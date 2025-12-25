@@ -689,6 +689,17 @@ socket.on('startGame', () => {
     init(); 
 });
 
+socket.on('diceSynced', (data) => {
+    // Update local dice with the ones received from the opponent
+    dieA = data.dice[0];
+    dieB = data.dice[1];
+    dieAEl.textContent = dieA;
+    dieBEl.textContent = dieB;
+    
+    // Now that dice are synced, start the move processing
+    processTurnStart();
+});
+
 // --- UPDATED INPUT HANDLER ---
 function mouseDown(e) {
     // Add this check to prevent moving on opponent's turn
@@ -1298,50 +1309,71 @@ function botMove(){
 function startTurn() {
     if (!active) return;
 
-    rollDice(() => {
-        // Check if there are any valid moves on the board for the current dice
-        const hasAllowed = boardValues.some((col, x) => col.some((val, y) => isAllowedToPlace(x, y)));
+    // --- MULTIPLAYER DICE LOGIC ---
+    if (isMultiplayer) {
+        if (current === myRole) {
+            // It is YOUR turn: you roll the dice and send them to the opponent
+            rollDice(() => {
+                socket.emit('syncDice', { 
+                    dice: [dieA, dieB], 
+                    roomId: currentRoom 
+                });
+                processTurnStart(); 
+            });
+        } else {
+            // It is OPPONENT'S turn: wait for them to send dice via Socket.io
+            log(`⌛ Waiting for opponent to roll...`);
+            document.getElementById('passBtn').disabled = true;
+            draw();
+        }
+    } else {
+        // --- ORIGINAL SINGLE PLAYER / LOCAL LOGIC ---
+        rollDice(processTurnStart);
+    }
+}
+
+// We move the move-validation logic into this helper function
+function processTurnStart() {
+    // Check if there are any valid moves on the board for the current dice
+    const hasAllowed = boardValues.some((col, x) => col.some((val, y) => isAllowedToPlace(x, y)));
+    
+    let playerString;
+    if (isMultiplayer) {
+        playerString = (current === myRole) ? "YOUR" : "OPPONENT'S";
+    } else {
+        playerString = (current === 1) ? 'BLUE' : (mode === 'single' ? 'RED (BOT)' : 'RED');
+    }
+
+    if (!hasAllowed) {
+        log(`⚠️ ${playerString} has no valid moves for ${dieA} & ${dieB}. Passing turn.`);
+        document.getElementById('passBtn').disabled = true;
         
-        // Determine the display name for the current player
-        let playerString;
+        // Auto-pass logic
+        current = (current === 1) ? 2 : 1;
+        updateTurnLabel();
+        renderSidebar();
+        setTimeout(startTurn, 600);
+
+    } else if (current === 2 && mode === 'single' && !isMultiplayer) {
+        // Bot logic (Only runs in local single player)
+        log('🤖 Red (Bot) is thinking...');
+        document.getElementById('passBtn').disabled = true;
+        draw(); 
+        soundBotThink(); 
+        setTimeout(botMove, 1000);
+        
+    } else {
+        // Human Turn logic
+        const isMyTurn = isMultiplayer ? (current === myRole) : true;
+        document.getElementById('passBtn').disabled = !isMyTurn;
+        
         if (isMultiplayer) {
-            playerString = (current === myRole) ? "YOUR" : "OPPONENT'S";
+            log(isMyTurn ? `✨ YOUR TURN! Choose a multiple of ${dieA} & ${dieB}.` : `⌛ Waiting for opponent move...`);
         } else {
-            playerString = (current === 1) ? 'BLUE' : (mode === 'single' ? 'RED (BOT)' : 'RED');
+            log(`✨ ${playerString} turn. Choose a common multiple of ${dieA} & ${dieB}.`);
         }
-
-        if (!hasAllowed) {
-            log(`⚠️ ${playerString} has no valid moves for ${dieA} & ${dieB}. Passing turn.`);
-            document.getElementById('passBtn').disabled = true;
-            
-            // If in Multiplayer, we wait for the server to tell us to switch, 
-            // but for local state sync, we flip the turn:
-            current = (current === 1) ? 2 : 1;
-            updateTurnLabel();
-            renderSidebar();
-            setTimeout(startTurn, 300);
-
-        } else if (current === 2 && mode === 'single' && !isMultiplayer) {
-            // ONLY run Bot logic if we are NOT in multiplayer mode
-            log('🤖 Red (Bot) is thinking...');
-            document.getElementById('passBtn').disabled = true;
-            draw(); 
-            soundBotThink(); 
-            setTimeout(botMove, 600 + Math.random() * 500);
-            
-        } else {
-            // Enable controls if it is actually your turn
-            const isMyTurn = isMultiplayer ? (current === myRole) : true;
-            document.getElementById('passBtn').disabled = !isMyTurn;
-            
-            if (isMultiplayer) {
-                log(isMyTurn ? `✨ YOUR TURN! Choose a multiple of ${dieA} & ${dieB}.` : `⌛ Waiting for opponent to move...`);
-            } else {
-                log(`✨ ${playerString} turn. Choose a common multiple of ${dieA} & ${dieB}.`);
-            }
-            draw(); 
-        }
-    });
+        draw(); 
+    }
 }
   
 
