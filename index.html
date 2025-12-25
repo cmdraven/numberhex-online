@@ -726,6 +726,42 @@ socket.on('opponentMove', (data) => {
 });
 
 // --- Game Constants and State ---
+// --- UPDATED GLOBAL VARIABLES ---
+let isMultiplayer = false; 
+let myRole = null; // 1 or 2
+let currentRoom = null;
+
+function init() {
+    // Reset core game state
+    board = [];
+    boardValues = [];
+    for (let i = 0; i < SIZE; i++) {
+        board[i] = [];
+        boardValues[i] = [];
+        for (let j = 0; j < SIZE; j++) {
+            board[i][j] = -1;
+            boardValues[i][j] = Math.floor(Math.random() * 90) + 10;
+        }
+    }
+    
+    sel = [-1, -1];
+    current = 1;
+    moveHistory = [];
+    occupiedCount = 0;
+    active = true; 
+    
+    // UI Resets
+    mainModalBackdrop.classList.add('hidden');
+    moveLogEl.innerHTML = '';
+    log("🎮 New Game Started! Blue goes first.");
+    
+    updateTurnLabel();
+    renderSidebar();
+    draw();
+
+    // Trigger first turn
+    startTurn();
+}
 const SIZE = 11; 
 const TOTAL_CELLS = SIZE * SIZE;
 const HEX_R = 45; // Slightly larger hex radius
@@ -1309,10 +1345,10 @@ function botMove(){
 function startTurn() {
     if (!active) return;
 
-    // --- MULTIPLAYER DICE LOGIC ---
+    // --- CASE 1: MULTIPLAYER LOGIC ---
     if (isMultiplayer) {
         if (current === myRole) {
-            // It is YOUR turn: you roll the dice and send them to the opponent
+            // It is YOUR turn online: you roll and sync to opponent
             rollDice(() => {
                 socket.emit('syncDice', { 
                     dice: [dieA, dieB], 
@@ -1321,20 +1357,20 @@ function startTurn() {
                 processTurnStart(); 
             });
         } else {
-            // It is OPPONENT'S turn: wait for them to send dice via Socket.io
+            // It is OPPONENT'S turn online: wait for their syncDice event
             log(`⌛ Waiting for opponent to roll...`);
             document.getElementById('passBtn').disabled = true;
             draw();
         }
-    } else {
-        // --- ORIGINAL SINGLE PLAYER / LOCAL LOGIC ---
+    } 
+    // --- CASE 2: SINGLE PLAYER / LOCAL MULTIPLAYER ---
+    else {
         rollDice(processTurnStart);
     }
 }
 
-// We move the move-validation logic into this helper function
 function processTurnStart() {
-    // Check if there are any valid moves on the board for the current dice
+    // Check if any moves are valid for the current dice roll
     const hasAllowed = boardValues.some((col, x) => col.some((val, y) => isAllowedToPlace(x, y)));
     
     let playerString;
@@ -1348,14 +1384,14 @@ function processTurnStart() {
         log(`⚠️ ${playerString} has no valid moves for ${dieA} & ${dieB}. Passing turn.`);
         document.getElementById('passBtn').disabled = true;
         
-        // Auto-pass logic
+        // Auto-switch turn
         current = (current === 1) ? 2 : 1;
         updateTurnLabel();
         renderSidebar();
-        setTimeout(startTurn, 600);
+        setTimeout(startTurn, 1000); 
 
     } else if (current === 2 && mode === 'single' && !isMultiplayer) {
-        // Bot logic (Only runs in local single player)
+        // --- LOCAL BOT LOGIC ---
         log('🤖 Red (Bot) is thinking...');
         document.getElementById('passBtn').disabled = true;
         draw(); 
@@ -1363,12 +1399,14 @@ function processTurnStart() {
         setTimeout(botMove, 1000);
         
     } else {
-        // Human Turn logic
-        const isMyTurn = isMultiplayer ? (current === myRole) : true;
-        document.getElementById('passBtn').disabled = !isMyTurn;
+        // --- HUMAN TURN LOGIC (Local or Online) ---
+        // In local play, we always allow input. In multiplayer, only if current == myRole.
+        const canControl = isMultiplayer ? (current === myRole) : true;
+        
+        document.getElementById('passBtn').disabled = !canControl;
         
         if (isMultiplayer) {
-            log(isMyTurn ? `✨ YOUR TURN! Choose a multiple of ${dieA} & ${dieB}.` : `⌛ Waiting for opponent move...`);
+            log(canControl ? `✨ YOUR TURN! Choose a multiple of ${dieA} & ${dieB}.` : `⌛ Waiting for opponent move...`);
         } else {
             log(`✨ ${playerString} turn. Choose a common multiple of ${dieA} & ${dieB}.`);
         }
