@@ -671,7 +671,16 @@ document.getElementById('matchBtn').addEventListener('click', () => {
 socket.on('matchFound', (data) => {
     currentRoom = data.roomId;
     myRole = data.role;
-    isMatchmaking = true;
+    isMultiplayer = true; // Sets network flag
+    
+    // FORCE MODE CHANGE: This is the missing piece
+    mode = 'multi'; 
+    modeSelect.value = 'multi'; 
+    sidebarModeEl.textContent = '👥 MULTI PLAYER';
+    
+    document.getElementById('matchBtn').textContent = "CONNECTED";
+    document.getElementById('matchBtn').style.background = getCssVar('--accent-success');
+    
     log(`Matched! You are ${myRole === 1 ? 'BLUE' : 'RED'}`);
 });
 
@@ -1286,34 +1295,55 @@ function botMove(){
 }
 
 
-function startTurn(){
-    if (!active) return; 
+function startTurn() {
+    if (!active) return;
 
-    rollDice(()=>{
+    rollDice(() => {
+        // Check if there are any valid moves on the board for the current dice
         const hasAllowed = boardValues.some((col, x) => col.some((val, y) => isAllowedToPlace(x, y)));
-        const playerString = current === 1 ? 'Blue' : (mode === 'single' ? 'Red (Bot)' : 'Red');
+        
+        // Determine the display name for the current player
+        let playerString;
+        if (isMultiplayer) {
+            playerString = (current === myRole) ? "YOUR" : "OPPONENT'S";
+        } else {
+            playerString = (current === 1) ? 'BLUE' : (mode === 'single' ? 'RED (BOT)' : 'RED');
+        }
 
-        if (!hasAllowed){
+        if (!hasAllowed) {
             log(`⚠️ ${playerString} has no valid moves for ${dieA} & ${dieB}. Passing turn.`);
             document.getElementById('passBtn').disabled = true;
-            current = current === 1 ? 2 : 1;
+            
+            // If in Multiplayer, we wait for the server to tell us to switch, 
+            // but for local state sync, we flip the turn:
+            current = (current === 1) ? 2 : 1;
             updateTurnLabel();
-            renderSidebar(); // NEW
+            renderSidebar();
             setTimeout(startTurn, 300);
 
-        } else if (current === 2 && mode === 'single'){
+        } else if (current === 2 && mode === 'single' && !isMultiplayer) {
+            // ONLY run Bot logic if we are NOT in multiplayer mode
             log('🤖 Red (Bot) is thinking...');
             document.getElementById('passBtn').disabled = true;
             draw(); 
             soundBotThink(); 
-            setTimeout(botMove, 600 + Math.random()*500);
+            setTimeout(botMove, 600 + Math.random() * 500);
+            
         } else {
-            document.getElementById('passBtn').disabled = false;
-            log(`✨ ${playerString} turn. Choose a common multiple of ${dieA} & ${dieB}.`);
+            // Enable controls if it is actually your turn
+            const isMyTurn = isMultiplayer ? (current === myRole) : true;
+            document.getElementById('passBtn').disabled = !isMyTurn;
+            
+            if (isMultiplayer) {
+                log(isMyTurn ? `✨ YOUR TURN! Choose a multiple of ${dieA} & ${dieB}.` : `⌛ Waiting for opponent to move...`);
+            } else {
+                log(`✨ ${playerString} turn. Choose a common multiple of ${dieA} & ${dieB}.`);
+            }
             draw(); 
         }
     });
 }
+  
 
 function rollDice(cb){
     dieA = null; dieB = null;
