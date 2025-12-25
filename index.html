@@ -1,0 +1,1743 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>NumberHex: Common Multiple Challenge</title>
+<link rel="icon" type="image/png" href="logo.png" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="/socket.io/socket.io.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+/* --- GAME-LIKE VIBRANT DARK THEME & FULL SCREEN LAYOUT --- */
+:root{
+  /* Base Colors - Dark Gaming Theme */
+  --bg-primary: #1A1A1A; /* Dark Game Console Black */
+  --bg-panel: #2A2A2A; /* Dark Grey Panel background */
+  --bg-light: #333333; /* Slightly lighter dark grey for elements */
+  
+  --text-light: #E0E0E0; /* Light text for primary readability */
+  --text-dark: #B0B0B0; /* Lighter secondary text */
+  --muted: #444444; /* Dark grey for borders/muted elements */
+  
+  /* Game Accents - Green-Themed & High Contrast */
+  --accent-blue: #7FFF00; /* Electric Lime Green - Player 1 (Replaces Blue) */
+  --accent-blue-light: #BFFF00; /* Lighter Lime for boundary */
+  --accent-blue-shadow: #4c8c00; /* Darker Green for Main Button Shadow */
+  --accent-red: #FF4500; /* Vibrant Orange-Red - Player 2 (Kept for contrast) */
+  --accent-red-light: #ff7559; /* Lighter Orange-Red for boundary */
+  --accent-dark: #FFFFFF; /* White for primary outlines/shadows */
+  --accent-success: #7FFF00; /* Match Player 1 color */
+  --accent-info: #00E0A0; /* Vibrant Teal/Cyan for info messages */
+  --accent-warning: #ffc107; /* Yellow for warnings (kept) */
+  --accent-danger: #FF4500; /* Match Player 2 color */
+  --ghost-shadow: #111111; /* Very dark shadow for ghost buttons */
+  
+  --win: var(--accent-success); /* Use green for win path */
+  
+  --max-width: 1400px;
+  --text-primary: var(--text-light); 
+  --text-secondary: var(--text-dark);
+  
+  /* --- NEW CYBERPUNK/NEON UI STYLING --- */
+  --radius-sharp: 5px; /* Sharp corners for modern look */
+  --radius-panel: 8px; /* Slightly more rounded for main containers */
+
+  /* Shadows for Depth (Less depth, more glow/contrast) */
+  --shadow-l: 0 0 15px rgba(0,0,0,0.5); 
+  --shadow-m: 0 0 5px rgba(0,0,0,0.5);
+  --shadow-inset: inset 0 0 5px rgba(0,0,0,0.3);
+  
+  /* 2D button press variables */
+  --btn-offset: 4px; /* Offset distance for 2D look */
+  --btn-shadow-color: var(--accent-blue-shadow);
+
+  --font-title: 'Bungee Inline', cursive;
+  --font-text: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue";
+
+  /* Turn indicators for code logic */
+  --glow-color-1: var(--accent-blue);
+  --glow-color-2: var(--accent-red);
+  --turn-indicator-1: var(--accent-blue);
+  --turn-indicator-2: var(--accent-red);
+}
+
+/* Global Reset & Body - DEFAULT (Desktop Non-Scrolling) */
+*{box-sizing:border-box}
+html,body{
+    height:100vh; /* Fixed height for desktop/default */
+    margin:0;
+    font-family:var(--font-text);
+    background:var(--bg-primary); 
+    color:var(--text-primary);
+    overflow: hidden; /* Prevent scrolling on desktop/default */
+}
+.wrap{
+    max-width:var(--max-width);
+    margin:0 auto;
+    padding: 8px 16px; 
+    height: 100vh; /* Fixed height for desktop/default */
+    display: flex;
+    flex-direction: column;
+} 
+
+/* NEW LAYOUT FOR SIDEBAR */
+.main-layout { 
+    flex-grow: 1;
+    display: flex;
+    gap: 12px;
+    min-height: 0;
+}
+.main-game-area { 
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; 
+}
+.sidebar { 
+    width: 300px; /* Fixed width */
+    background: var(--bg-panel);
+    border: 3px solid var(--accent-blue);
+    border-radius: var(--radius-panel);
+    padding: 15px;
+    box-shadow: var(--shadow-l);
+    flex-shrink: 0; 
+    overflow-y: auto; 
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: 100%; /* Ensure it fills the height of main-layout */
+}
+.sidebar h3 {
+    font-family: var(--font-title);
+    color: var(--accent-blue);
+    font-size: 20px;
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--muted);
+    letter-spacing: 2px;
+}
+.sidebar p {
+    font-size: 14px;
+}
+.move-log {
+    flex-grow: 1;
+    min-height: 100px;
+    background: var(--bg-light);
+    border-radius: var(--radius-sharp);
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-light);
+}
+.move-entry {
+    border-bottom: 1px dashed var(--muted);
+    padding: 3px 0;
+}
+.move-entry:last-child {
+    border-bottom: none;
+}
+.move-turn {
+    font-weight: 800;
+    margin-right: 5px;
+    color: var(--text-dark);
+}
+.factor-tile-btn {
+    font-family: var(--font-text);
+    font-size: 14px;
+}
+/* END NEW LAYOUT FOR SIDEBAR */
+
+
+/* Header - Responsive adjustments */
+.header{
+    position: relative; 
+    z-index: 10;      
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:12px;
+    flex-wrap: wrap;
+    flex-shrink: 0; 
+}
+.title h1{
+    margin:0;
+    font-size: clamp(40px, 8vw, 75px); 
+    font-weight:900;
+    font-family:var(--font-title);
+    color:var(--accent-blue);
+    line-height:1.05; 
+    letter-spacing: 5px; 
+    /* Updated for sharper neon glow */
+    text-shadow: 0 0 5px var(--accent-blue), 0 0 15px rgba(127, 255, 0, 0.4);
+}
+.controls { display: flex; gap: 12px; }
+
+/* Status/Control Strip */
+.status-strip {
+    position: relative; 
+    z-index: 10;      
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-panel);
+    padding: 10px 20px; 
+    border-radius: var(--radius-panel); /* SQUARED */
+    box-shadow: var(--shadow-m);
+    margin-bottom: 12px; 
+    gap: 15px;
+    flex-wrap: wrap;
+    border: 2px solid var(--muted); /* Reduced thickness */
+    flex-shrink: 0; 
+}
+.turn-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 150px;
+}
+.log-status {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+.turn-indicator-bar {
+    border-radius: 4px; /* SQUARED */
+    padding: 4px 15px;
+    font-size: 18px;
+    font-weight: 900;
+    text-transform: uppercase;
+    background: var(--bg-light); 
+    border: 2px solid var(--muted);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); 
+    font-family: var(--font-title); 
+}
+
+/* Inputs/Selects - Dark Style */
+.select, .input {
+    width:auto;
+    padding:8px 12px;
+    border-radius:var(--radius-sharp); /* SQUARED */
+    background:var(--bg-light);
+    border:2px solid var(--muted);
+    color:var(--text-primary); 
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Button Styling (NEW 2D/OFFSET SHADOW LOOK) */
+.btn{
+    background:var(--accent-blue);
+    color:var(--bg-panel); 
+    padding:10px 20px;
+    border-radius:var(--radius-sharp); /* SQUARED */
+    border:none;
+    font-weight:800;
+    cursor:pointer;
+    transition:transform 0.1s, box-shadow 0.1s; 
+    /* Offset shadow for 2D "game button" feel */
+    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--btn-shadow-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.btn:hover{
+    /* Slight shift up-left */
+    transform:translate(-1px, -1px); 
+    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--btn-shadow-color);
+}
+.btn:active{
+    /* Press down and right (shadow disappears) */
+    transform:translate(var(--btn-offset), var(--btn-offset)); 
+    box-shadow: 0 0 0px var(--btn-shadow-color);
+}
+.ghost{
+    background:var(--bg-light);
+    border:2px solid var(--muted);
+    color:var(--text-primary);
+    padding:10px 14px;
+    border-radius:var(--radius-sharp); /* SQUARED */
+    font-weight:700;
+    cursor:pointer;
+    transition:background 0.1s, transform 0.1s;
+    /* Offset shadow for 2D "game button" feel */
+    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--ghost-shadow);
+}
+.ghost:hover{
+    background:var(--muted); 
+    transform:translate(-1px, -1px);
+    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--ghost-shadow);
+}
+.ghost:active{
+    transform:translate(var(--btn-offset), var(--btn-offset));
+    box-shadow: 0 0 0px var(--ghost-shadow);
+}
+
+/* Dice Area - MORE PROMINENT */
+.dice{display:flex;gap:15px;align-items:center}
+.die{
+    width:70px; 
+    height:70px; 
+    border-radius:var(--radius-sharp); /* SQUARED */
+    background:var(--bg-panel); 
+    color:var(--text-dark); 
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:900;
+    font-size:40px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+    border:4px solid var(--muted);
+    animation:diceRoll 0.1s infinite alternate; 
+    transition: all 0.2s; 
+    line-height: 1;
+    font-family: var(--font-title); 
+}
+.die.ready{animation:none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);} 
+.die.ready:nth-child(1){border-color: var(--accent-blue);}
+.die.ready:nth-child(2){border-color: var(--accent-red);}
+@keyframes diceRoll {from {transform: rotate(0deg) scale(1);} to {transform: rotate(2deg) scale(1.02);} }
+
+/* Grid/Board Panel - Main content area */
+.panel{
+    background:var(--bg-panel);
+    padding:12px; 
+    border-radius:var(--radius-panel); /* SQUARED */
+    border:3px solid var(--muted); 
+    /* MODIFIED: Sharper, more intense neon glow */
+    box-shadow: 
+        0 0 8px rgba(0,0,0,0.8), /* Dark shadow for depth */
+        0 0 10px var(--accent-blue), /* Stronger central glow */
+        0 0 25px rgba(127, 255, 0, 0.2); /* Wider halo */
+    flex-grow: 1; 
+    min-height: 0; 
+    display: flex;
+    flex-direction: column;
+}
+.board-scroll{
+    border-radius:4px; /* SQUARED */
+    padding: 10px; 
+    background: var(--bg-light); 
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    box-shadow: var(--shadow-inset); 
+    margin: 0; 
+    flex-grow: 1; 
+    min-height: 0;
+}
+.grid-container{
+    position:relative;
+    display:inline-block;
+    user-select:none;
+    touch-action:manipulation; 
+    background-color: transparent;
+    margin: 0 auto; 
+}
+#output {
+    height: auto;
+    display: block; 
+}
+.legend{
+    display:flex;
+    justify-content: space-around; 
+    gap:15px;
+    align-items:center;
+    padding-top:12px;
+    font-size:16px; 
+    font-weight:800; 
+    border-top: 2px solid var(--muted);
+    text-transform: uppercase;
+    flex-shrink: 0; 
+    font-family: var(--font-title);
+    letter-spacing: 1px;
+}
+
+/* Modal Styles */
+.modal-overlay { 
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.85); 
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+.modal-content { 
+    background: var(--bg-panel); 
+    border: 3px solid var(--accent-blue); 
+    color: var(--text-primary); 
+    padding: 25px;
+    border-radius: var(--radius-panel); /* SQUARED */
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-l);
+    position: relative;
+    transform: scale(0.95);
+    transition: transform 0.3s ease-out;
+    width: 500px; /* Default width for new modals */
+}
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+.modal-content h2 { 
+    border-bottom: 3px solid var(--accent-blue); 
+    color: var(--accent-blue); 
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    text-shadow: none; 
+}
+.modal-content h3 { 
+    color: var(--text-primary); 
+    margin-top: 20px;
+    font-weight: 800;
+}
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 30px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-dark);
+}
+.modal-content .ghost:hover{
+    /* Override hover for factor buttons */
+    background:var(--bg-light); 
+    transform: none;
+    box-shadow: none;
+}
+.modal-content .ghost:active{
+    /* Override active for factor buttons */
+    transform: none;
+    box-shadow: none;
+}
+/* Error Message Specific Styles (for the custom error screen) */
+#error-modal.modal-content {
+    border-color: var(--accent-red);
+    box-shadow: 0 0 20px rgba(255, 69, 0, 0.5); /* Red glow for error */
+}
+.error-message {
+    background: #4d2626; /* Darker red background for error */
+    border: 2px solid var(--accent-red);
+    color: var(--text-light); 
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    line-height: 1.4;
+    font-size: 1.1em;
+}
+.error-message strong {
+    color: var(--accent-red);
+}
+
+/* --- MOBILE SPECIFIC STYLES (Max-width 768px) --- */
+@media (max-width: 768px) {
+    /* ENABLE SCROLLING FOR MOBILE */
+    html, body {
+        height: auto; /* Allow height to expand */
+        min-height: 100vh; /* Still ensure full viewport coverage */
+        overflow-y: auto; /* Allow vertical scrolling */
+        overflow-x: hidden; /* Prevent horizontal scrolling */
+    }
+    .wrap {
+        height: auto; /* Allow wrap to expand beyond viewport if necessary */
+        min-height: 100vh;
+        padding: 4px 8px;
+    }
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 8px;
+    }
+    .title h1 {
+        text-align: center;
+        letter-spacing: 2px;
+    }
+    .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .main-layout {
+        flex-direction: column; /* Stack sidebar below game board on mobile */
+    }
+    .sidebar {
+        width: auto;
+        height: 300px; /* Fixed height for a scrollable log on mobile */
+        order: 3; /* Move sidebar to the bottom */
+    }
+    .status-strip {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 8px 12px;
+        gap: 10px;
+    }
+    .status-strip > div:last-child {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+    }
+    .dice {
+        flex-grow: 1;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+    #passBtn {
+        flex-shrink: 0;
+        width: 100px;
+    }
+    .status-strip > div:first-child {
+        display: grid;
+        grid-template-columns: 1fr auto; 
+        gap: 8px;
+    }
+    .turn-info {
+        flex-grow: 0;
+        min-width: auto;
+        padding-bottom: 5px;
+        border-bottom: 1px solid var(--muted);
+    }
+    .log-status {
+        margin-bottom: 2px;
+        font-size: 13px;
+        text-align: center;
+        max-width: 100%;
+    }
+    .turn-indicator-bar {
+        font-size: 16px;
+        padding: 2px 10px;
+        align-self: center;
+    }
+    .panel {
+        padding: 8px;
+        border-radius: var(--radius-sharp); /* SQUARED */
+        border-width: 2px;
+    }
+    .board-scroll {
+        padding: 10px;
+    }
+    .legend {
+        flex-direction: column;
+        gap: 8px;
+        font-size: 14px;
+        text-align: center;
+    }
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="title">
+      <h1>NUMBERHEX</h1>
+    </div>
+
+    <div class="controls">
+      <button id="howToPlayBtn" class="ghost">RULEBOOK ❓</button>
+      <button id="lcmHelperBtn" class="ghost" style="--ghost-shadow: var(--accent-blue-shadow);">HELPER 💡</button>
+      <button id="newBtn" class="btn">NEW GAME</button>
+      <button id="matchBtn" class="btn" style="background: var(--accent-info); --btn-shadow-color: #008f66;">FIND MATCH</button>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    <div class="main-game-area">
+
+        <div class="status-strip">
+            <div style="display:flex; gap: 12px; flex-shrink: 0;">
+                <select id="modeSelect" class="select">
+                    <option value="single">🤖 SINGLE PLAYER</option>
+                    <option value="multi">👥 MULTI PLAYER</option>
+                </select>
+                <button id="undoBtn" class="ghost">↩️ UNDO</button>
+            </div>
+            
+            <div class="turn-info">
+              <div id="statusLog" class="log-status">Ready to play!</div>
+              <div class="turn-indicator-bar">
+                <span id="turnLabel" class="turn-indicator js-accent-blue">BLUE</span>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:20px; flex-shrink: 0;">
+                <div class="dice">
+                  <div id="dieA" class="die ready">-</div>
+                  <div id="dieB" class="die ready">-</div>
+                </div>
+                <button id="passBtn" class="ghost">PASS 🔁</button>
+            </div>
+        </div>
+
+
+        <section class="panel board-panel">
+            <div class="board-scroll">
+              <div class="grid-container">
+                  <canvas id="output">Canvas not supported...</canvas>
+              </div>
+            </div>
+
+            <div class="legend">
+              <div><span style="color:var(--accent-blue);">🔵</span> LEFT &mdash; RIGHT GOAL</div>
+              <div><span style="color:var(--accent-red);">🔴</span> TOP &mdash; BOTTOM GOAL</div>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="sidebar"> 
+        <h3>GAME STATS</h3>
+        <div id="game-stats">
+            <p><strong>Mode:</strong> <span id="sidebar-mode">SINGLE PLAYER</span></p>
+            <p><strong>Total Moves:</strong> <span id="sidebar-moves">0</span></p>
+            <p><strong>Occupied Tiles:</strong> <span id="sidebar-occupied">0 / 121</span></p>
+        </div>
+        
+        <h3>MOVE HISTORY</h3>
+        <div id="moveLog" class="move-log">
+            </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="instructionsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content" id="rulebook-modal">
+        <button class="modal-close-btn" onclick="hideInstructions()" aria-label="Close instructions">&times;</button>
+        <h2 id="modalTitle">HEX RULEBOOK 📖</h2>
+
+        <h3>THE GOAL 🏆</h3>
+        <p>The Blue Player wins by connecting the Left edge to the Right edge. The Red Player wins by connecting the Top edge to the Bottom edge.</p>
+
+        <h3>THE PLACEMENT RULE 🎲</h3>
+        <p>On your turn, two dice (1-10) are rolled. You must place your piece on a tile whose value is a common multiple of both dice rolls.</p>
+        <p>A tile value N is valid if and only if:</p>
+        <ol style="margin-left: 15px; list-style-type: decimal; font-family: var(--font-text); background: var(--bg-light); padding: 10px; border-radius: 5px; margin-top: 10px; color: var(--text-dark);">
+            <li>N is perfectly divisible by Die A.</li>
+            <li>N is perfectly divisible by Die B.</li>
+        </ol>
+        <p style="margin-top: 15px; font-weight: 700; color: var(--accent-red);">If NO valid tile is available, you must click the "Pass Turn" button.</p>
+        <p class="small" style="margin-top: 15px; color: var(--text-secondary);">Note: The game provides detailed error feedback if you click the wrong tile!</p>
+    </div>
+</div>
+
+<div id="modal-backdrop" class="modal-overlay" role="dialog" aria-modal="true">
+    <div id="win-modal" class="modal-content text-center">
+        <button class="modal-close-btn" onclick="closeModal()" aria-label="Close message">&times;</button>
+        <h2 id="modal-title" class="text-3xl font-extrabold mb-4" style="color: var(--accent-blue);">Game Message</h2>
+        <div id="modal-message" class="text-lg text-gray-700 mb-8 font-medium"></div>
+    </div>
+</div>
+
+<div id="helperModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="helperModalTitle">
+    <div class="modal-content">
+        <button class="modal-close-btn" onclick="hideHelper()" aria-label="Close helper">&times;</button>
+        <h2 id="helperModalTitle" style="border-color: var(--accent-info); color: var(--accent-info);">COMMON MULTIPLE & FACTOR HELPER 💡</h2>
+        <div id="helperContent">
+            </div>
+    </div>
+</div>
+
+
+<script>
+// --- NETWORK STATE ---
+const socket = io();
+let myRole = null; 
+let currentRoom = null;
+let isMatchmaking = false;
+
+document.getElementById('matchBtn').addEventListener('click', () => {
+    socket.emit('findMatch');
+    document.getElementById('matchBtn').textContent = "SEARCHING...";
+});
+
+socket.on('matchFound', (data) => {
+    currentRoom = data.roomId;
+    myRole = data.role;
+    isMatchmaking = true;
+    log(`Matched! You are ${myRole === 1 ? 'BLUE' : 'RED'}`);
+});
+
+socket.on('startGame', () => {
+    active = true;
+    init(); 
+});
+
+// --- UPDATED INPUT HANDLER ---
+function mouseDown(e) {
+    // Add this check to prevent moving on opponent's turn
+    if (isMatchmaking && current !== myRole) return; 
+    
+    // ... rest of your original logic ...
+    
+    if (isAllowedToPlace(x, y)) {
+        place(x, y, current);
+        // ADD THIS: Sync move to opponent
+        if (isMatchmaking) {
+            socket.emit('emitMove', { x, y, owner: myRole, dice: [dieA, dieB], roomId: currentRoom });
+        }
+        afterPlacement();
+    }
+}
+
+// --- RECEIVE OPPONENT MOVES ---
+socket.on('opponentMove', (data) => {
+    dieA = data.dice[0];
+    dieB = data.dice[1];
+    place(data.x, data.y, data.owner);
+    afterPlacement();
+});
+
+// --- Game Constants and State ---
+const SIZE = 11; 
+const TOTAL_CELLS = SIZE * SIZE;
+const HEX_R = 45; // Slightly larger hex radius
+const HEX_W = HEX_R * Math.sqrt(3); 
+const HEX_BORDER_WIDTH = 3;
+const HEX_TEXT_STROKE_WIDTH = 5; 
+const HEX_FONT_SIZE = 35; // Larger font for prominence
+const HEX_FONT = `900 ${HEX_FONT_SIZE}px 'Bungee Inline', sans-serif`;
+const X_MARGIN = HEX_R * 1.5; 
+const Y_MARGIN = HEX_R * 1.5; 
+
+const outputCanvas = document.getElementById('output');
+const ctx = outputCanvas.getContext("2d");
+const dieAEl = document.getElementById('dieA'), dieBEl = document.getElementById('dieB');
+const turnLabel = document.getElementById('turnLabel');
+const statusLogEl = document.getElementById('statusLog');
+const modeSelect = document.getElementById('modeSelect'); 
+const mainModalBackdrop = document.getElementById('modal-backdrop');
+const mainModalContent = document.getElementById('win-modal');
+
+// NEW SIDEBAR ELEMENTS
+const moveLogEl = document.getElementById('moveLog');
+const sidebarModeEl = document.getElementById('sidebar-mode');
+const sidebarMovesEl = document.getElementById('sidebar-moves');
+const sidebarOccupiedEl = document.getElementById('sidebar-occupied');
+const lcmHelperBtn = document.getElementById('lcmHelperBtn');
+const helperModal = document.getElementById('helperModal');
+const helperContentEl = document.getElementById('helperContent');
+
+
+let board = []; 
+let boardValues = []; 
+let sel = [-1, -1]; 
+let current = 1; 
+let dieA = null, dieB = null;
+let moveHistory = [];
+let mode = 'single';
+let active = true; 
+let occupiedCount = 0; 
+let lastHoveredValid = [-1, -1]; 
+
+// Utility to get a CSS variable value
+function getCssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+// --- Sound Functions ---
+let audioCtx;
+function tone(freq, t=0.08, vol=0.06){ try{ if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='sine'; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + t);}catch(e){} }
+function soundWin() { tone(880, 0.15, 0.1); setTimeout(()=>tone(1320, 0.25, 0.1), 160); }
+function soundError() { tone(180, 0.1, 0.1); setTimeout(()=>tone(130, 0.1, 0.1), 100); }
+function soundDice() { tone(440, 0.08); }
+function soundPlace(owner) { tone(owner === 1 ? 600 : 400, 0.08); }
+function soundClick() { tone(700, 0.05, 0.05); }
+function soundPass() { tone(200, 0.08, 0.1); setTimeout(()=>tone(150, 0.08, 0.1), 100); }
+function soundNewGame() { tone(523, 0.05); setTimeout(()=>tone(659, 0.05), 80); }
+function soundHover() { tone(300, 0.02, 0.03); } 
+function soundBotThink() { tone(150, 0.1, 0.08); setTimeout(() => tone(180, 0.1, 0.08), 150); } 
+
+
+function log(msg){ 
+    statusLogEl.textContent = msg; 
+}
+function isIntClose(x){ const eps = 1e-9; return Math.abs(Math.round(x) - x) < eps; }
+
+function getCanvasCenter(x, y) {
+    const cx = x * HEX_W + y * (HEX_W / 2) + X_MARGIN;
+    const cy = y * 1.5 * HEX_R + Y_MARGIN;
+    return [cx, cy];
+}
+
+/**
+ * Calculates scale factor based on **both** width and height 
+ * constraints of the container to ensure the board fits entirely on screen without scrolling.
+ * MODIFIED: On small screens, prioritizes filling width and allows vertical overflow.
+ */
+function calculateCanvasSize() {
+    const [maxXCenter, maxYCenter] = getCanvasCenter(SIZE - 1, SIZE - 1);
+    const padding = HEX_R * 0.5; // Use smaller padding to maximize space
+    
+    // Calculated intrinsic board size
+    const boardIntrinsicWidth = Math.ceil(maxXCenter + HEX_R + padding);
+    const boardIntrinsicHeight = Math.ceil(maxYCenter + HEX_R + padding); 
+
+    outputCanvas.width = boardIntrinsicWidth;
+    outputCanvas.height = boardIntrinsicHeight;
+    
+    const scrollContainer = document.querySelector('.board-scroll');
+    const scrollRect = scrollContainer.getBoundingClientRect();
+    
+    // Add a small safety margin (20px) to the available space
+    const safetyMargin = 20; 
+    const availableWidth = scrollRect.width - safetyMargin; 
+    const availableHeight = scrollRect.height - safetyMargin; 
+
+    // Calculate scale factor based on both dimensions
+    const scaleX = availableWidth / boardIntrinsicWidth;
+    const scaleY = availableHeight / boardIntrinsicHeight;
+    
+    // 1. Check if we are on a small screen (mobile)
+    // We use window.innerWidth because screen size directly impacts our scaling decision
+    const isMobileScreen = window.innerWidth <= 768; 
+    
+    let scale;
+    if (isMobileScreen) {
+        // 2. On mobile, scale by width to maximize size, rely on page scroll for height
+        scale = scaleX; 
+    } else {
+        // 3. On desktop, use the minimum scale to fit all content without scrolling
+        scale = Math.min(scaleX, scaleY);
+    }
+    
+    // Apply the transformation and center the board
+    outputCanvas.style.transform = `scale(${scale})`;
+    outputCanvas.style.transformOrigin = 'center center'; 
+
+    outputCanvas.style.position = 'static'; 
+}
+
+
+// --- Game Logic Functions (Unchanged) ---
+function findArr(a, b) {
+    for (var i = 0; i < a.length; i++)
+        if (a[i][0] == b[0] && a[i][1] == b[1])
+            return i;
+    return -1;
+}
+
+function getConnections(x, y, owner, open, closed) {
+    var dx = [1, 0, -1, -1, 0, 1];
+    var dy = [0, 1, 1, 0, -1, -1];
+    var ret = [];
+    for (var i = 0; i < 6; i++) {
+        const nx = x + dx[i];
+        const ny = y + dy[i];
+        
+        if (nx >= 0 && nx < SIZE && ny >= 0 && ny < SIZE) {
+            if (board[nx][ny] == owner && findArr(open, [nx, ny]) == -1 && findArr(closed, [nx, ny]) == -1)
+                ret.push([nx, ny]);
+        }
+    }
+    return ret;
+}
+
+function checkWin(owner) {
+    var open = [], openPrev = [], closed = [], closedPrev = [];
+    const END_DIM = (owner === 1 ? 0 : 1); 
+
+    for (var a = 0; a < SIZE; a++) {
+        const startX = (owner === 1 ? 0 : a);
+        const startY = (owner === 1 ? a : 0);
+
+        if (board[startX][startY] == owner) {
+            open.length = openPrev.length = closed.length = closedPrev.length = 0;
+            var pathFound = false;
+
+            open.push([startX, startY]);
+            openPrev.push(-1); 
+
+            while (open.length > 0) {
+                var u = open.shift();
+                var uI = openPrev.shift();
+
+                closed.push(u);
+                closedPrev.push(uI);
+
+                if (u[END_DIM] == SIZE - 1) {
+                    pathFound = true;
+                    break;
+                }
+
+                var connections = getConnections(u[0], u[1], owner, open, closed);
+                for (var i = 0; i < connections.length; i++) {
+                    open.push(connections[i]);
+                    openPrev.push(closed.length - 1);
+                }
+            }
+
+            if (pathFound) {
+                var path = [];
+                var u = closed.length - 1;
+                while (closedPrev[u] != -1) {
+                    path.push(closed[u]);
+                    u = closedPrev[u];
+                }
+                path.push([startX, startY]);
+                path.reverse();
+                active = false;
+                return path;
+            }
+        }
+    }
+    return false;
+}
+
+function isAllowedToPlace(x, y){
+  if (board[x][y] !== -1) return false;
+  if (dieA === null || dieB === null) return false;
+  const val = boardValues[x][y];
+  if (dieA === 0 || dieB === 0) return false;
+  const a = val / dieA;
+  const b = val / dieB;
+  return isIntClose(a) && isIntClose(b);
+}
+
+// --- Canvas Drawing Functions (Unchanged) ---
+function drawHexagon(c, x, y, r, options = {}) {
+    const {
+        fillStyle = null,
+        strokeStyle = null,
+        lineWidth = HEX_BORDER_WIDTH,
+        shadowColor = null,
+        shadowBlur = 0
+    } = options;
+
+    const prevFill = c.fillStyle;
+    const prevStroke = c.strokeStyle;
+    const prevLineWidth = c.lineWidth;
+    const prevShadowColor = c.shadowColor;
+    const prevShadowBlur = c.shadowBlur;
+
+    if (fillStyle !== null) c.fillStyle = fillStyle;
+    if (strokeStyle !== null) c.strokeStyle = strokeStyle;
+    c.lineWidth = lineWidth;
+    c.shadowColor = shadowColor ?? prevShadowColor;
+    c.shadowBlur = shadowBlur;
+
+    c.beginPath();
+    c.moveTo(x, y - r);
+    for (let i = 0; i < 6; i++) {
+        c.lineTo(
+            x + r * Math.cos(Math.PI * (1.5 + 1 / 3 * i)),
+            y + r * Math.sin(Math.PI * (1.5 + 1 / 3 * i))
+        );
+    }
+    c.closePath();
+
+    if (fillStyle !== null) c.fill();
+    if (strokeStyle !== null) c.stroke();
+
+    c.fillStyle = prevFill;
+    c.strokeStyle = prevStroke;
+    c.lineWidth = prevLineWidth;
+    c.shadowColor = prevShadowColor;
+    c.shadowBlur = prevShadowBlur;
+}
+
+function drawHexagonOutline(c, x, y, r, strokeStyle, lineWidth = HEX_BORDER_WIDTH) {
+    const prevStroke = c.strokeStyle;
+    const prevLineWidth = c.lineWidth;
+
+    c.strokeStyle = strokeStyle;
+    c.lineWidth = lineWidth;
+
+    c.beginPath();
+    c.moveTo(x, y - r);
+    for (let i = 0; i < 6; i++) {
+        c.lineTo(
+            x + r * Math.cos(Math.PI * (1.5 + 1 / 3 * i)),
+            y + r * Math.sin(Math.PI * (1.5 + 1 / 3 * i))
+        );
+    }
+    c.closePath();
+    c.stroke();
+
+    c.strokeStyle = prevStroke;
+    c.lineWidth = prevLineWidth;
+}
+
+function drawPath(c, p) {
+    const WIN_COLOR = getCssVar('--win');
+
+    c.lineWidth = 14; 
+    c.strokeStyle = WIN_COLOR; 
+    c.lineCap = "round";
+    c.lineJoin = "round";
+    c.beginPath();
+
+    for (var i = 0; i < p.length; i++) {
+        const [cx, cy] = getCanvasCenter(p[i][0], p[i][1]);
+        if (i === 0) {
+            c.moveTo(cx, cy);
+        } else {
+            c.lineTo(cx, cy);
+        }
+    }
+    c.stroke();
+    c.lineCap = "butt";
+}
+
+function getSel(e) {
+    const rect = outputCanvas.getBoundingClientRect();
+    
+    // Use scale factor to convert screen coordinates to canvas coordinates
+    const scale = outputCanvas.style.transform.match(/scale\((.*?)\)/)?.[1] || 1;
+    
+    let canvasX = (e.clientX - rect.left) / scale;
+    let canvasY = (e.clientY - rect.top) / scale;
+
+    for (let x = 0; x < SIZE; x++) {
+        for (let y = 0; y < SIZE; y++) {
+            const [cx, cy] = getCanvasCenter(x, y);
+
+            const dx = canvasX - cx;
+            const dy = canvasY - cy;
+            const distanceSq = dx * dx + dy * dy;
+
+            if (distanceSq < HEX_R * HEX_R) { 
+                sel = [x, y];
+                return;
+            }
+        }
+    }
+
+    sel = [-1, -1];
+}
+
+function draw() {
+    ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+
+    const ACCENT_BLUE = getCssVar('--accent-blue');
+    const ACCENT_RED = getCssVar('--accent-red');
+    const ACCENT_BLUE_LIGHT = getCssVar('--accent-blue-light');
+    const ACCENT_RED_LIGHT = getCssVar('--accent-red-light');
+    const MUTED = getCssVar('--muted');
+    // Using a hardcoded dark grey for empty tile text for better visibility on white background.
+    const TEXT_EMPTY_TILE = '#333333'; 
+
+
+    // 1. Draw Goal Boundaries 
+    const BOUNDARY_R = HEX_R + 5; 
+    const boundaryWidth = HEX_BORDER_WIDTH + 1;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    // --- Red Borders (Top/Bottom) ---
+    for (let x = 0; x < SIZE; x++) {
+        const [cx, cy] = getCanvasCenter(x, 0);
+        drawHexagonOutline(ctx, cx, cy, BOUNDARY_R, ACCENT_RED_LIGHT, boundaryWidth);
+    }
+    for (let x = 0; x < SIZE; x++) {
+        const [cx, cy] = getCanvasCenter(x, SIZE - 1);
+        drawHexagonOutline(ctx, cx, cy, BOUNDARY_R, ACCENT_RED_LIGHT, boundaryWidth);
+    }
+
+    // --- Blue Borders (Left/Right) ---
+    for (let y = 0; y < SIZE; y++) {
+        const [cx, cy] = getCanvasCenter(0, y);
+        drawHexagonOutline(ctx, cx, cy, BOUNDARY_R, ACCENT_BLUE_LIGHT, boundaryWidth);
+    }
+    for (let y = 0; y < SIZE; y++) {
+        const [cx, cy] = getCanvasCenter(SIZE - 1, y);
+        drawHexagonOutline(ctx, cx, cy, BOUNDARY_R, ACCENT_BLUE_LIGHT, boundaryWidth);
+    }
+
+    // 2. Draw the Hexagons
+    ctx.lineWidth = HEX_BORDER_WIDTH;
+
+    for (var x = 0; x < SIZE; x++) {
+        for (var y = 0; y < SIZE; y++) {
+            const owner = board[x][y];
+            const cellValue = boardValues[x][y];
+            
+            let isHovered = (x == sel[0] && y == sel[1]);
+
+            // 1. Calculate Center Coordinates
+            const [cx, cy] = getCanvasCenter(x, y);
+
+            // 2. Determine Fill and Stroke Color 
+            if (owner !== -1) { 
+                drawHexagon(ctx, cx, cy, HEX_R, {
+                    fillStyle: owner === 1 ? ACCENT_BLUE : ACCENT_RED,
+                    strokeStyle: 'white', 
+                    lineWidth: HEX_BORDER_WIDTH + 2,
+                    shadowColor: 'rgba(0,0,0,0.2)', 
+                    shadowBlur: 8 
+                });
+            } else {
+                drawHexagon(ctx, cx, cy, HEX_R, {
+                    fillStyle: 'white', 
+                    strokeStyle: MUTED,
+                    lineWidth: HEX_BORDER_WIDTH
+                });
+            }
+
+            // 4. Draw Text (Cell Value) - High Contrast Text
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = HEX_FONT;
+
+            const prevStrokeStyle = ctx.strokeStyle;
+            const prevLineWidth = ctx.lineWidth;
+
+            // Stroke (Outline) of the Text
+            ctx.lineWidth = HEX_TEXT_STROKE_WIDTH;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; 
+            ctx.strokeText(cellValue, cx, cy);
+
+            // Fill Color of the Text
+            ctx.fillStyle = owner !== -1 ? 'white' : TEXT_EMPTY_TILE; 
+            ctx.fillText(cellValue, cx, cy);
+
+            ctx.strokeStyle = prevStrokeStyle;
+            ctx.lineWidth = prevLineWidth;
+
+            // 5. Draw Hover Outline
+            if (isHovered && owner === -1) { 
+                drawHexagonOutline(
+                    ctx,
+                    cx,
+                    cy,
+                    HEX_R,
+                    current === 1 ? ACCENT_BLUE : ACCENT_RED,
+                    HEX_BORDER_WIDTH + 3 
+                );
+            }
+        }
+    }
+}
+
+// --- NEW HELPER UTILITY FUNCTIONS ---
+function getGcd(a, b) {
+    return b === 0 ? a : getGcd(b, a % b);
+}
+function getLcm(a, b) {
+    if (a === 0 || b === 0) return 0;
+    return Math.abs(a * b) / getGcd(a, b);
+}
+function getFactors(n) {
+    const factors = new Set();
+    for (let i = 1; i <= Math.sqrt(n); i++) {
+        if (n % i === 0) {
+            factors.add(i);
+            factors.add(n / i);
+        }
+    }
+    return Array.from(factors).sort((a, b) => a - b);
+}
+// --- END HELPER UTILITY FUNCTIONS ---
+
+// --- NEW SIDEBAR RENDER FUNCTION ---
+function renderSidebar() {
+    // 1. Update Game Stats
+    sidebarModeEl.textContent = mode === 'single' ? '🤖 SINGLE PLAYER' : '👥 MULTI PLAYER';
+    sidebarMovesEl.textContent = moveHistory.length;
+    sidebarOccupiedEl.textContent = `${occupiedCount} / ${TOTAL_CELLS}`;
+
+    // 2. Update Move Log
+    moveLogEl.innerHTML = ''; // Clear existing log
+    let moveCounter = 1;
+    
+    for (let i = 0; i < moveHistory.length; i++) {
+        const move = moveHistory[i];
+        const colorSpan = `<span style="color:${move.owner===1?getCssVar('--accent-blue'):getCssVar('--accent-red')};">`;
+        
+        // Group two moves (Blue and Red) into one move number like in Chess
+        const moveNum = (move.owner === 1 || mode === 'multi') ? moveCounter + '.' : ''; 
+        
+        // Display the move
+        const moveEntry = document.createElement('div');
+        moveEntry.className = 'move-entry';
+        moveEntry.innerHTML = `
+            <span class="move-turn">${moveNum}</span>
+            ${colorSpan}${move.owner === 1 ? '🔵 Blue' : '🔴 Red'}</span> 
+            placed on <strong>${boardValues[move.x][move.y]}</strong> 
+            (Dice: ${move.dice[0]}, ${move.dice[1]})
+        `;
+        
+        moveLogEl.appendChild(moveEntry);
+        
+        if (move.owner === 2 || mode === 'multi') {
+            moveCounter++;
+        }
+    }
+    
+    // Auto-scroll to the bottom for the latest move
+    moveLogEl.scrollTop = moveLogEl.scrollHeight;
+}
+// --- END NEW SIDEBAR RENDER FUNCTION ---
+
+// --- Game Flow Handlers ---
+
+function mouseDown(e) {
+    if (e.button !== 0 || !active) return; 
+
+    let event = e.touches ? e.touches[0] : e;
+    getSel(event); 
+
+    if (sel[0] !== -1 && sel[1] !== -1) {
+        const x = sel[0];
+        const y = sel[1];
+        
+        if (board[x][y] === -1) {
+            if (isAllowedToPlace(x, y)) {
+                place(x, y, current);
+                afterPlacement();
+            } else {
+                // Show dedicated error screen on invalid move
+                showCommonMultipleError(x, y);
+                soundError();
+            }
+        } else {
+            log(`Tile ${boardValues[x][y]} is already occupied.`);
+            soundError();
+        }
+    }
+}
+
+function place(x, y, owner) {
+    if (board[x][y] === -1) {
+        occupiedCount++;
+    }
+    board[x][y] = owner;
+    moveHistory.push({x, y, owner, dice: [dieA, dieB]});
+    log(`${owner===1?'🔵':'🔴'} placed on ${boardValues[x][y]} (Dice: ${dieA}, ${dieB})`);
+    soundPlace(owner);
+}
+
+function afterPlacement(){
+    draw();
+
+    const pPath = checkWin(current);
+    if (pPath){
+        drawPath(ctx, pPath);
+        announceWin(current);
+        renderSidebar(); // NEW
+        return;
+    }
+    
+    if (occupiedCount >= TOTAL_CELLS) {
+        announceDraw();
+        renderSidebar(); // NEW
+        return;
+    }
+    
+    current = current === 1 ? 2 : 1;
+    updateTurnLabel();
+    renderSidebar(); // NEW
+    setTimeout(startTurn, 50);
+}
+
+function botMove(){
+    if (current !== 2 || mode !== 'single') return;
+    
+    const allowed = [];
+    for(let x=0; x<SIZE; x++) {
+        for(let y=0; y<SIZE; y++) {
+            if (isAllowedToPlace(x, y)) {
+                allowed.push({x, y});
+            }
+        }
+    }
+    
+    if (allowed.length === 0){
+        log('🤖 Bot has no allowed moves. Passing turn.');
+        document.getElementById('passBtn').disabled = true;
+        current = 1; updateTurnLabel(); renderSidebar(); // NEW
+        setTimeout(startTurn, 300);
+        return;
+    }
+    
+    let best = allowed[0];
+    let bestScore = Infinity;
+    
+    // UPDATED Bot logic: More balanced heuristic (2x goal distance + 2x center distance)
+    const center = Math.floor(SIZE/2);
+    for (const pos of allowed){
+        const distBottom = SIZE - 1 - pos.y; // Distance to Red's goal (Bottom, Y=SIZE-1)
+        const distCenter = Math.abs(pos.x - center); // Horizontal distance from board center (X-axis)
+        
+        // Balanced score: Prioritize goal progress equally with blocking/central play.
+        const score = distBottom * 2 + distCenter * 2; 
+        if (score < bestScore){ bestScore = score; best = pos; }
+    }
+    
+    place(best.x, best.y, 2);
+    afterPlacement();
+}
+
+
+function startTurn(){
+    if (!active) return; 
+
+    rollDice(()=>{
+        const hasAllowed = boardValues.some((col, x) => col.some((val, y) => isAllowedToPlace(x, y)));
+        const playerString = current === 1 ? 'Blue' : (mode === 'single' ? 'Red (Bot)' : 'Red');
+
+        if (!hasAllowed){
+            log(`⚠️ ${playerString} has no valid moves for ${dieA} & ${dieB}. Passing turn.`);
+            document.getElementById('passBtn').disabled = true;
+            current = current === 1 ? 2 : 1;
+            updateTurnLabel();
+            renderSidebar(); // NEW
+            setTimeout(startTurn, 300);
+
+        } else if (current === 2 && mode === 'single'){
+            log('🤖 Red (Bot) is thinking...');
+            document.getElementById('passBtn').disabled = true;
+            draw(); 
+            soundBotThink(); 
+            setTimeout(botMove, 600 + Math.random()*500);
+        } else {
+            document.getElementById('passBtn').disabled = false;
+            log(`✨ ${playerString} turn. Choose a common multiple of ${dieA} & ${dieB}.`);
+            draw(); 
+        }
+    });
+}
+
+function rollDice(cb){
+    dieA = null; dieB = null;
+    dieAEl.classList.remove('ready'); dieBEl.classList.remove('ready');
+    dieAEl.textContent = '?'; dieBEl.textContent = '?';
+    
+    let frames = 10;
+    const iv = setInterval(()=>{
+        dieAEl.textContent = Math.floor(Math.random()*10)+1;
+        dieBEl.textContent = Math.floor(Math.random()*10)+1;
+        tone(220 + Math.random()*200, 0.04, 0.05);
+        frames--;
+        if (frames <= 0){
+            clearInterval(iv);
+            dieA = Math.floor(Math.random()*10)+1;
+            dieB = Math.floor(Math.random()*10)+1;
+            dieAEl.textContent = dieA; dieBEl.textContent = dieB;
+            dieAEl.classList.add('ready'); dieBEl.classList.add('ready');
+            soundDice();
+            
+            if (cb) cb();
+        }
+    }, 70);
+}
+
+
+function showCommonMultipleError(x, y) {
+    const val = boardValues[x][y];
+    
+    const divA = val / dieA;
+    const divB = val / dieB;
+    
+    const ACCENT_RED = getCssVar('--accent-red');
+    const ACCENT_BLUE = getCssVar('--accent-blue');
+    const TEXT_DARK = getCssVar('--text-dark');
+    const TEXT_PRIMARY = getCssVar('--text-primary');
+
+    let message = `<div class="error-message"><strong style="font-size:1.2em; color: ${ACCENT_RED};">TILE ${val} IS NOT A COMMON MULTIPLE!</strong><br><br>`;
+    message += `The tile value must be a multiple of **both** dice rolls (${dieA} and ${dieB}).<br><br>`;
+
+    message += `<strong style="color:${TEXT_DARK};">Check 1: Divisible by ${dieA}?</strong><br>`;
+    if (isIntClose(divA)) {
+        message += `<span style="color:${ACCENT_BLUE}; font-weight: 700;">✅ YES:</span> ${val} / ${dieA} = ${Math.round(divA)}.<br>`;
+    } else {
+        message += `<span style="color:${ACCENT_RED}; font-weight: 700;">❌ NO:</span> ${val} / ${dieA} = ${divA.toFixed(2)}.<br>`;
+    }
+    
+    message += `<br><strong style="color:${TEXT_DARK};">Check 2: Divisible by ${dieB}?</strong><br>`;
+    if (isIntClose(divB)) {
+        message += `<span style="color:${ACCENT_BLUE}; font-weight: 700;">✅ YES:</span> ${val} / ${dieB} = ${Math.round(divB)}.<br>`;
+    } else {
+        message += `<span style="color:${ACCENT_RED}; font-weight: 700;">❌ NO:</span> ${val} / ${dieB} = ${divB.toFixed(2)}.<br>`;
+    }
+
+    message += `<br><span style="font-weight: 600; color: ${getCssVar('--text-secondary')};">TIP:</span> Look for a multiple of the Least Common Multiple (LCM) of ${dieA} and ${dieB}.</div>`;
+    
+    // Set custom styles for the error modal
+    mainModalContent.style.borderColor = ACCENT_RED;
+    mainModalContent.classList.add('error-modal');
+
+    document.getElementById('modal-title').textContent = '🚫 INCORRECT MULTIPLE!';
+    document.getElementById('modal-title').style.color = ACCENT_RED;
+    document.getElementById('modal-message').innerHTML = message;
+    mainModalBackdrop.classList.add('active');
+}
+
+
+function showCustomMessage(title, message, isGameOver = false) {
+    const ACCENT_BLUE = getCssVar('--accent-blue');
+    mainModalContent.classList.remove('error-modal');
+    mainModalContent.style.borderColor = isGameOver ? ACCENT_BLUE : getCssVar('--muted');
+
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-title').style.color = isGameOver ? ACCENT_BLUE : getCssVar('--text-dark');
+    document.getElementById('modal-message').innerHTML = `<p style="color: ${getCssVar('--text-primary')}; font-size: 1.1em; font-weight: 600;">${message}</p>`;
+    mainModalBackdrop.classList.add('active');
+}
+
+function announceWin(player){
+    draw();
+    log(`🎉 ${player===1?'Blue':'Red'} wins the game!`);
+    active = false;
+    soundWin();
+    setTimeout(()=>{ 
+        const ACCENT_BLUE = getCssVar('--accent-blue');
+        const ACCENT_RED = getCssVar('--accent-red');
+        const TEXT_PRIMARY = getCssVar('--text-primary');
+        const title = `🏆 ${player===1?'BLUE':'RED'} WINS!`;
+        const msg = player === 1 
+            ? 'Blue successfully connected the Left and Right edges! Click outside or the X to close.'
+            : 'Red successfully connected the Top and Bottom edges! Click outside or the X to close.';
+            
+        mainModalContent.style.borderColor = player===1 ? ACCENT_BLUE : ACCENT_RED;
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-title').style.color = player===1 ? ACCENT_BLUE : ACCENT_RED;
+        document.getElementById('modal-message').innerHTML = `<p style="font-size: 1.3em; color: ${TEXT_PRIMARY};">${msg}</p>`;
+        mainModalBackdrop.classList.add('active');
+    }, 80);
+}
+
+function announceDraw(){
+    draw();
+    log('🤝 Game ends in a Draw.');
+    active = false;
+    tone(200, 0.5);
+    setTimeout(()=>{ showCustomMessage('🤝 DRAW!', 'The board is full, and neither player completed a connection. Click outside or the X to close.', true); }, 80);
+}
+
+function closeModal() {
+    mainModalBackdrop.classList.remove('active');
+    // If the game was over, clicking the backdrop should trigger init
+    if (!active && moveHistory.length > 0) init(); 
+}
+
+function showInstructions() {
+    soundClick();
+    document.getElementById('instructionsModal').classList.add('active');
+}
+
+function hideInstructions() {
+    soundClick();
+    document.getElementById('instructionsModal').classList.remove('active');
+}
+
+// --- NEW HELPER MODAL FUNCTIONS ---
+function showHelper() {
+    soundClick();
+    
+    if (dieA === null || dieB === null) {
+        showCustomMessage('NO DICE ROLLED', 'Roll the dice first to use the Common Multiple Helper.');
+        return;
+    }
+    
+    // 1. Calculate Core Math
+    const lcm = getLcm(dieA, dieB);
+    
+    // 2. Find All Valid Tiles
+    const validTiles = [];
+    for(let x=0; x<SIZE; x++) {
+        for(let y=0; y<SIZE; y++) {
+            if (isAllowedToPlace(x, y)) {
+                validTiles.push(boardValues[x][y]);
+            }
+        }
+    }
+    
+    // 3. Generate HTML Content
+    let html = `
+        <p style="font-size: 1.1em; font-weight: 600; color: ${getCssVar('--accent-info')};">
+            Current Dice Rolls: 
+            <strong style="color: ${getCssVar('--accent-blue')};">${dieA}</strong> 
+            and 
+            <strong style="color: ${getCssVar('--accent-red')};">${dieB}</strong>
+        </p>
+        <p style="margin-bottom: 20px;">
+            To place a piece, the tile value must be a **Common Multiple** of both dice.
+        </p>
+        
+        <h3 style="color: ${getCssVar('--accent-blue')}; margin-top: 5px;">LEAST COMMON MULTIPLE (LCM)</h3>
+        <p style="font-size: 1.5em; font-family: var(--font-title); color: ${getCssVar('--accent-success')}; margin-bottom: 25px;">
+            LCM(${dieA}, ${dieB}) = ${lcm}
+        </p>
+    `;
+    
+    // --- Graphical Factor Tree (Simplified) ---
+    html += `<h3 style="color: ${getCssVar('--accent-blue')}; margin-top: 5px;">VALID TILES & FACTOR CHECK (Graphical)</h3>`;
+    
+    if (validTiles.length === 0) {
+        html += `<p style="color: ${getCssVar('--accent-red')}; font-weight: 700;">🚫 NO VALID TILES AVAILABLE. YOU MUST PASS.</p>`;
+    } else {
+        html += `<p>All valid tiles are multiples of the LCM (${lcm}). Click any of the unoccupied tiles below for a detailed factor view:</p>`;
+        
+        // Create an interactive list of valid tiles
+        html += `<div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; background: ${getCssVar('--bg-light')}; padding: 10px; border-radius: 5px;">`;
+        
+        // Sort valid tiles to group occupied and unoccupied for clarity
+        const sortedTiles = validTiles.map(val => {
+            let isOccupied = !boardValues.some((col, x) => col.some((v, y) => v === val && board[x][y] === -1));
+            return { val, isOccupied };
+        }).sort((a, b) => a.isOccupied - b.isOccupied || a.val - b.val);
+
+        sortedTiles.forEach(({val, isOccupied}) => {
+            if (!isOccupied) {
+                html += `<button 
+                    class="ghost factor-tile-btn" 
+                    data-value="${val}" 
+                    style="--ghost-shadow: ${getCssVar('--accent-blue-shadow')};"
+                    onclick="showFactorDetails(${val}, ${dieA}, ${dieB})"
+                >
+                    ${val}
+                </button>`;
+            } else {
+                html += `<span 
+                    style="padding: 10px 14px; background: ${getCssVar('--bg-panel')}; border-radius: ${getCssVar('--radius-sharp')}; color: ${getCssVar('--text-dark')}; font-weight: 700; text-decoration: line-through; border: 2px solid ${getCssVar('--muted')};"
+                >
+                    ${val}
+                </span>`;
+            }
+        });
+        html += `</div>`;
+        
+        // Placeholder for factor details (the "Graphical Factor Tree" view)
+        html += `<div id="factorDetailsView" style="margin-top: 20px; padding: 15px; border: 2px solid ${getCssVar('--muted')}; border-radius: ${getCssVar('--radius-panel')}; background: ${getCssVar('--bg-light')}">
+            <p style="color: ${getCssVar('--text-dark')};">Click a valid, unoccupied tile above to see its factors and check divisibility.</p>
+        </div>`;
+    }
+
+    helperContentEl.innerHTML = html;
+    helperModal.classList.add('active');
+}
+
+function hideHelper() {
+    soundClick();
+    helperModal.classList.remove('active');
+}
+
+function showFactorDetails(val, dieA, dieB) {
+    const factors = getFactors(val);
+    const detailsView = document.getElementById('factorDetailsView');
+    
+    let factorHtml = `<h4 style="font-size: 1.2em; color: ${getCssVar('--accent-blue')}; margin-bottom: 10px; font-family: var(--font-title); letter-spacing: 1px;">FACTORS OF TILE ${val}</h4>`;
+    
+    factorHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
+    factors.forEach(f => {
+        let style = `padding: 5px 10px; border-radius: 4px; font-weight: 700; transition: all 0.1s; box-shadow: 0 2px 5px rgba(0,0,0,0.3);`;
+        let isDiceA = f === dieA;
+        let isDiceB = f === dieB;
+        
+        if (isDiceA || isDiceB) {
+            style += `background: ${getCssVar('--accent-success')}; color: ${getCssVar('--bg-primary')}; border: 2px solid ${getCssVar('--accent-blue')};`;
+        } else {
+            style += `background: ${getCssVar('--bg-panel')}; color: ${getCssVar('--text-light')}; border: 2px solid ${getCssVar('--muted')};`;
+        }
+
+        factorHtml += `<span style="${style}">
+            ${f}
+            ${isDiceA ? ' (Die A)' : ''}
+            ${isDiceB ? ' (Die B)' : ''}
+        </span>`;
+    });
+    factorHtml += `</div>`;
+    
+    // Divisibility checks
+    factorHtml += `<div style="margin-top: 20px; border-top: 1px solid ${getCssVar('--muted')}; padding-top: 10px;">`;
+    const divA = val / dieA;
+    const divB = val / dieB;
+    factorHtml += `<p><strong>Check Divisibility by ${dieA}:</strong> ${val} / ${dieA} = ${isIntClose(divA) ? `<span style="color: ${getCssVar('--accent-success')};">✅ ${Math.round(divA)} (Perfect)</span>` : `<span style="color: ${getCssVar('--accent-red')};">❌ ${divA.toFixed(2)} (Not Perfect)</span>`}</p>`;
+    factorHtml += `<p><strong>Check Divisibility by ${dieB}:</strong> ${val} / ${dieB} = ${isIntClose(divB) ? `<span style="color: ${getCssVar('--accent-success')};">✅ ${Math.round(divB)} (Perfect)</span>` : `<span style="color: ${getCssVar('--accent-red')};">❌ ${divB.toFixed(2)} (Not Perfect)</span>`}</p>`;
+    factorHtml += `</div>`;
+
+    detailsView.innerHTML = factorHtml;
+    // Scroll the modal content to show the new details
+    helperModal.querySelector('.modal-content').scrollTop = detailsView.offsetTop - 20; 
+}
+// --- END NEW HELPER MODAL FUNCTIONS ---
+
+function updateTurnLabel(){ 
+    const ACCENT_BLUE = getCssVar('--accent-blue');
+    const ACCENT_RED = getCssVar('--accent-red');
+    turnLabel.textContent = current===1 ? 'BLUE' : (mode==='single' ? 'RED (BOT)' : 'RED'); 
+    turnLabel.style.color = current===1 ? ACCENT_BLUE : ACCENT_RED;
+}
+
+function initBoardData() {
+    board = new Array(SIZE).fill(0).map(() => new Array(SIZE).fill(-1));
+    boardValues = new Array(SIZE).fill(0).map(() => new Array(SIZE).fill(0));
+    
+    let value = 1;
+    for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+            boardValues[x][y] = value++;
+        }
+    }
+}
+
+function init(){
+    soundNewGame();
+    initBoardData();
+    moveHistory = [];
+    current = 1; 
+    dieA = dieB = null;
+    sel = [-1, -1];
+    occupiedCount = 0;
+    active = true;
+    lastHoveredValid = [-1, -1]; 
+
+    // Calculate size immediately to fit screen
+    calculateCanvasSize(); 
+
+    dieAEl.textContent = '-'; dieBEl.textContent = '-';
+    dieAEl.classList.add('ready'); dieBEl.classList.add('ready');
+    
+    log('GAME STARTED! Blue rolls first.');
+    
+    updateTurnLabel();
+    draw();
+    renderSidebar(); // NEW: Initial render
+    setTimeout(startTurn, 200);
+}
+
+function load() {
+    mode = modeSelect.value;
+    modeSelect.querySelector(`option[value="${mode}"]`).selected = true;
+    init();
+}
+
+
+// --- Event Listeners ---
+outputCanvas.addEventListener('pointerdown', mouseDown);
+outputCanvas.addEventListener('pointermove', (e) => {
+    if (active) {
+        let event = e.touches ? e.touches[0] : e;
+        getSel(event);
+        
+        // Hover Sound Logic
+        const [x, y] = sel;
+        if (x !== -1 && y !== -1 && isAllowedToPlace(x, y)) {
+            if (lastHoveredValid[0] !== x || lastHoveredValid[1] !== y) {
+                soundHover(); // Play sound only on entering a new valid tile
+                lastHoveredValid = [x, y];
+            }
+        } else {
+            lastHoveredValid = [-1, -1];
+        }
+
+        draw();
+    }
+}); 
+outputCanvas.addEventListener('pointerleave', () => { 
+    sel = [-1, -1]; 
+    lastHoveredValid = [-1, -1]; 
+    draw(); 
+});
+
+window.addEventListener('resize', () => { 
+    // Recalculate size on window resize (especially helpful for mobile orientation change)
+    setTimeout(calculateCanvasSize, 50); 
+}); 
+
+document.getElementById('passBtn').addEventListener('click', ()=>{
+  if (!active || (current === 2 && mode === 'single')) return; 
+
+  const hasAllowed = boardValues.some((col, x) => col.some((val, y) => isAllowedToPlace(x, y)));
+  if (hasAllowed) {
+    showCustomMessage('ACTION BLOCKED', 'A valid move is available. You must play or undo, not pass.');
+    soundError();
+    return;
+  }
+  
+  soundPass(); // Play pass sound only if allowed to pass
+  log(`🔁 ${current===1?'Blue':'Red'} passed turn.`);
+  current = current === 1 ? 2 : 1;
+  updateTurnLabel();
+  renderSidebar(); // NEW
+  setTimeout(startTurn, 300);
+});
+
+document.getElementById('undoBtn').addEventListener('click', ()=>{
+    if (moveHistory.length === 0) return; 
+
+    soundClick();
+    active = true; 
+    let lastMove = moveHistory.pop();
+    board[lastMove.x][lastMove.y] = -1;
+    occupiedCount--;
+
+    if (mode === 'single' && lastMove.owner === 1 && moveHistory.length > 0) {
+        const botMove = moveHistory.pop();
+        board[botMove.x][botMove.y] = -1;
+        occupiedCount--;
+    } 
+    
+    const lastValidMove = moveHistory.length > 0 ? moveHistory[moveHistory.length - 1] : null;
+    if (lastValidMove) {
+        current = lastValidMove.owner === 1 ? 2 : 1; 
+        dieA = lastValidMove.dice[0];
+        dieB = lastValidMove.dice[1];
+        dieAEl.textContent = dieA; dieBEl.textContent = dieB;
+        log(`↩️ UNDO. ${current===1?'Blue':'Red'}'s turn (re-roll pending).`);
+    } else {
+        dieA = dieB = null;
+        dieAEl.textContent = '-'; dieBEl.textContent = '-';
+        current = 1;
+        log('↩️ UNDO. Board clear. Blue starts new game roll.');
+    }
+    
+    draw();
+    updateTurnLabel();
+    renderSidebar(); // NEW
+    
+    setTimeout(startTurn, 100);
+});
+
+
+document.getElementById('newBtn').addEventListener('click', ()=> init());
+document.getElementById('howToPlayBtn').addEventListener('click', showInstructions);
+lcmHelperBtn.addEventListener('click', showHelper); // NEW HELPER BUTTON LISTENER
+
+// Close modals when clicking outside or on the close button
+document.getElementById('instructionsModal').addEventListener('click', (e) => {
+    if (e.target.id === 'instructionsModal' || e.target.classList.contains('modal-close-btn')) {
+        hideInstructions();
+    }
+});
+document.getElementById('modal-backdrop').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-backdrop' || e.target.classList.contains('modal-close-btn')) {
+        closeModal();
+    }
+});
+document.getElementById('helperModal').addEventListener('click', (e) => { // NEW HELPER MODAL LISTENER
+    if (e.target.id === 'helperModal' || e.target.classList.contains('modal-close-btn')) {
+        hideHelper();
+    }
+});
+
+
+modeSelect.addEventListener('change', (e)=>{ 
+    soundClick();
+    mode = e.target.value; 
+    init(); 
+});
+
+
+window.addEventListener('load', load); 
+</script>
+</body>
+</html>
