@@ -666,24 +666,21 @@ let isMatchmaking = false;
 document.getElementById('matchBtn').addEventListener('click', () => {
     socket.emit('findMatch');
     document.getElementById('matchBtn').textContent = "SEARCHING...";
+    // Note: isMultiplayer becomes true once 'matchFound' is received
 });
 
 socket.on('matchFound', (data) => {
     currentRoom = data.roomId;
     myRole = data.role;
-    isMultiplayer = true; // Sets network flag
+    isMultiplayer = true; // IMPORTANT: This unlocks the network logic
+    active = true;
     
-    // FORCE MODE CHANGE: This is the missing piece
-    mode = 'multi'; 
-    modeSelect.value = 'multi'; 
-    sidebarModeEl.textContent = '👥 MULTI PLAYER';
+    document.getElementById('matchBtn').textContent = "MATCHED!";
+    document.getElementById('matchBtn').style.background = "#22C55E"; // Green
     
-    document.getElementById('matchBtn').textContent = "CONNECTED";
-    document.getElementById('matchBtn').style.background = getCssVar('--accent-success');
-    
-    log(`Matched! You are ${myRole === 1 ? 'BLUE' : 'RED'}`);
+    init(); // Start a fresh board for the match
 });
-
+  
 socket.on('startGame', () => {
     active = true;
     init(); 
@@ -957,6 +954,7 @@ function checkWin(owner) {
     return false;
 }
 
+  
 function isAllowedToPlace(x, y){
   if (board[x][y] !== -1) return false;
   if (dieA === null || dieB === null) return false;
@@ -1240,6 +1238,8 @@ function renderSidebar() {
     // Auto-scroll to the bottom for the latest move
     moveLogEl.scrollTop = moveLogEl.scrollHeight;
 }
+
+
 // --- END NEW SIDEBAR RENDER FUNCTION ---
 
 // --- Game Flow Handlers ---
