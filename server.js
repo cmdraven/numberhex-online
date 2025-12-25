@@ -47,6 +47,10 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         if (waitingPlayer && waitingPlayer.id === socket.id) waitingPlayer = null;
     });
+
+    socket.on('syncDice', (data) => {
+    socket.to(data.roomId).emit('diceSynced', data);
+    });
 });
 
 const PORT = process.env.PORT || 3000;
