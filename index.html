@@ -729,14 +729,17 @@ document.getElementById('matchBtn').addEventListener('click', () => {
 
 socket.on('matchFound', (data) => {
     currentRoom = data.roomId;
-    myRole = data.role;
-    isMultiplayer = true; // IMPORTANT: This unlocks the network logic
-    active = true;
+    myRole = data.role; // 1 for Blue, 2 for Red
+    isMultiplayer = true;
     
-    document.getElementById('matchBtn').textContent = "MATCHED!";
-    document.getElementById('matchBtn').style.background = "#22C55E"; // Green
+    // UI Feedback: Let the player know who they are
+    const colorName = (myRole === 1) ? "BLUE" : "RED";
+    statusLogEl.textContent = `Matched! You are Player ${myRole} (${colorName})`;
     
-    init(); // Start a fresh board for the match
+    // Only Player 1 (Blue) is allowed to trigger the very first roll
+    if (myRole === 1) {
+        init(); 
+    }
 });
   
 socket.on('startGame', () => {
@@ -760,6 +763,16 @@ function updateDiceUI() {
 // --- UPDATED INPUT HANDLER ---
 function mouseDown(e) {
     if (!active) return;
+
+    
+    // NEW: Multiplayer Turn Enforcement
+    if (isMultiplayer && current !== myRole) {
+        log("It's not your turn!");
+        return;
+    }
+
+    // ... rest of your existing click logic ...
+
 
     // BLOCK if it's not your turn
     if (isMultiplayer && current !== myRole) {
@@ -1402,32 +1415,25 @@ function botMove(){
 
 
 function startTurn() {
-    if (!active) return;
-
-    if (isMultiplayer) {
-        // ONLY the person whose turn it is rolls the dice
-        if (current === myRole) {
-            dieA = Math.floor(Math.random() * 10) + 1;
-            dieB = Math.floor(Math.random() * 10) + 1;
-            
-            // Sync these dice to the opponent immediately
-            socket.emit('syncDice', {
-                roomId: currentRoom,
-                dice: [dieA, dieB]
-            });
-            processTurnStart();
-        }
-    } else {
-        // Standard single player logic
-        dieA = Math.floor(Math.random() * 10) + 1;
-        dieB = Math.floor(Math.random() * 10) + 1;
-        processTurnStart();
+    // If it's multiplayer and NOT my turn, wait for the socket to give me dice
+    if (isMultiplayer && current !== myRole) {
+        log("Waiting for opponent to roll...");
+        return; 
     }
 
-    // Update UI for both players
-    dieAEl.textContent = dieA || '-';
-    dieBEl.textContent = dieB || '-';
-    draw();
+    // Otherwise, I am the active player, so I roll
+    dieA = Math.floor(Math.random() * 6) + 1;
+    dieB = Math.floor(Math.random() * 6) + 1;
+    
+    // If multiplayer, tell the other person what I rolled
+    if (isMultiplayer) {
+        socket.emit('syncDice', {
+            roomId: currentRoom,
+            dice: [dieA, dieB]
+        });
+    }
+
+    processTurnStart(); // This updates the UI and starts the turn
 }
 
 function processTurnStart() {
@@ -1803,6 +1809,9 @@ outputCanvas.addEventListener('pointermove', (e) => {
         draw();
     }
 }); 
+
+
+
 outputCanvas.addEventListener('pointerleave', () => { 
     sel = [-1, -1]; 
     lastHoveredValid = [-1, -1]; 
