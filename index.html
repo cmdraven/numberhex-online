@@ -756,28 +756,59 @@ socket.on('diceSynced', (data) => {
 });
 
 // --- UPDATED INPUT HANDLER ---
+// --- UPDATED INPUT HANDLER ---
 function mouseDown(e) {
-    // Add this check to prevent moving on opponent's turn
-    if (isMatchmaking && current !== myRole) return; 
-    
-    // ... rest of your original logic ...
-    
+    if (!active) return;
+
+    // BLOCK UNWANTED MOVES
+    if (isMultiplayer && current !== myRole) {
+        log("⚠️ It's not your turn! Wait for the opponent.");
+        return;
+    }
+
+    getSel(e);
+    const [x, y] = sel;
+    if (x === -1 || y === -1) return;
+
     if (isAllowedToPlace(x, y)) {
         place(x, y, current);
-        // ADD THIS: Sync move to opponent
-        if (isMatchmaking) {
-            socket.emit('emitMove', { x, y, owner: myRole, dice: [dieA, dieB], roomId: currentRoom });
+        soundPlace(current);
+        
+        // SEND TO SERVER
+        if (isMultiplayer) {
+            socket.emit('emitMove', { 
+                x, y, 
+                role: myRole, 
+                dice: [dieA, dieB], 
+                roomId: currentRoom 
+            });
         }
+        
         afterPlacement();
+    } else {
+        handleErrorClick(x, y);
     }
 }
-
 // --- RECEIVE OPPONENT MOVES ---
 socket.on('opponentMove', (data) => {
+    // 1. Force the game turn to be the opponent's role for this calculation
+    current = data.role; 
+
+    // 2. Sync the dice so the placement logic validates correctly
     dieA = data.dice[0];
     dieB = data.dice[1];
-    place(data.x, data.y, data.owner);
-    afterPlacement();
+    dieAEl.textContent = dieA;
+    dieBEl.textContent = dieB;
+
+    // 3. Apply the move to the board
+    // We use the same 'place' function you use for clicks
+    place(data.x, data.y, data.role);
+    soundPlace(data.role);
+
+    // 4. Update the turn back to YOU
+    afterPlacement(); 
+    
+    log(`Opponent placed at (${data.x}, ${data.y}). Your turn!`);
 });
 
 // --- Game Constants and State ---
@@ -1263,27 +1294,36 @@ function renderSidebar() {
 // --- Game Flow Handlers ---
 
 function mouseDown(e) {
-    if (e.button !== 0 || !active) return; 
+    if (!active) return;
+    
+    // PREVENT "EVERYONE IS BLUE" ISSUE:
+    // Only allow placement if it is your turn in multiplayer
+    if (isMultiplayer && current !== myRole) {
+        log("⚠️ It's not your turn!");
+        return;
+    }
 
-    let event = e.touches ? e.touches[0] : e;
-    getSel(event); 
+    getSel(e);
+    const [x, y] = sel;
 
-    if (sel[0] !== -1 && sel[1] !== -1) {
-        const x = sel[0];
-        const y = sel[1];
-        
-        if (board[x][y] === -1) {
-            if (isAllowedToPlace(x, y)) {
-                place(x, y, current);
-                afterPlacement();
-            } else {
-                // Show dedicated error screen on invalid move
-                showCommonMultipleError(x, y);
-                soundError();
+    if (x !== -1 && y !== -1) {
+        if (isAllowedToPlace(x, y)) {
+            place(x, y, current);
+            soundPlace(current);
+            
+            // SYNC MOVE TO OPPONENT:
+            if (isMultiplayer) {
+                socket.emit('emitMove', { 
+                    x, y, 
+                    owner: myRole, 
+                    dice: [dieA, dieB], 
+                    roomId: currentRoom 
+                });
             }
+            
+            afterPlacement();
         } else {
-            log(`Tile ${boardValues[x][y]} is already occupied.`);
-            soundError();
+            handleErrorClick(x, y);
         }
     }
 }
