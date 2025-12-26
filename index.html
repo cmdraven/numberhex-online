@@ -807,21 +807,27 @@ function mouseDown(e) {
 
 // --- RECEIVE OPPONENT MOVES ---
 socket.on('opponentMove', (data) => {
-    // 1. Force state to match the person who just moved
-    current = data.role; 
-    dieA = data.dice[0];
-    dieB = data.dice[1];
-    
+    // 1. Place the piece (this uses the color sent by the opponent)
     place(data.x, data.y, data.owner);
     soundPlace(data.owner);
 
-    // 2. Advance the local turn state
+    // 2. FORCE the turn to swap correctly
+    // If Player 1 (Blue) moved, it MUST be Player 2's (Red) turn now.
     current = (data.owner === 1) ? 2 : 1; 
-    
-    // 3. IMPORTANT: Update UI and check for next turn
-    afterPlacement(); 
-    
-    log("Opponent moved. It is now your turn!");
+
+    // 3. Update the UI and Sidebar
+    updateTurnLabel();
+    renderSidebar();
+    draw();
+
+    // 4. TRIGGER THE DICE ROLL
+    // If the new turn matches YOUR role, you are now authorized to roll.
+    if (current === myRole) {
+        log("Your turn! Rolling dice...");
+        setTimeout(startTurn, 500); // Small delay for smoothness
+    } else {
+        log("Opponent's turn. Waiting for roll...");
+    }
 });
 
 // Sync dice separately if needed (optional but safer)
@@ -1354,18 +1360,32 @@ function place(x, y, owner) {
 function afterPlacement() {
     const winPath = checkWin(current);
     if (winPath) {
-        showWin(current, winPath);
+        active = false;
+        showWinModal(current, winPath);
         return;
     }
 
-    // Switch turn: 1 -> 2 or 2 -> 1
+    // Toggle turn
     current = (current === 1) ? 2 : 1;
     
     updateTurnLabel();
     renderSidebar();
-    
-    // Crucial: Wait a split second then start the next turn
-    setTimeout(startTurn, 100);
+    draw();
+
+    // TRIGGER NEXT STEP
+    if (isMultiplayer) {
+        if (current === myRole) {
+            // It's my turn again (shouldn't happen in 1v1, but good for safety)
+            setTimeout(startTurn, 300);
+        } else {
+            // It's the opponent's turn. Clear your dice so you don't get confused.
+            dieAEl.textContent = "?";
+            dieBEl.textContent = "?";
+        }
+    } else {
+        // Single player mode always rolls next turn
+        setTimeout(startTurn, 300);
+    }
 }
 
 function botMove(){
@@ -1425,6 +1445,16 @@ function startTurn() {
             dice: [dieA, dieB]
         });
     }
+
+   
+    // Stop if it's multiplayer and not your turn
+    
+
+    
+    
+    // Sync to opponent
+   
+
 
     processTurnStart();
 }
