@@ -787,12 +787,16 @@ function updateDiceUI() {
 // --- UPDATED INPUT HANDLER ---
 // --- UPDATED INPUT HANDLER ---
 function mouseDown(e) {
-    if (!active) return;
+ if (!active) return;
 
+    // --- THE GATEKEEPER ---
+    // If multiplayer is active and it's NOT your turn, ignore the click entirely
     if (isMultiplayer && current !== myRole) {
-        log("⚠️ It's not your turn!");
-        return;
+        log("🚫 It's not your turn! Waiting for opponent...");
+        return; 
     }
+
+    const rect = outputCanvas.getBoundingClientRect();
 
     getSel(e);
     const [x, y] = sel;
@@ -850,6 +854,17 @@ socket.on('opponentMove', (data) => {
 
 
 function init() {
+
+    document.getElementById('newBtn').addEventListener('click', () => {
+    if (isMultiplayer) {
+        if (confirm("This will leave your current match. Are you sure?")) {
+            // Logic to leave room and reset
+            location.reload(); 
+        }
+    } else {
+        init();
+    }
+});
     // Reset core game state
     board = [];
     boardValues = [];
@@ -1823,6 +1838,21 @@ function updateTurnLabel(){
     const ACCENT_RED = getCssVar('--accent-red');
     turnLabel.textContent = current===1 ? 'BLUE' : (mode==='single' ? 'RED (BOT)' : 'RED'); 
     turnLabel.style.color = current===1 ? ACCENT_BLUE : ACCENT_RED;
+
+    
+
+    if (isMultiplayer) {
+        if (current === myRole) {
+            outputCanvas.style.cursor = "pointer";
+            outputCanvas.style.filter = "none"; // Normal board
+            outputCanvas.style.pointerEvents = "auto";
+        } else {
+            outputCanvas.style.cursor = "not-allowed";
+            outputCanvas.style.filter = "grayscale(0.3) opacity(0.8)"; // Visual lock
+            outputCanvas.style.pointerEvents = "none"; // Hard browser-level lock
+        }
+    }
+
 }
 
 function initBoardData() {
