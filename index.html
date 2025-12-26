@@ -762,9 +762,22 @@ socket.on('startGame', () => {
 socket.on('diceSynced', (data) => {
     dieA = data.dice[0];
     dieB = data.dice[1];
-    updateDiceUI();
-    log("Opponent is thinking...");
+    
+    // Force the UI elements to update their text
+    dieAEl.textContent = dieA;
+    dieBEl.textContent = dieB;
+
+    // Trigger the visual "ready" state for the dice graphics
+    dieAEl.classList.add('ready');
+    dieBEl.classList.add('ready');
+
+    // Calculate valid moves so the opponent knows where they can click
+    processTurnStart(); 
+    
+    log(`Dice synced: ${dieA} & ${dieB}`);
 });
+
+
 
 function updateDiceUI() {
     dieAEl.textContent = dieA || '-';
@@ -807,29 +820,29 @@ function mouseDown(e) {
 
 // --- RECEIVE OPPONENT MOVES ---
 socket.on('opponentMove', (data) => {
-    // 1. Place the piece (this uses the color sent by the opponent)
+    // 1. Use 'owner' (not role) to place the piece with the correct color
     place(data.x, data.y, data.owner);
     soundPlace(data.owner);
 
-    // 2. FORCE the turn to swap correctly
-    // If Player 1 (Blue) moved, it MUST be Player 2's (Red) turn now.
-    current = (data.owner === 1) ? 2 : 1; 
+    // 2. Set the current turn to the player who just moved
+    current = data.owner;
 
-    // 3. Update the UI and Sidebar
+    // 3. Immediately swap the turn to the OTHER player
+    current = (current === 1) ? 2 : 1; 
+
+    // 4. Update UI
     updateTurnLabel();
     renderSidebar();
     draw();
 
-    // 4. TRIGGER THE DICE ROLL
-    // If the new turn matches YOUR role, you are now authorized to roll.
+    // 5. If it is now YOUR turn, roll the dice!
     if (current === myRole) {
-        log("Your turn! Rolling dice...");
-        setTimeout(startTurn, 500); // Small delay for smoothness
+        log("Your turn! Rolling...");
+        setTimeout(startTurn, 500); 
     } else {
         log("Opponent's turn. Waiting for roll...");
     }
 });
-
 // Sync dice separately if needed (optional but safer)
 
 
@@ -1386,6 +1399,21 @@ function afterPlacement() {
         // Single player mode always rolls next turn
         setTimeout(startTurn, 300);
     }
+
+    current = (current === 1) ? 2 : 1;
+    
+    // NEW: Clear the dice visuals so they don't show old numbers
+    dieAEl.classList.remove('ready');
+    dieBEl.classList.remove('ready');
+    dieAEl.textContent = "-";
+    dieBEl.textContent = "-";
+
+    updateTurnLabel();
+    
+    // Trigger next roll
+    if (!isMultiplayer || (isMultiplayer && current === myRole)) {
+        setTimeout(startTurn, 600);
+    }
 }
 
 function botMove(){
@@ -1472,6 +1500,24 @@ socket.on('diceSynced', (data) => {
 });
 
 function processTurnStart() {
+
+    dieAEl.textContent = dieA;
+    dieBEl.textContent = dieB;
+
+    // 2. TRIGGER THE GRAPHIC: 
+    // We remove 'ready' and add it back to restart the animation/visual
+    dieAEl.classList.remove('ready');
+    dieBEl.classList.remove('ready');
+    
+    // Use a tiny timeout to ensure the browser notices the change
+    setTimeout(() => {
+        dieAEl.classList.add('ready');
+        dieBEl.classList.add('ready');
+    }, 10);
+
+    updateValidMoves();
+    draw();
+
     // Check if any moves are valid for the current dice roll
     const hasAllowed = boardValues.some((col, x) => col.some((val, y) => isAllowedToPlace(x, y)));
     
