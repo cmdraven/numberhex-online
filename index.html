@@ -657,11 +657,69 @@ html,body{
 
 
 <script>
+const SIZE = 11; 
+const TOTAL_CELLS = SIZE * SIZE;
+const HEX_R = 45;
+const HEX_W = HEX_R * Math.sqrt(3);
+
+// 2. SOCKET INITIALIZATION
+let socket;
+try {
+    socket = io(); // This will work perfectly on Render
+} catch (e) {
+    console.error("Socket not found, playing offline.");
+}
+
+// 3. GAME STATE
+let board = [];
+let current = 1;
+
 // --- NETWORK STATE ---
-const socket = io();
+
 let myRole = null; 
 let currentRoom = null;
 let isMatchmaking = false;
+let isMultiplayer = false;
+
+
+
+
+const HEX_BORDER_WIDTH = 3;
+const HEX_TEXT_STROKE_WIDTH = 5; 
+const HEX_FONT_SIZE = 35; // Larger font for prominence
+const HEX_FONT = `900 ${HEX_FONT_SIZE}px 'Bungee Inline', sans-serif`;
+const X_MARGIN = HEX_R * 1.5; 
+const Y_MARGIN = HEX_R * 1.5; 
+
+const outputCanvas = document.getElementById('output');
+const ctx = outputCanvas.getContext("2d");
+const dieAEl = document.getElementById('dieA'), dieBEl = document.getElementById('dieB');
+const turnLabel = document.getElementById('turnLabel');
+const statusLogEl = document.getElementById('statusLog');
+const modeSelect = document.getElementById('modeSelect'); 
+const mainModalBackdrop = document.getElementById('modal-backdrop');
+const mainModalContent = document.getElementById('win-modal');
+
+// NEW SIDEBAR ELEMENTS
+const moveLogEl = document.getElementById('moveLog');
+const sidebarModeEl = document.getElementById('sidebar-mode');
+const sidebarMovesEl = document.getElementById('sidebar-moves');
+const sidebarOccupiedEl = document.getElementById('sidebar-occupied');
+const lcmHelperBtn = document.getElementById('lcmHelperBtn');
+const helperModal = document.getElementById('helperModal');
+const helperContentEl = document.getElementById('helperContent');
+
+
+
+let boardValues = []; 
+let sel = [-1, -1]; 
+
+let dieA = null, dieB = null;
+let moveHistory = [];
+let mode = 'single';
+let active = true; 
+let occupiedCount = 0; 
+let lastHoveredValid = [-1, -1]; 
 
 document.getElementById('matchBtn').addEventListener('click', () => {
     socket.emit('findMatch');
@@ -723,10 +781,7 @@ socket.on('opponentMove', (data) => {
 });
 
 // --- Game Constants and State ---
-// --- UPDATED GLOBAL VARIABLES ---
-let isMultiplayer = false; 
-let myRole = null; // 1 or 2
-let currentRoom = null;
+
 
 function init() {
     // Reset core game state
@@ -759,46 +814,9 @@ function init() {
     // Trigger first turn
     startTurn();
 }
-const SIZE = 11; 
-const TOTAL_CELLS = SIZE * SIZE;
-const HEX_R = 45; // Slightly larger hex radius
-const HEX_W = HEX_R * Math.sqrt(3); 
-const HEX_BORDER_WIDTH = 3;
-const HEX_TEXT_STROKE_WIDTH = 5; 
-const HEX_FONT_SIZE = 35; // Larger font for prominence
-const HEX_FONT = `900 ${HEX_FONT_SIZE}px 'Bungee Inline', sans-serif`;
-const X_MARGIN = HEX_R * 1.5; 
-const Y_MARGIN = HEX_R * 1.5; 
-
-const outputCanvas = document.getElementById('output');
-const ctx = outputCanvas.getContext("2d");
-const dieAEl = document.getElementById('dieA'), dieBEl = document.getElementById('dieB');
-const turnLabel = document.getElementById('turnLabel');
-const statusLogEl = document.getElementById('statusLog');
-const modeSelect = document.getElementById('modeSelect'); 
-const mainModalBackdrop = document.getElementById('modal-backdrop');
-const mainModalContent = document.getElementById('win-modal');
-
-// NEW SIDEBAR ELEMENTS
-const moveLogEl = document.getElementById('moveLog');
-const sidebarModeEl = document.getElementById('sidebar-mode');
-const sidebarMovesEl = document.getElementById('sidebar-moves');
-const sidebarOccupiedEl = document.getElementById('sidebar-occupied');
-const lcmHelperBtn = document.getElementById('lcmHelperBtn');
-const helperModal = document.getElementById('helperModal');
-const helperContentEl = document.getElementById('helperContent');
 
 
-let board = []; 
-let boardValues = []; 
-let sel = [-1, -1]; 
-let current = 1; 
-let dieA = null, dieB = null;
-let moveHistory = [];
-let mode = 'single';
-let active = true; 
-let occupiedCount = 0; 
-let lastHoveredValid = [-1, -1]; 
+
 
 // Utility to get a CSS variable value
 function getCssVar(name) {
