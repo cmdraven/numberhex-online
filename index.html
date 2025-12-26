@@ -341,8 +341,15 @@ html,body{
     margin: 0 auto; 
 }
 #output {
-    height: auto;
-    display: block; 
+    transition: filter 0.5s ease, opacity 0.5s ease;
+}
+
+/* This class will be applied when it is NOT your turn */
+.board-locked {
+    filter: grayscale(0.5) blur(1px);
+    opacity: 0.6;
+    pointer-events: none; /* Physically prevents clicking */
+    cursor: not-allowed;
 }
 .legend{
     display:flex;
@@ -791,9 +798,16 @@ function mouseDown(e) {
 
     // --- THE GATEKEEPER ---
     // If multiplayer is active and it's NOT your turn, ignore the click entirely
-    if (isMultiplayer && current !== myRole) {
-        log("🚫 It's not your turn! Waiting for opponent...");
-        return; 
+   
+
+    if (isMultiplayer) {
+        if (current === myRole) {
+            // It is MY turn: brighten the screen
+            outputCanvas.classList.remove('board-locked');
+        } else {
+            // It is OPPONENT'S turn: dim the screen
+            outputCanvas.classList.add('board-locked');
+        }
     }
 
     const rect = outputCanvas.getBoundingClientRect();
@@ -1394,28 +1408,24 @@ function afterPlacement() {
     }
 
     // Toggle turn
-    current = (current === 1) ? 2 : 1;
-    
-    updateTurnLabel();
+  current = (current === 1) ? 2 : 1;
+
+    updateTurnLabel(); // This triggers the dimming/brightening
     renderSidebar();
     draw();
 
-    // TRIGGER NEXT STEP
+    // Trigger the next roll for the person whose turn it now is
     if (isMultiplayer) {
         if (current === myRole) {
-            // It's my turn again (shouldn't happen in 1v1, but good for safety)
-            setTimeout(startTurn, 300);
+            setTimeout(startTurn, 400); // You roll
         } else {
-            // It's the opponent's turn. Clear your dice so you don't get confused.
+            // You are now waiting; clear your dice until the sync arrives
             dieAEl.textContent = "?";
             dieBEl.textContent = "?";
         }
     } else {
-        // Single player mode always rolls next turn
-        setTimeout(startTurn, 300);
+        setTimeout(startTurn, 400);
     }
-
-    current = (current === 1) ? 2 : 1;
     
     // NEW: Clear the dice visuals so they don't show old numbers
     dieAEl.classList.remove('ready');
@@ -1429,6 +1439,8 @@ function afterPlacement() {
     if (!isMultiplayer || (isMultiplayer && current === myRole)) {
         setTimeout(startTurn, 600);
     }
+
+    
 }
 
 function botMove(){
@@ -1471,17 +1483,17 @@ function botMove(){
 
 
 function startTurn() {
-    // If multiplayer and NOT my turn, wait for the socket to tell me what the opponent rolled
+    // GATEKEEPER: Only the active player triggers the roll logic
     if (isMultiplayer && current !== myRole) {
         log("Waiting for opponent to roll...");
         return; 
     }
 
-    // Roll new dice
+    // Roll new numbers
     dieA = Math.floor(Math.random() * 10) + 1;
     dieB = Math.floor(Math.random() * 10) + 1;
     
-    // If multiplayer, broadcast these dice to the other player immediately
+    // If Multiplayer, send these numbers to the opponent immediately
     if (isMultiplayer) {
         socket.emit('syncDice', {
             roomId: currentRoom,
@@ -1489,18 +1501,13 @@ function startTurn() {
         });
     }
 
-   
-    // Stop if it's multiplayer and not your turn
-    
-
-    
-    
-    // Sync to opponent
-   
-
-
+    // Apply the visual roll locally
     processTurnStart();
 }
+
+   
+    // Stop if it's multiplayer and not yo
+
 
 // Ensure diceSynced listener updates the UI correctly
 socket.on('diceSynced', (data) => {
@@ -1833,26 +1840,23 @@ function showFactorDetails(val, dieA, dieB) {
 }
 // --- END NEW HELPER MODAL FUNCTIONS ---
 
-function updateTurnLabel(){ 
-    const ACCENT_BLUE = getCssVar('--accent-blue');
-    const ACCENT_RED = getCssVar('--accent-red');
-    turnLabel.textContent = current===1 ? 'BLUE' : (mode==='single' ? 'RED (BOT)' : 'RED'); 
-    turnLabel.style.color = current===1 ? ACCENT_BLUE : ACCENT_RED;
-
+function updateTurnLabel() {
+    const label = document.getElementById('turnLabel');
+    const color = (current === 1) ? 'var(--accent-blue)' : 'var(--accent-red)';
+    const name = (current === 1) ? 'BLUE' : 'RED';
     
+    label.style.color = color;
+    label.textContent = `${name}'S TURN`;
 
+    // Visual Sync
     if (isMultiplayer) {
         if (current === myRole) {
-            outputCanvas.style.cursor = "pointer";
-            outputCanvas.style.filter = "none"; // Normal board
-            outputCanvas.style.pointerEvents = "auto";
+            outputCanvas.classList.remove('board-locked');
+            log("Your turn! Make your move.");
         } else {
-            outputCanvas.style.cursor = "not-allowed";
-            outputCanvas.style.filter = "grayscale(0.3) opacity(0.8)"; // Visual lock
-            outputCanvas.style.pointerEvents = "none"; // Hard browser-level lock
+            outputCanvas.classList.add('board-locked');
         }
     }
-
 }
 
 function initBoardData() {
