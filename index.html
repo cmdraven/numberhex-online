@@ -727,21 +727,33 @@ document.getElementById('matchBtn').addEventListener('click', () => {
     // Note: isMultiplayer becomes true once 'matchFound' is received
 });
 
+// --- UPDATED MATCHMAKING LISTENER ---
 socket.on('matchFound', (data) => {
     currentRoom = data.roomId;
     myRole = data.role; // 1 for Blue, 2 for Red
     isMultiplayer = true;
+    isMatchmaking = false; // Reset matchmaking state
     
     // UI Feedback: Let the player know who they are
     const colorName = (myRole === 1) ? "BLUE" : "RED";
     statusLogEl.textContent = `Matched! You are Player ${myRole} (${colorName})`;
     
-    // Only Player 1 (Blue) is allowed to trigger the very first roll
+    // Update the Matchmaking button
+    const matchBtn = document.getElementById('matchBtn');
+    matchBtn.textContent = "MATCHED!";
+    matchBtn.style.background = "#22C55E"; // Success Green
+
+    // IMPORTANT: Sync the mode dropdown to Multiplayer
+    modeSelect.value = "multi";
+    mode = "multi";
+    
+    active = true;
+    
+    // Only Player 1 (Blue) triggers the first roll to ensure sync
     if (myRole === 1) {
         init(); 
     }
 });
-  
 socket.on('startGame', () => {
     active = true;
     init(); 
@@ -764,45 +776,35 @@ function updateDiceUI() {
 function mouseDown(e) {
     if (!active) return;
 
-    
-    // NEW: Multiplayer Turn Enforcement
     if (isMultiplayer && current !== myRole) {
-        log("It's not your turn!");
-        return;
-    }
-
-    // ... rest of your existing click logic ...
-
-
-    // BLOCK if it's not your turn
-    if (isMultiplayer && current !== myRole) {
-        log("⚠️ Wait for opponent...");
+        log("⚠️ It's not your turn!");
         return;
     }
 
     getSel(e);
     const [x, y] = sel;
-    if (x === -1 || y === -1) return;
+    if (x === -1) return;
 
-    if (isAllowedToPlace(x, y)) {
-        place(x, y, current);
-        soundPlace(current);
-        
-        // Emit move BEFORE afterPlacement
-        if (isMultiplayer) {
-            socket.emit('emitMove', { 
-                x, y, 
-                role: myRole, 
-                dice: [dieA, dieB], 
-                roomId: currentRoom 
-            });
-        }
-        
-        afterPlacement(); 
-    } else {
+    if (!isAllowedToPlace(x, y)) {
         handleErrorClick(x, y);
+        return;
     }
+
+    place(x, y, current);
+
+    if (socket && isMultiplayer) {
+        socket.emit('emitMove', {
+            x,
+            y,
+            owner: myRole,
+            dice: [dieA, dieB],
+            roomId: currentRoom
+        });
+    }
+
+    afterPlacement();
 }
+
 // --- RECEIVE OPPONENT MOVES ---
 socket.on('opponentMove', (data) => {
     // 1. Force state to match the person who just moved
@@ -810,26 +812,20 @@ socket.on('opponentMove', (data) => {
     dieA = data.dice[0];
     dieB = data.dice[1];
     
-    // 2. Place the piece on the local board
-    // Note: Make sure your 'place' function accepts (x, y, role)
-    place(data.x, data.y, data.role);
-    soundPlace(data.role);
+    place(data.x, data.y, data.owner);
+    soundPlace(data.owner);
 
-    // 3. CRITICAL: Advance the turn to the NEXT player
+    // 2. Advance the local turn state
+    current = (data.owner === 1) ? 2 : 1; 
+    
+    // 3. IMPORTANT: Update UI and check for next turn
     afterPlacement(); 
     
     log("Opponent moved. It is now your turn!");
 });
 
 // Sync dice separately if needed (optional but safer)
-socket.on('diceSynced', (data) => {
-    dieA = data.dice[0];
-    dieB = data.dice[1];
-    dieAEl.textContent = dieA;
-    dieBEl.textContent = dieB;
-    processTurnStart();
-    draw();
-});
+
 
 // --- Game Constants and State ---
 
@@ -1312,40 +1308,37 @@ function renderSidebar() {
 // --- END NEW SIDEBAR RENDER FUNCTION ---
 
 // --- Game Flow Handlers ---
-
 function mouseDown(e) {
     if (!active) return;
-    
-    // PREVENT "EVERYONE IS BLUE" ISSUE:
-    // Only allow placement if it is your turn in multiplayer
+
+    // The Gatekeeper: Blocks your click if it's the opponent's turn
     if (isMultiplayer && current !== myRole) {
-        log("⚠️ It's not your turn!");
+        log("⚠️ It's not your turn! Wait for the opponent.");
         return;
     }
 
     getSel(e);
     const [x, y] = sel;
+    if (x === -1) return;
 
-    if (x !== -1 && y !== -1) {
-        if (isAllowedToPlace(x, y)) {
-            place(x, y, current);
-            soundPlace(current);
-            
-            // SYNC MOVE TO OPPONENT:
-            if (isMultiplayer) {
-                socket.emit('emitMove', { 
-                    x, y, 
-                    owner: myRole, 
-                    dice: [dieA, dieB], 
-                    roomId: currentRoom 
-                });
-            }
-            
-            afterPlacement();
-        } else {
-            handleErrorClick(x, y);
-        }
+    if (!isAllowedToPlace(x, y)) {
+        handleErrorClick(x, y);
+        return;
     }
+
+    // If it is your turn, place the piece and tell the server
+    place(x, y, current);
+    
+    if (isMultiplayer) {
+        socket.emit('emitMove', {
+            x, y,
+            owner: myRole, // Send your role so the other side knows who moved
+            dice: [dieA, dieB],
+            roomId: currentRoom
+        });
+    }
+
+    afterPlacement();
 }
 
 function place(x, y, owner) {
@@ -1415,17 +1408,17 @@ function botMove(){
 
 
 function startTurn() {
-    // If it's multiplayer and NOT my turn, wait for the socket to give me dice
+    // If multiplayer and NOT my turn, wait for the socket to tell me what the opponent rolled
     if (isMultiplayer && current !== myRole) {
         log("Waiting for opponent to roll...");
         return; 
     }
 
-    // Otherwise, I am the active player, so I roll
-    dieA = Math.floor(Math.random() * 6) + 1;
-    dieB = Math.floor(Math.random() * 6) + 1;
+    // Roll new dice
+    dieA = Math.floor(Math.random() * 10) + 1;
+    dieB = Math.floor(Math.random() * 10) + 1;
     
-    // If multiplayer, tell the other person what I rolled
+    // If multiplayer, broadcast these dice to the other player immediately
     if (isMultiplayer) {
         socket.emit('syncDice', {
             roomId: currentRoom,
@@ -1433,8 +1426,20 @@ function startTurn() {
         });
     }
 
-    processTurnStart(); // This updates the UI and starts the turn
+    processTurnStart();
 }
+
+// Ensure diceSynced listener updates the UI correctly
+socket.on('diceSynced', (data) => {
+    dieA = data.dice[0];
+    dieB = data.dice[1];
+    dieAEl.textContent = dieA;
+    dieBEl.textContent = dieB;
+    dieAEl.classList.add('ready');
+    dieBEl.classList.add('ready');
+    
+    processTurnStart(); // Re-calculate valid moves for the local player
+});
 
 function processTurnStart() {
     // Check if any moves are valid for the current dice roll
