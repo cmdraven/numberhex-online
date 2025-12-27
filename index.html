@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>NumberHex: Common Multiple Challenge</title>
+<title>NumberHex</title>
 <link rel="icon" type="image/png" href="logo.png" />
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="/socket.io/socket.io.js"></script>
@@ -1400,47 +1400,62 @@ function place(x, y, owner) {
 }
 
 function afterPlacement() {
-    const winPath = checkWin(current);
-    if (winPath) {
+    // 1. Check for a winner
+    if (checkWin(current)) {
         active = false;
-        showWinModal(current, winPath);
+        showWinModal(`PLAYER ${current === 1 ? 'BLUE' : 'RED'} WINS!`);
         return;
     }
 
-    // Toggle turn
-  current = (current === 1) ? 2 : 1;
-
-    updateTurnLabel(); // This triggers the dimming/brightening
+    // 2. Switch the Turn
+    current = (current === 1) ? 2 : 1;
+    updateTurnLabel();
     renderSidebar();
     draw();
 
-    // Trigger the next roll for the person whose turn it now is
+    // 3. Handle Turn Transitions
     if (isMultiplayer) {
         if (current === myRole) {
-            setTimeout(startTurn, 400); // You roll
+            setTimeout(startTurn, 500);
         } else {
-            // You are now waiting; clear your dice until the sync arrives
+            // Wait for opponent
             dieAEl.textContent = "?";
             dieBEl.textContent = "?";
+            dieAEl.classList.remove('ready');
         }
     } else {
-        setTimeout(startTurn, 400);
-    }
-    
-    // NEW: Clear the dice visuals so they don't show old numbers
-    dieAEl.classList.remove('ready');
-    dieBEl.classList.remove('ready');
-    dieAEl.textContent = "-";
-    dieBEl.textContent = "-";
+        // --- BOT LOGIC FOR SINGLE PLAYER ---
+        if (current === 2) { 
+            log("🤖 Bot is thinking...");
+            setTimeout(() => {
+                startTurn(); // Roll for the bot
+                
+                // Bot finds all available valid tiles
+                let validMoves = [];
+                for (let i = 0; i < SIZE; i++) {
+                    for (let j = 0; j < SIZE; j++) {
+                        if (isAllowedToPlace(i, j)) validMoves.push([i, j]);
+                    }
+                }
 
-    updateTurnLabel();
-    
-    // Trigger next roll
-    if (!isMultiplayer || (isMultiplayer && current === myRole)) {
-        setTimeout(startTurn, 600);
+                if (validMoves.length > 0) {
+                    // Bot picks a random move from valid options
+                    let [bx, by] = validMoves[Math.floor(Math.random() * validMoves.length)];
+                    setTimeout(() => {
+                        place(bx, by, 2);
+                        soundPlace(2);
+                        afterPlacement(); // Return turn to Human
+                    }, 800);
+                } else {
+                    log("🤖 Bot has no moves and passes.");
+                    setTimeout(afterPlacement, 800);
+                }
+            }, 600);
+        } else {
+            // Human turn
+            setTimeout(startTurn, 500);
+        }
     }
-
-    
 }
 
 function botMove(){
@@ -1483,25 +1498,17 @@ function botMove(){
 
 
 function startTurn() {
-    // GATEKEEPER: Only the active player triggers the roll logic
     if (isMultiplayer && current !== myRole) {
-        log("Waiting for opponent to roll...");
         return; 
     }
 
-    // Roll new numbers
     dieA = Math.floor(Math.random() * 10) + 1;
     dieB = Math.floor(Math.random() * 10) + 1;
     
-    // If Multiplayer, send these numbers to the opponent immediately
     if (isMultiplayer) {
-        socket.emit('syncDice', {
-            roomId: currentRoom,
-            dice: [dieA, dieB]
-        });
+        socket.emit('syncDice', { roomId: currentRoom, dice: [dieA, dieB] });
     }
 
-    // Apply the visual roll locally
     processTurnStart();
 }
 
@@ -2014,13 +2021,11 @@ document.getElementById('helperModal').addEventListener('click', (e) => { // NEW
     }
 });
 
-
 modeSelect.addEventListener('change', (e)=>{ 
     soundClick();
     mode = e.target.value; 
     init(); 
 });
-
 
 window.addEventListener('load', load); 
 </script>
