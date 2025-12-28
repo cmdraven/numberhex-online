@@ -7,6 +7,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
+app.use(express.static(__dirname));
+
 // Serve your index.html file
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -51,6 +53,18 @@ io.on('connection', (socket) => {
     socket.on('syncDice', (data) => {
     socket.to(data.roomId).emit('diceSynced', data);
     });
+});
+
+    // SERVER SIDE LOGIC
+socket.on('playerResigned', (data) => {
+    // Relay the message to everyone ELSE in that room
+    socket.to(data.roomId).emit('opponentResigned', { 
+        playerId: data.playerId 
+    });
+
+
+socket.on('leaveRoom', (data) => {
+    socket.leave(data.roomId);
 });
 
 const PORT = process.env.PORT || 3000;
