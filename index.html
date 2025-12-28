@@ -779,18 +779,6 @@ socket.on('disconnect', () => {
     console.log('A user disconnected');
 });
 
-socket.on('playerResigned', (data) => {
-    // Send message to the OTHER player in the room
-    socket.to(data.roomId).emit('opponentResigned', { 
-        playerId: data.playerId 
-    });
-});
-
-// Add this listener to handle the opponent quitting
-socket.on('opponentResigned', (data) => {
-    log("🏳️ Opponent has resigned!");
-    handleResignation(data.playerId); 
-}); 
 
 // Update your existing function or add this to handle the game end logic
 function handleResignation(resignerId) {
@@ -1586,18 +1574,21 @@ socket.on('diceSynced', (data) => {
     processTurnStart(); // Re-calculate valid moves for the local player
 });
 
-function showWinModal(title, subtitle = "") {
-    const modal = document.getElementById('winModal');
-    document.getElementById('winTitle').textContent = title;
-    document.getElementById('winSubtitle').textContent = subtitle;
+function showWinModal(title, reason) {
+    const modal = document.getElementById('modal-backdrop');
+    const titleEl = document.getElementById('modal-title');
+    const messageEl = document.getElementById('modal-message');
+
+    titleEl.textContent = title;
+    messageEl.textContent = reason;
+
+    modal.classList.add('active'); // Shows the modal
     
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    
-    // Visual lock for the background
+    // Dim the board visually
     outputCanvas.style.filter = "grayscale(0.8) blur(2px)";
     outputCanvas.style.pointerEvents = "none";
 }
+
 function processTurnStart() {
 
     dieAEl.textContent = dieA;
