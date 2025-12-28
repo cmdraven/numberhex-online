@@ -789,59 +789,39 @@ socket.on('playerResigned', (data) => {
 // Add this listener to handle the opponent quitting
 socket.on('opponentResigned', (data) => {
     log("🏳️ Opponent has resigned!");
-    handleResignation(data.playerId); // The ID of the person who quit
-});
+    handleResignation(data.playerId); 
+}); 
 
 // Update your existing function or add this to handle the game end logic
 function handleResignation(resignerId) {
-    active = false; // Stop game interactions
+    active = false; // Stop the game engine
     
-    // Determine winner
+    // Determine winner (the one who didn't resign)
     const winnerName = (resignerId === 1) ? "RED" : "BLUE";
     const reason = (resignerId === myRole) ? "You resigned." : "Opponent resigned.";
     
-    // 1. Show the modal
+    // Show the modal (using your existing modal ID)
     showWinModal(`${winnerName} WINS!`, reason);
-
-    // 2. DISCONNECT / LEAVE ROOM
+    
+    // Cleanup Multiplayer State
     if (isMultiplayer) {
         socket.emit('leaveRoom', { roomId: currentRoom });
-        // Reset multiplayer status so they can join new games
-        isMultiplayer = false; 
+        isMultiplayer = false;
         currentRoom = null;
     }
 
-    // 3. CLEAR THE BOARD VISUALLY
+    // Visual Reset
     board = []; 
-    validMoves = [];
     dieA = dieB = null;
     dieAEl.textContent = "-";
     dieBEl.textContent = "-";
     
-    updateMenuButtons();
-    draw(); // Redraws the empty board
+    updateMenuButtons(); // Changes button text back to "NEW GAME"
+    draw(); 
 }
 
-// Listen for when the other player quits
-// Listen for when the other player quits
-socket.on('opponentResigned', (data) => {
-    log("🏳️ Opponent has resigned!");
-    handleResignation(data.playerId); 
-});
 
-function handleResignation(resignerId) {
-    active = false; // Stop the game
-    
-    // Determine who won
-    const winner = (resignerId === 1) ? "RED" : "BLUE";
-    const reason = (resignerId === myRole) ? "You resigned." : "Opponent resigned.";
-    
-    // Show the win modal with the result
-    showWinModal(`${winner} WINS! (${reason})`);
-    
-    // Reset the button back to "New Game"
-    updateMenuButtons();
-}
+
 
 socket.on('diceSynced', (data) => {
     dieA = data.dice[0];
@@ -2090,18 +2070,18 @@ document.getElementById('undoBtn').addEventListener('click', ()=>{
 });
 
 
-const newBtn = document.getElementById('newBtn');
-
+// 1. The Button Click
 document.getElementById('newBtn').addEventListener('click', () => {
     if (isMultiplayer && active) {
         if (confirm("Are you sure you want to resign? This will end the match for both players.")) {
-            socket.emit('playerResigned', { 
-                roomId: currentRoom, 
-                playerId: myRole 
-            });
+            // Tell the server we are resigning
+            socket.emit('playerResigned', { roomId: currentRoom, playerId: myRole });
+            
+            // Handle it locally immediately
             handleResignation(myRole);
         }
     } else {
+        // Normal behavior for single player or after match end
         init();
     }
 });
