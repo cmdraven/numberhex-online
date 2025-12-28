@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>NumberHex: Common Multiple Challenge</title>
+<title>NumberHex</title>
 <link rel="icon" type="image/png" href="logo.png" />
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="/socket.io/socket.io.js"></script>
@@ -554,7 +554,9 @@ html,body{
 <div class="wrap">
   <div class="header">
     <div class="title">
-      <h1>NUMBERHEX</h1>
+      <h1>N U M B E R H E X</h1>
+      
+      <h2>A project by the students of Delhi Public School Harni. </h2>
     </div>
 
     <div class="controls">
@@ -571,7 +573,7 @@ html,body{
         <div class="status-strip">
             <div style="display:flex; gap: 12px; flex-shrink: 0;">
                 <select id="modeSelect" class="select">
-                    <option value="single">🤖 SINGLE PLAYER</option>
+                    <option value="single">♟️ SINGLE PLAYER</option>
                     <option value="multi">👥 MULTI PLAYER</option>
                 </select>
                 <button id="undoBtn" class="ghost">↩️ UNDO</button>
@@ -1504,7 +1506,7 @@ function afterPlacement() {
     } else {
         // --- BOT LOGIC FOR SINGLE PLAYER ---
         if (current === 2) { 
-            log("🤖 Bot is thinking...");
+            log("start thinking...");
             setTimeout(() => {
                 startTurn(); // Roll for the bot
                 
@@ -1525,7 +1527,7 @@ function afterPlacement() {
                         afterPlacement(); // Return turn to Human
                     }, 800);
                 } else {
-                    log("🤖 Bot has no moves and passes.");
+                    log("You have no moves and passes.");
                     setTimeout(afterPlacement, 800);
                 }
             }, 600);
@@ -1549,7 +1551,7 @@ function botMove(){
     }
     
     if (allowed.length === 0){
-        log('🤖 Bot has no allowed moves. Passing turn.');
+        log('No allowed moves. Passing turn.');
         document.getElementById('passBtn').disabled = true;
         current = 1; updateTurnLabel(); renderSidebar(); // NEW
         setTimeout(startTurn, 300);
@@ -1662,7 +1664,7 @@ function processTurnStart() {
 
     } else if (current === 2 && mode === 'single' && !isMultiplayer) {
         // --- LOCAL BOT LOGIC ---
-        log('🤖 Red (Bot) is thinking...');
+        log('Start thinking...');
         document.getElementById('passBtn').disabled = true;
         draw(); 
         soundBotThink(); 
@@ -1722,7 +1724,7 @@ function showCommonMultipleError(x, y) {
     const TEXT_PRIMARY = getCssVar('--text-primary');
 
     let message = `<div class="error-message"><strong style="font-size:1.2em; color: ${ACCENT_RED};">TILE ${val} IS NOT A COMMON MULTIPLE!</strong><br><br>`;
-    message += `The tile value must be a multiple of **both** dice rolls (${dieA} and ${dieB}).<br><br>`;
+    message += `The tile value must be a multiple of both dice rolls (${dieA} and ${dieB}).<br><br>`;
 
     message += `<strong style="color:${TEXT_DARK};">Check 1: Divisible by ${dieA}?</strong><br>`;
     if (isIntClose(divA)) {
