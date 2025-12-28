@@ -779,6 +779,38 @@ socket.on('disconnect', () => {
     console.log('A user disconnected');
 });
 
+// index.html
+// 1. Listen for the "letter" from the server
+socket.on('opponentResigned', (data) => {
+    log("🏳️ Opponent has resigned!");
+    handleResignation(data.playerId); 
+});
+
+// 2. The logic that actually clears the board and shows the modal
+function handleResignation(resignerId) {
+    active = false; 
+    
+    const winnerName = (resignerId === 1) ? "RED" : "BLUE";
+    const reason = (resignerId === myRole) ? "You resigned." : "Opponent resigned.";
+    
+    showWinModal(`${winnerName} WINS!`, reason);
+
+    if (isMultiplayer) {
+        socket.emit('leaveRoom', { roomId: currentRoom });
+        isMultiplayer = false;
+        currentRoom = null;
+    }
+
+    // This is what clears the board for the opponent
+    board = []; 
+    dieA = dieB = null;
+    dieAEl.textContent = "-";
+    dieBEl.textContent = "-";
+    
+    updateMenuButtons(); 
+    draw(); // Redraws the now-empty board
+}
+
 
 // Update your existing function or add this to handle the game end logic
 function handleResignation(resignerId) {
@@ -2065,14 +2097,16 @@ document.getElementById('undoBtn').addEventListener('click', ()=>{
 document.getElementById('newBtn').addEventListener('click', () => {
     if (isMultiplayer && active) {
         if (confirm("Are you sure you want to resign? This will end the match for both players.")) {
-            // Tell the server we are resigning
-            socket.emit('playerResigned', { roomId: currentRoom, playerId: myRole });
-            
-            // Handle it locally immediately
+            // 1. Tell the server we are quitting
+            socket.emit('playerResigned', { 
+                roomId: currentRoom, 
+                playerId: myRole 
+            });
+            // 2. Clear our own screen
             handleResignation(myRole);
         }
     } else {
-        // Normal behavior for single player or after match end
+        // Single player or game already over: just restart
         init();
     }
 });
