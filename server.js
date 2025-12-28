@@ -7,6 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
+// 1. FIX FOR LOGO: Serve static files from the root directory
 app.use(express.static(__dirname));
 
 // Serve your index.html file
@@ -17,6 +18,8 @@ app.get('/', (req, res) => {
 let waitingPlayer = null; 
 
 io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+
     // When a user clicks 'Find Match'
     socket.on('findMatch', () => {
         if (waitingPlayer && waitingPlayer.id !== socket.id) {
@@ -46,26 +49,26 @@ io.on('connection', (socket) => {
         socket.to(data.roomId).emit('opponentPass');
     });
 
+    socket.on('syncDice', (data) => {
+        socket.to(data.roomId).emit('diceSynced', data);
+    });
+
+    // RESIGNATION LOGIC (Now correctly inside the connection block)
+    socket.on('playerResigned', (data) => {
+        socket.to(data.roomId).emit('opponentResigned', { 
+            playerId: data.playerId 
+        });
+    });
+
+    socket.on('leaveRoom', (data) => {
+        socket.leave(data.roomId);
+    });
+
     socket.on('disconnect', () => {
         if (waitingPlayer && waitingPlayer.id === socket.id) waitingPlayer = null;
+        console.log('User disconnected');
     });
-
-    socket.on('syncDice', (data) => {
-    socket.to(data.roomId).emit('diceSynced', data);
-    });
-});
-
-    // SERVER SIDE LOGIC
-socket.on('playerResigned', (data) => {
-    // Relay the message to everyone ELSE in that room
-    socket.to(data.roomId).emit('opponentResigned', { 
-        playerId: data.playerId 
-    });
-
-
-socket.on('leaveRoom', (data) => {
-    socket.leave(data.roomId);
-});
+}); // <--- This closes io.on('connection')
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
