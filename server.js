@@ -75,6 +75,8 @@ io.on('connection', (socket) => {
         playerId: data.playerId 
         });
     });
+
+    
     
 }); // <--- This closes io.on('connection')
 
