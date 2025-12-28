@@ -68,6 +68,14 @@ io.on('connection', (socket) => {
         if (waitingPlayer && waitingPlayer.id === socket.id) waitingPlayer = null;
         console.log('User disconnected');
     });
+
+    socket.on('playerResigned', (data) => {
+    // This sends the message to everyone in the room EXCEPT the person who resigned
+        socket.to(data.roomId).emit('opponentResigned', { 
+        playerId: data.playerId 
+        });
+    });
+    
 }); // <--- This closes io.on('connection')
 
 const PORT = process.env.PORT || 3000;
