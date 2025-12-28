@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>NumberHex</title>
-<link rel="icon" type="image/png" href="/logo.png" />
+<title>NumberHex: Common Multiple Challenge</title>
+<link rel="icon" type="image/png" href="logo.png" />
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="/socket.io/socket.io.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
@@ -571,8 +571,8 @@ html,body{
         <div class="status-strip">
             <div style="display:flex; gap: 12px; flex-shrink: 0;">
                 <select id="modeSelect" class="select">
-                    <option value="single">👤 Play with yourself</option>
-                    <option value="multi">👥 Play with someone else</option>
+                    <option value="single">🤖 SINGLE PLAYER</option>
+                    <option value="multi">👥 MULTI PLAYER</option>
                 </select>
                 <button id="undoBtn" class="ghost">↩️ UNDO</button>
             </div>
@@ -756,6 +756,8 @@ socket.on('matchFound', (data) => {
     
     active = true;
     
+    updateMenuButtons(); // Switch to "Resign"
+
     // Only Player 1 (Blue) triggers the first roll to ensure sync
     if (myRole === 1) {
         init(); 
@@ -765,6 +767,54 @@ socket.on('startGame', () => {
     active = true;
     init(); 
 });
+
+socket.on('playerResigned', (data) => {
+    // Send message to the OTHER player in the room
+    socket.to(data.roomId).emit('opponentResigned', { 
+        playerId: data.playerId 
+    });
+});
+
+// Add this listener to handle the opponent quitting
+socket.on('opponentResigned', (data) => {
+    log("🏳️ Opponent has resigned!");
+    handleResignation(data.playerId); // The ID of the person who quit
+});
+
+// Update your existing function or add this to handle the game end logic
+function handleResignation(resignerId) {
+    active = false; // Stop all game interactions
+    
+    // Determine the winner (The one who didn't resign)
+    const winnerName = (resignerId === 1) ? "RED" : "BLUE";
+    const reason = (resignerId === myRole) ? "You resigned." : "Opponent resigned.";
+    
+    showWinModal(`${winnerName} WINS!`, reason);
+    
+    // Switch the button back to "New Game" state
+    updateMenuButtons();
+    draw();
+}
+
+// Listen for when the other player quits
+socket.on('opponentResigned', (data) => {
+    log("Opponent has resigned!");
+    handleResignation(data.playerId); // The ID of the person who quit
+});
+
+function handleResignation(resignerId) {
+    active = false; // Stop the game
+    
+    // Determine who won
+    const winner = (resignerId === 1) ? "RED" : "BLUE";
+    const reason = (resignerId === myRole) ? "You resigned." : "Opponent resigned.";
+    
+    // Show the win modal with the result
+    showWinModal(`${winner} WINS! (${reason})`);
+    
+    // Reset the button back to "New Game"
+    updateMenuButtons();
+}
 
 socket.on('diceSynced', (data) => {
     dieA = data.dice[0];
@@ -876,6 +926,7 @@ function init() {
             location.reload(); 
         }
     } else {
+        updateMenuButtons(); // Switch to "New Game"
         init();
     }
 });
@@ -1528,6 +1579,26 @@ socket.on('diceSynced', (data) => {
     processTurnStart(); // Re-calculate valid moves for the local player
 });
 
+function showWinModal(title, subtitle = "") {
+    const modal = document.getElementById('winModal');
+    const titleEl = document.getElementById('winTitle');
+    const subtitleEl = document.getElementById('winSubtitle');
+
+    // Update text content
+    titleEl.textContent = title;
+    subtitleEl.textContent = subtitle;
+
+    // Show the modal (using Tailwind classes you already have)
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    // Visual Lock: Dim the board so no more moves can be made
+    outputCanvas.style.filter = "grayscale(0.8) blur(2px)";
+    outputCanvas.style.pointerEvents = "none";
+    
+    active = false; // Stop the game engine
+}
+
 function processTurnStart() {
 
     dieAEl.textContent = dieA;
@@ -2000,7 +2071,36 @@ document.getElementById('undoBtn').addEventListener('click', ()=>{
 });
 
 
-document.getElementById('newBtn').addEventListener('click', ()=> init());
+const newBtn = document.getElementById('newBtn');
+
+document.getElementById('newBtn').addEventListener('click', () => {
+    if (isMultiplayer && active) {
+        if (confirm("Are you sure you want to resign? This will end the match.")) {
+            // 1. Tell the server you are resigning
+            socket.emit('playerResigned', { 
+                roomId: currentRoom, 
+                playerId: myRole 
+            });
+            
+            // 2. Run the local game-over logic
+            handleResignation(myRole);
+        }
+    } else {
+        // If the game is already over or in single player, just restart
+        init();
+    }
+});
+
+// Helper function to update the button text
+function updateMenuButtons() {
+    if (isMultiplayer && active) {
+        newBtn.textContent = "🏳️ RESIGN";
+        newBtn.classList.add('bg-red-600'); // Optional: make it red
+    } else {
+        newBtn.textContent = "🔄 NEW GAME";
+        newBtn.classList.remove('bg-red-600');
+    }
+}
 document.getElementById('howToPlayBtn').addEventListener('click', showInstructions);
 lcmHelperBtn.addEventListener('click', showHelper); // NEW HELPER BUTTON LISTENER
 
