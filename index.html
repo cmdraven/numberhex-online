@@ -722,7 +722,7 @@ googleBtn.addEventListener('click', () => {
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // 2. Listen for User State (This triggers automatically on page load for returning users)
-aauth.onAuthStateChanged(user => {
+auth.onAuthStateChanged(user => {
     const userProfile = document.getElementById('userProfile');
     const userAvatar = document.getElementById('userAvatar');
     const userName = document.getElementById('userName');
