@@ -722,36 +722,31 @@ googleBtn.addEventListener('click', () => {
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // 2. Listen for User State (This triggers automatically on page load for returning users)
-auth.onAuthStateChanged(user => {
-    const loginOverlay = document.getElementById('loginOverlay');
+aauth.onAuthStateChanged(user => {
     const userProfile = document.getElementById('userProfile');
     const userAvatar = document.getElementById('userAvatar');
     const userName = document.getElementById('userName');
 
     if (user) {
-        console.log("Welcome back, ", user.displayName);
-        
-        // Hide Login Overlay immediately
-        loginOverlay.classList.add('hidden');
         loginOverlay.style.display = 'none';
+        
+        // Use inline style to override Tailwind's 'hidden' class safely
+        userProfile.style.display = 'flex';
+        userProfile.classList.remove('hidden'); 
+        
+        // Ensure a fallback image if Google doesn't provide one
+        userAvatar.src = user.photoURL || 'https://www.gravatar.com/avatar/?d=mp';
+        userName.textContent = user.displayName.split(' ')[0];
 
-        // Update Profile Button
-        userProfile.classList.remove('hidden');
-        userProfile.classList.add('flex');
-        userAvatar.src = user.photoURL || 'https://via.placeholder.com/40';
-        userName.textContent = user.displayName.split(' ')[0]; // Show first name
-
-        // Authenticate with your Socket server
+        // Signal to server that we are ready
         socket.emit('authenticate', {
             uid: user.uid,
             name: user.displayName,
             photo: user.photoURL
         });
     } else {
-        // Show Login Overlay if no user is found
-        loginOverlay.classList.remove('hidden');
         loginOverlay.style.display = 'flex';
-        userProfile.classList.add('hidden');
+        userProfile.style.display = 'none';
     }
 });
 
@@ -837,32 +832,32 @@ document.getElementById('matchBtn').addEventListener('click', () => {
 // --- UPDATED MATCHMAKING LISTENER ---
 socket.on('matchFound', (data) => {
     currentRoom = data.roomId;
-    myRole = data.role; // 1 for Blue, 2 for Red
+    myRole = data.role;
     isMultiplayer = true;
-    isMatchmaking = false; // Reset matchmaking state
     
-    // UI Feedback: Let the player know who they are
-    const colorName = (myRole === 1) ? "BLUE" : "RED";
-    statusLogEl.textContent = `Matched! You are Player ${myRole} (${colorName})`;
+    // Update the UI log
+    log(`Matched! Playing against ${data.opponentName}`);
     
-    // Update the Matchmaking button
-    const matchBtn = document.getElementById('matchBtn');
-    matchBtn.textContent = "MATCHED!";
-    matchBtn.style.background = "#22C55E"; // Success Green
+    // Optional: If you want to show the opponent's photo on the sidebar
+    const statsArea = document.getElementById('game-stats');
+    statsArea.innerHTML += `
+        <div class="flex items-center gap-2 mt-4 p-2 bg-black rounded">
+            <img src="${data.opponentPhoto || 'https://via.placeholder.com/30'}" class="w-6 h-6 rounded-full border border-red-500">
+            <span class="text-xs text-red-500">Opponent: ${data.opponentName}</span>
+        </div>
+    `;
 
-    // IMPORTANT: Sync the mode dropdown to Multiplayer
+    // Ensure the game starts
     modeSelect.value = "multi";
     mode = "multi";
-    
     active = true;
-    
-    updateMenuButtons(); // Switch to "Resign"
+    updateMenuButtons();
 
-    // Only Player 1 (Blue) triggers the first roll to ensure sync
     if (myRole === 1) {
-        init(); 
+        init(); // Blue player (Role 1) starts the first roll
     }
 });
+
 socket.on('startGame', () => {
     active = true;
     init(); 
