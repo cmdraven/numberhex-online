@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-// 1. FIX FOR LOGO: Serve static files from the root directory
+// Serve static files (like logo.png) from the root directory
 app.use(express.static(__dirname));
 
 // Serve your index.html file
@@ -19,12 +19,21 @@ let waitingPlayer = null;
 
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
+
+    // 1. Authenticate: Attach user info to the socket
     socket.on('authenticate', (userData) => {
-        socket.user = userData; // Attach user info to this specific connection
-        console.log(`${userData.name} joined the game server.`);
+        socket.user = userData; 
+        console.log(`User Identified: ${userData.name}`);
     });
-    // When a user clicks 'Find Match'
+
+    // 2. Matchmaking
     socket.on('findMatch', () => {
+        // Safety check: Don't pair if authentication hasn't happened yet
+        if (!socket.user) {
+            socket.emit('error', 'Please log in first.');
+            return;
+        }
+
         if (waitingPlayer && waitingPlayer.id !== socket.id) {
             const roomId = `room_${waitingPlayer.id}_${socket.id}`;
             const opponent = waitingPlayer;
@@ -33,26 +42,29 @@ io.on('connection', (socket) => {
             socket.join(roomId);
             opponent.join(roomId);
 
-            
-            // Pair them: Player 1 is Blue, Player 2 is Red
-            opponent.emit('matchFound', { roomId, role: 1 });
-            socket.emit('matchFound', { roomId, role: 2 });
+            // Pair them and send opponent data to both
+            opponent.emit('matchFound', { 
+                roomId, 
+                role: 1, 
+                opponentName: socket.user.name, 
+                opponentPhoto: socket.user.photo 
+            });
+
+            socket.emit('matchFound', { 
+                roomId, 
+                role: 2, 
+                opponentName: opponent.user.name, 
+                opponentPhoto: opponent.user.photo 
+            });
             
             io.to(roomId).emit('startGame');
         } else {
             waitingPlayer = socket;
             socket.emit('searching');
         }
-
-        if (waitingPlayer) {
-             const roomId = `room_${waitingPlayer.id}_${socket.id}`;
-             io.to(roomId).emit('matchFound', { 
-                 role: 2, 
-                 opponentName: waitingPlayer.user.name 
-             });
-        }
     });
 
+    // 3. Game Actions
     socket.on('emitMove', (data) => {
         socket.to(data.roomId).emit('opponentMove', data);
     });
@@ -65,7 +77,7 @@ io.on('connection', (socket) => {
         socket.to(data.roomId).emit('diceSynced', data);
     });
 
-    // RESIGNATION LOGIC (Now correctly inside the connection block)
+    // 4. Resignation & Leaving
     socket.on('playerResigned', (data) => {
         socket.to(data.roomId).emit('opponentResigned', { 
             playerId: data.playerId 
@@ -76,26 +88,14 @@ io.on('connection', (socket) => {
         socket.leave(data.roomId);
     });
 
+    // 5. Disconnect
     socket.on('disconnect', () => {
-        if (waitingPlayer && waitingPlayer.id === socket.id) waitingPlayer = null;
-        console.log('User disconnected');
+        if (waitingPlayer && waitingPlayer.id === socket.id) {
+            waitingPlayer = null;
+        }
+        console.log('User disconnected:', socket.id);
     });
-
-    socket.on('playerResigned', (data) => {
-    // This sends the message to everyone in the room EXCEPT the person who resigned
-        socket.to(data.roomId).emit('opponentResigned', { 
-        playerId: data.playerId 
-        });
-    });
-
-    socket.on('authenticate', (userData) => {
-    socket.user = userData; // Store the name/photo on the socket object
-    console.log(`User Identified: ${userData.name}`);
-    });
-
-    
-    
-}); // <--- This closes io.on('connection')
+});
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
