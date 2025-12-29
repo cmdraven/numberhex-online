@@ -664,6 +664,12 @@ html,body{
     </div>
 </div>
 
+<div id="userProfile" class="hidden flex items-center gap-3 bg-[#2A2A2A] border border-[#7FFF00] p-1 pr-4 rounded-full">
+    <img id="userAvatar" src="" alt="Avatar" class="w-8 h-8 rounded-full border border-[#7FFF00]">
+    <span id="userName" class="text-[#7FFF00] font-bold text-sm tracking-tight uppercase">Guest</span>
+    <button id="logoutBtn" class="text-gray-400 hover:text-red-500 text-xs font-bold ml-2">Logout</button>
+</div>
+
 <div id="loginOverlay" class="fixed inset-0 bg-black bg-opacity-90 z-[2000] flex flex-center items-center justify-center">
     <div class="bg-[#2A2A2A] p-8 rounded-lg border-2 border-[#7FFF00] text-center max-w-sm">
         <h2 class="font-['Bungee_Inline'] text-2xl text-[#7FFF00] mb-6">NUMBERHEX LOGIN</h2>
@@ -694,28 +700,69 @@ const loginOverlay = document.getElementById('loginOverlay');
 const googleBtn = document.getElementById('googleLoginBtn');
 
 // Handle Login
-googleBtn.onclick = () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider);
-};
+// 1. Ensure the listener is assigned to the button ID
 
-// Listen for User State
+
+googleBtn.addEventListener('click', () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    
+    // Explicitly using the 'auth' object created from your config
+    auth.signInWithPopup(provider)
+        .then((result) => {
+            console.log("Login Successful");
+        })
+        .catch((error) => {
+            console.error("Login Error:", error.code, error.message);
+            // If it keeps closing, try Redirect instead:
+            // auth.signInWithRedirect(provider); 
+        });
+});
+
+// 1. Set Persistence (Optional, but ensures it stays logged in across sessions)
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+// 2. Listen for User State (This triggers automatically on page load for returning users)
 auth.onAuthStateChanged(user => {
+    const loginOverlay = document.getElementById('loginOverlay');
+    const userProfile = document.getElementById('userProfile');
+    const userAvatar = document.getElementById('userAvatar');
+    const userName = document.getElementById('userName');
+
     if (user) {
-        console.log("Logged in as:", user.displayName);
-        loginOverlay.style.display = 'none'; // Hide login
+        console.log("Welcome back, ", user.displayName);
         
-        // Tell the server who we are via Socket.io
+        // Hide Login Overlay immediately
+        loginOverlay.classList.add('hidden');
+        loginOverlay.style.display = 'none';
+
+        // Update Profile Button
+        userProfile.classList.remove('hidden');
+        userProfile.classList.add('flex');
+        userAvatar.src = user.photoURL || 'https://via.placeholder.com/40';
+        userName.textContent = user.displayName.split(' ')[0]; // Show first name
+
+        // Authenticate with your Socket server
         socket.emit('authenticate', {
             uid: user.uid,
             name: user.displayName,
             photo: user.photoURL
         });
     } else {
-        loginOverlay.style.display = 'flex'; // Show login
+        // Show Login Overlay if no user is found
+        loginOverlay.classList.remove('hidden');
+        loginOverlay.style.display = 'flex';
+        userProfile.classList.add('hidden');
     }
 });
 
+// 3. Logout Functionality
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    if(confirm("Are you sure you want to logout?")) {
+        auth.signOut().then(() => {
+            location.reload(); // Refresh to show login screen
+        });
+    }
+});
 
 const SIZE = 11; 
 const TOTAL_CELLS = SIZE * SIZE;
