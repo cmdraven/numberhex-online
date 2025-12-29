@@ -655,6 +655,37 @@ html,body{
     </div>
 </div>
 
+<div id="profileModal" class="fixed inset-0 bg-black bg-opacity-90 z-[3000] hidden flex items-center justify-center p-4">
+    <div class="bg-[#2A2A2A] p-6 rounded-lg border-2 border-[#7FFF00] w-full max-w-md shadow-[0_0_20px_rgba(127,255,0,0.3)]">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="font-['Bungee_Inline'] text-xl text-[#7FFF00]">PROFILE SETTINGS</h2>
+            <button onclick="toggleProfileModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="text-[10px] text-gray-400 uppercase tracking-widest block mb-1">Display Name</label>
+                <input type="text" id="editName" class="w-full bg-[#1A1A1A] border border-[#444] rounded p-2 text-white focus:border-[#7FFF00] outline-none">
+            </div>
+            
+            <div>
+                <label class="text-[10px] text-gray-400 uppercase tracking-widest block mb-1">Avatar URL</label>
+                <input type="text" id="editPhoto" class="w-full bg-[#1A1A1A] border border-[#444] rounded p-2 text-white focus:border-[#7FFF00] outline-none" placeholder="Paste image link here...">
+            </div>
+
+            <button onclick="saveProfile()" class="w-full bg-[#7FFF00] text-black font-black py-3 rounded hover:scale-105 transition-transform">SAVE CHANGES</button>
+            
+            <div class="mt-8 p-4 bg-[#1A1A1A] rounded-lg border border-dashed border-[#444]">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] text-[#7FFF00] font-bold uppercase">💡 Daily Math Tip</span>
+                    <button onclick="showNextTip()" class="text-[10px] text-gray-500 hover:text-white underline">Next Tip</button>
+                </div>
+                <p id="mathTipDisplay" class="text-sm text-gray-300 italic">"The LCM of two prime numbers is always their product."</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="helperModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="helperModalTitle">
     <div class="modal-content">
         <button class="modal-close-btn" onclick="hideHelper()" aria-label="Close helper">&times;</button>
@@ -702,6 +733,72 @@ const googleBtn = document.getElementById('googleLoginBtn');
 // Handle Login
 // 1. Ensure the listener is assigned to the button ID
 
+// --- MATH TIPS DATABASE ---
+// --- MATH TIPS SYSTEM ---
+const tips = [
+    "To find a common multiple of 4 and 6, try checking 12, 24, and 36.",
+    "The LCM (Least Common Multiple) is the smallest positive integer divisible by both numbers.",
+    "When dice show 3 and 5, any number ending in 0 or 5 that is divisible by 3 works (e.g., 15, 30, 45).",
+    "Strategy: Try to build a path across the board while blocking your opponent's prime numbers.",
+    "If the dice are identical (e.g., 4 and 4), any multiple of 4 is a valid move."
+];
+let currentTipIdx = 0;
+
+function showNextTip() {
+    currentTipIdx = (currentTipIdx + 1) % tips.length;
+    document.getElementById('mathTipDisplay').textContent = `"${tips[currentTipIdx]}"`;
+}
+
+// --- PROFILE MANAGEMENT ---
+function toggleProfileModal() {
+    const modal = document.getElementById('profileModal');
+    const user = firebase.auth().currentUser;
+
+    if (modal.classList.contains('hidden')) {
+        // Pre-fill fields
+        document.getElementById('editName').value = user.displayName || "";
+        document.getElementById('editPhoto').value = user.photoURL || "";
+        modal.classList.remove('hidden');
+    } else {
+        modal.classList.add('hidden');
+    }
+}
+
+async function saveProfile() {
+    const user = firebase.auth().currentUser;
+    const newName = document.getElementById('editName').value;
+    const newPhoto = document.getElementById('editPhoto').value;
+
+    if (user) {
+        try {
+            await user.updateProfile({
+                displayName: newName,
+                photoURL: newPhoto
+            });
+            
+            // Update UI
+            document.getElementById('userName').textContent = newName.split(' ')[0];
+            document.getElementById('userAvatar').src = newPhoto || 'https://via.placeholder.com/40';
+            
+            // Sync with game server
+            socket.emit('authenticate', { uid: user.uid, name: newName, photo: newPhoto });
+            
+            toggleProfileModal();
+            alert("Profile updated successfully!");
+        } catch (error) {
+            console.error("Update failed:", error);
+            alert("Error updating profile.");
+        }
+    }
+}
+
+// Attach click event to your existing userProfile div
+document.getElementById('userProfile').addEventListener('click', (e) => {
+    // Only open if they didn't click the Logout button
+    if (!e.target.closest('#logoutBtn')) {
+        toggleProfileModal();
+    }
+});
 
 googleBtn.addEventListener('click', () => {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -723,22 +820,15 @@ firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // 2. Listen for User State (This triggers automatically on page load for returning users)
 auth.onAuthStateChanged(user => {
-    const userProfile = document.getElementById('userProfile');
-    const userAvatar = document.getElementById('userAvatar');
-    const userName = document.getElementById('userName');
-
     if (user) {
+        // User is found in local storage, skip login screen
         loginOverlay.style.display = 'none';
+        userProfile.classList.remove('hidden');
+        userProfile.classList.add('flex');
         
-        // Use inline style to override Tailwind's 'hidden' class safely
-        userProfile.style.display = 'flex';
-        userProfile.classList.remove('hidden'); 
-        
-        // Ensure a fallback image if Google doesn't provide one
-        userAvatar.src = user.photoURL || 'https://www.gravatar.com/avatar/?d=mp';
-        userName.textContent = user.displayName.split(' ')[0];
+        userAvatar.src = user.photoURL || 'https://via.placeholder.com/40';
+        userName.textContent = user.displayName ? user.displayName.split(' ')[0] : "Player";
 
-        // Signal to server that we are ready
         socket.emit('authenticate', {
             uid: user.uid,
             name: user.displayName,
@@ -746,7 +836,7 @@ auth.onAuthStateChanged(user => {
         });
     } else {
         loginOverlay.style.display = 'flex';
-        userProfile.style.display = 'none';
+        userProfile.classList.add('hidden');
     }
 });
 
