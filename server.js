@@ -88,6 +88,11 @@ io.on('connection', (socket) => {
         });
     });
 
+    socket.on('authenticate', (userData) => {
+    socket.user = userData; // Store the name/photo on the socket object
+    console.log(`User Identified: ${userData.name}`);
+    });
+
     
     
 }); // <--- This closes io.on('connection')
