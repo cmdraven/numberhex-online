@@ -19,7 +19,10 @@ let waitingPlayer = null;
 
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
-
+    socket.on('authenticate', (userData) => {
+        socket.user = userData; // Attach user info to this specific connection
+        console.log(`${userData.name} joined the game server.`);
+    });
     // When a user clicks 'Find Match'
     socket.on('findMatch', () => {
         if (waitingPlayer && waitingPlayer.id !== socket.id) {
@@ -30,6 +33,7 @@ io.on('connection', (socket) => {
             socket.join(roomId);
             opponent.join(roomId);
 
+            
             // Pair them: Player 1 is Blue, Player 2 is Red
             opponent.emit('matchFound', { roomId, role: 1 });
             socket.emit('matchFound', { roomId, role: 2 });
@@ -38,6 +42,14 @@ io.on('connection', (socket) => {
         } else {
             waitingPlayer = socket;
             socket.emit('searching');
+        }
+
+        if (waitingPlayer) {
+             const roomId = `room_${waitingPlayer.id}_${socket.id}`;
+             io.to(roomId).emit('matchFound', { 
+                 role: 2, 
+                 opponentName: waitingPlayer.user.name 
+             });
         }
     });
 
