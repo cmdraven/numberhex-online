@@ -75,6 +75,18 @@
     box-shadow: 0 0 20px rgba(127, 255, 0, 0.4);
 }
 
+#userProfile {
+    z-index: 10000 !important; /* Higher than game canvas */
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+#userProfile:hover { transform: scale(1.05); }
+
+/* The Modal overlay */
+#profileModal {
+    z-index: 20000 !important;
+}
+
 /* Ensure laptop visibility isn't blocked by sidebar */
 @media (min-width: 1024px) {
     #userProfile {
@@ -681,55 +693,7 @@ html,body{
     </div>
 </div>
 
-<div id="modal-backdrop" class="modal-overlay" role="dialog" aria-modal="true">
-    <div id="win-modal" class="modal-content text-center">
-        <button class="modal-close-btn" onclick="closeModal()" aria-label="Close message">&times;</button>
-        <h2 id="modal-title" class="text-3xl font-extrabold mb-4" style="color: var(--accent-blue);">Game Message</h2>
-        <div id="modal-message" class="text-lg text-gray-700 mb-8 font-medium"></div>
-    </div>
-</div>
-
-<div id="profileModal" class="fixed inset-0 bg-black bg-opacity-90 z-[3000] hidden flex items-center justify-center p-4">
-    <div class="bg-[#2A2A2A] p-6 rounded-lg border-2 border-[#7FFF00] w-full max-w-md shadow-[0_0_20px_rgba(127,255,0,0.3)]">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="font-['Bungee_Inline'] text-xl text-[#7FFF00]">PROFILE SETTINGS</h2>
-            <button onclick="toggleProfileModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
-        </div>
-        
-        <div class="space-y-4">
-            <div>
-                <label class="text-[10px] text-gray-400 uppercase tracking-widest block mb-1">Display Name</label>
-                <input type="text" id="editName" class="w-full bg-[#1A1A1A] border border-[#444] rounded p-2 text-white focus:border-[#7FFF00] outline-none">
-            </div>
-            
-            <div>
-                <label class="text-[10px] text-gray-400 uppercase tracking-widest block mb-1">Avatar URL</label>
-                <input type="text" id="editPhoto" class="w-full bg-[#1A1A1A] border border-[#444] rounded p-2 text-white focus:border-[#7FFF00] outline-none" placeholder="Paste image link here...">
-            </div>
-
-            <button onclick="saveProfile()" class="w-full bg-[#7FFF00] text-black font-black py-3 rounded hover:scale-105 transition-transform">SAVE CHANGES</button>
-            
-            <div class="mt-8 p-4 bg-[#1A1A1A] rounded-lg border border-dashed border-[#444]">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-[10px] text-[#7FFF00] font-bold uppercase">💡 Daily Math Tip</span>
-                    <button onclick="showNextTip()" class="text-[10px] text-gray-500 hover:text-white underline">Next Tip</button>
-                </div>
-                <p id="mathTipDisplay" class="text-sm text-gray-300 italic">"The LCM of two prime numbers is always their product."</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="helperModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="helperModalTitle">
-    <div class="modal-content">
-        <button class="modal-close-btn" onclick="hideHelper()" aria-label="Close helper">&times;</button>
-        <h2 id="helperModalTitle" style="border-color: var(--accent-info); color: var(--accent-info);">COMMON MULTIPLE & FACTOR HELPER 💡</h2>
-        <div id="helperContent">
-            </div>
-    </div>
-</div>
-
-<div id="userProfile" class="fixed top-4 right-4 flex items-center gap-3 bg-[#2A2A2A] border-2 border-[#7FFF00] p-1.5 pr-5 rounded-full cursor-pointer shadow-lg hidden">
+<div id="userProfile" class="fixed top-4 right-4 flex items-center gap-3 bg-[#2A2A2A] border-2 border-[#7FFF00] p-1.5 pr-5 rounded-full cursor-pointer shadow-lg z-[9999]">
     <img id="userAvatar" src="" alt="P" class="w-10 h-10 rounded-full border-2 border-[#7FFF00] object-cover">
     <div class="flex flex-col">
         <span id="userName" class="text-[#7FFF00] font-black text-xs tracking-tighter uppercase leading-none">Player</span>
@@ -738,36 +702,39 @@ html,body{
 </div>
 
 <div id="profileModal" class="fixed inset-0 bg-black/90 z-[10000] hidden flex items-center justify-center p-4 backdrop-blur-md">
-    <div class="bg-[#2A2A2A] p-8 rounded-3xl border-2 border-[#7FFF00] w-full max-w-md">
+    <div class="bg-[#2A2A2A] p-8 rounded-3xl border-2 border-[#7FFF00] w-full max-w-md shadow-[0_0_40px_rgba(127,255,0,0.2)]">
         <div class="text-center mb-6">
             <h2 class="font-['Bungee_Inline'] text-3xl text-[#7FFF00]">PLAYER HUB</h2>
-            <p class="text-[9px] text-gray-500 uppercase tracking-widest">Global Ecosystem Stats</p>
+            <p class="text-[9px] text-gray-500 uppercase tracking-widest">Global Ecosystem Statistics</p>
         </div>
 
         <div class="grid grid-cols-3 gap-3 mb-8">
-            <div class="stat-card">
+            <div class="bg-[#1A1A1A] p-3 rounded-xl border border-[#444] text-center">
                 <div id="statsMatches" class="text-[#7FFF00] text-xl font-black">0</div>
                 <div class="text-[8px] text-gray-500 uppercase font-bold">Matches</div>
             </div>
-            <div class="stat-card">
+            <div class="bg-[#1A1A1A] p-3 rounded-xl border border-[#444] text-center">
                 <div id="statsWins" class="text-blue-400 text-xl font-black">0</div>
                 <div class="text-[8px] text-gray-500 uppercase font-bold">Wins</div>
             </div>
-            <div class="stat-card">
-                <div id="statsRank" class="text-purple-400 text-sm font-black pt-1">ROOKIE</div>
-                <div class="text-[8px] text-gray-500 uppercase font-bold">Rank</div>
+            <div class="bg-[#1A1A1A] p-3 rounded-xl border border-[#444] text-center">
+                <div id="statsRank" class="text-purple-400 text-[10px] font-black pt-2">ROOKIE</div>
+                <div class="text-[8px] text-gray-500 uppercase font-bold">Ecosystem Rank</div>
             </div>
         </div>
 
         <div class="space-y-4">
-            <input type="text" id="editName" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00]" placeholder="Username">
-            <input type="text" id="editPhoto" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00]" placeholder="Avatar URL">
-            <button onclick="saveProfile()" class="w-full bg-[#7FFF00] text-black font-black py-4 rounded-xl hover:scale-[1.02] active:scale-95 transition-all">SAVE IDENTITY</button>
-            <button id="logoutBtn" class="w-full text-gray-500 text-xs font-bold hover:text-red-500">Sign Out</button>
-        </div>
-
-        <div class="mt-8 pt-4 border-t border-[#444]">
-            <p id="mathTipDisplay" class="text-[11px] text-gray-400 italic text-center">"Loading math tip..."</p>
+            <div>
+                <label class="text-[9px] text-gray-500 uppercase ml-1 mb-1 block">Custom Username</label>
+                <input type="text" id="editName" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00] transition-all" placeholder="Enter name...">
+            </div>
+            <div>
+                <label class="text-[9px] text-gray-500 uppercase ml-1 mb-1 block">Avatar URL</label>
+                <input type="text" id="editPhoto" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00] transition-all" placeholder="Paste image link...">
+            </div>
+            
+            <button onclick="saveProfile()" class="w-full bg-[#7FFF00] text-black font-black py-4 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg">SAVE IDENTITY</button>
+            <button id="logoutBtn" class="w-full text-gray-500 text-xs font-bold hover:text-red-500 transition-colors pt-2">Sign Out of Ecosystem</button>
         </div>
     </div>
 </div>
@@ -825,6 +792,80 @@ function updateStatsUI(stats) {
     document.getElementById('displayRank').textContent = stats.rank;
 }
 
+
+// 1. Ecosystem Stats Database (Local)
+function getEcosystemStats(uid) {
+    const data = localStorage.getItem(`hex_stats_${uid}`);
+    return data ? JSON.parse(data) : { matches: 0, wins: 0 };
+}
+
+function calculateRank(wins) {
+    if (wins >= 50) return { title: "HEX GOD", color: "#FFD700" };
+    if (wins >= 20) return { title: "MASTER", color: "#A855F7" };
+    if (wins >= 5)  return { title: "SCHOLAR", color: "#60A5FA" };
+    return { title: "ROOKIE", color: "#9CA3AF" };
+}
+
+// 2. Open/Close Modal
+function toggleProfileModal() {
+    const modal = document.getElementById('profileModal');
+    if (modal.classList.contains('hidden')) {
+        const user = auth.currentUser;
+        const stats = getEcosystemStats(user.uid);
+        const rank = calculateRank(stats.wins);
+
+        // Fill Stats
+        document.getElementById('statsMatches').textContent = stats.matches;
+        document.getElementById('statsWins').textContent = stats.wins;
+        document.getElementById('statsRank').textContent = rank.title;
+        document.getElementById('statsRank').style.color = rank.color;
+
+        // Fill Inputs
+        document.getElementById('editName').value = user.displayName || "";
+        document.getElementById('editPhoto').value = user.photoURL || "";
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    } else {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+// 3. Save Custom Identity
+async function saveProfile() {
+    const user = auth.currentUser;
+    const newName = document.getElementById('editName').value;
+    const newPhoto = document.getElementById('editPhoto').value;
+
+    if (user && newName) {
+        try {
+            await user.updateProfile({ displayName: newName, photoURL: newPhoto });
+            
+            // Update UI Header
+            document.getElementById('userName').textContent = newName.split(' ')[0];
+            document.getElementById('userAvatar').src = newPhoto || 'https://via.placeholder.com/40';
+            
+            // Sync with Server
+            socket.emit('authenticate', { uid: user.uid, name: newName, photo: newPhoto });
+            
+            toggleProfileModal();
+            alert("Identity Synced to Ecosystem!");
+        } catch (e) {
+            alert("Save failed: " + e.message);
+        }
+    }
+}
+
+// 4. Update stats when game ends
+function recordGameResult(didWin) {
+    const user = auth.currentUser;
+    if (!user) return;
+    let stats = getEcosystemStats(user.uid);
+    stats.matches++;
+    if (didWin) stats.wins++;
+    localStorage.setItem(`hex_stats_${user.uid}`, JSON.stringify(stats));
+}
 // --- INTEGRATING WITH GAME END ---
 // Call this inside your handleResignation() or winning logic:
 function recordGameEnd(isWin) {
@@ -873,6 +914,84 @@ document.getElementById('userProfile').addEventListener('click', (e) => {
 document.getElementById('logoutBtn').addEventListener('click', () => {
     auth.signOut().then(() => location.reload());
 });
+
+// --- ECOSYSTEM LOGIC ---
+function getStats(uid) {
+    const saved = localStorage.getItem(`numberhex_stats_${uid}`);
+    return saved ? JSON.parse(saved) : { matches: 0, wins: 0, rank: "Rookie" };
+}
+
+function updateStatsUI(stats) {
+    // Dynamic Rank Calculation
+    let rank = "Rookie";
+    if (stats.wins >= 50) rank = "Hex God";
+    else if (stats.wins >= 20) rank = "Master";
+    else if (stats.wins >= 5) rank = "Scholar";
+
+    document.getElementById('statsMatches').textContent = stats.matches;
+    document.getElementById('statsWins').textContent = stats.wins;
+    document.getElementById('statsRank').textContent = rank.toUpperCase();
+    document.getElementById('displayRank').textContent = rank;
+}
+
+// --- MODAL & IDENTITY LOGIC ---
+function toggleProfileModal() {
+    const modal = document.getElementById('profileModal');
+    if (modal.classList.contains('hidden')) {
+        const user = auth.currentUser;
+        if (user) {
+            document.getElementById('editName').value = user.displayName || "";
+            document.getElementById('editPhoto').value = user.photoURL || "";
+            updateStatsUI(getStats(user.uid));
+            modal.classList.remove('hidden');
+        }
+    } else {
+        modal.classList.add('hidden');
+    }
+}
+
+async function saveProfile() {
+    const user = auth.currentUser;
+    const name = document.getElementById('editName').value;
+    const photo = document.getElementById('editPhoto').value;
+    
+    if (user && name) {
+        try {
+            await user.updateProfile({ displayName: name, photoURL: photo });
+            // Update UI
+            document.getElementById('userName').textContent = name.split(' ')[0];
+            document.getElementById('userAvatar').src = photo || 'https://via.placeholder.com/40';
+            // Sync with Server
+            socket.emit('authenticate', { uid: user.uid, name: name, photo: photo });
+            toggleProfileModal();
+            alert("Identity Updated!");
+        } catch (e) {
+            alert("Error updating profile: " + e.message);
+        }
+    }
+}
+
+// Event Listeners
+document.getElementById('userProfile').onclick = (e) => {
+    if (!e.target.closest('#logoutBtn')) toggleProfileModal();
+};
+
+document.getElementById('logoutBtn').onclick = () => {
+    if(confirm("Logout?")) auth.signOut().then(() => location.reload());
+};
+
+
+function recordMatchResult(isWin) {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    let stats = getStats(user.uid);
+    stats.matches++;
+    if (isWin) stats.wins++;
+    
+    localStorage.setItem(`numberhex_stats_${user.uid}`, JSON.stringify(stats));
+    updateStatsUI(stats);
+}
 
 // Handle Login
 // 1. Ensure the listener is assigned to the button ID
