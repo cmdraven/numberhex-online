@@ -64,6 +64,40 @@
   --turn-indicator-2: var(--accent-red);
 }
 
+#userProfile {
+    z-index: 9999 !important;
+    position: fixed !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#userProfile:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(127, 255, 0, 0.4);
+}
+
+/* Ensure laptop visibility isn't blocked by sidebar */
+@media (min-width: 1024px) {
+    #userProfile {
+        top: 25px;
+        right: 25px;
+    }
+}
+
+.stat-card {
+    background: rgba(26, 26, 26, 0.8);
+    border: 1px solid #444;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+/* Ensure laptop users see it clearly on large screens */
+@media (min-width: 1024px) {
+    #userProfile {
+        top: 20px;
+        right: 20px;
+    }
+}
 /* Global Reset & Body - DEFAULT (Desktop Non-Scrolling) */
 *{box-sizing:border-box}
 html,body{
@@ -695,10 +729,47 @@ html,body{
     </div>
 </div>
 
-<div id="userProfile" class="hidden flex items-center gap-3 bg-[#2A2A2A] border border-[#7FFF00] p-1 pr-4 rounded-full">
-    <img id="userAvatar" src="" alt="Avatar" class="w-8 h-8 rounded-full border border-[#7FFF00]">
-    <span id="userName" class="text-[#7FFF00] font-bold text-sm tracking-tight uppercase">Guest</span>
-    <button id="logoutBtn" class="text-gray-400 hover:text-red-500 text-xs font-bold ml-2">Logout</button>
+<div id="userProfile" class="fixed top-4 right-4 flex items-center gap-3 bg-[#2A2A2A] border-2 border-[#7FFF00] p-1.5 pr-5 rounded-full cursor-pointer shadow-lg hidden">
+    <img id="userAvatar" src="" alt="P" class="w-10 h-10 rounded-full border-2 border-[#7FFF00] object-cover">
+    <div class="flex flex-col">
+        <span id="userName" class="text-[#7FFF00] font-black text-xs tracking-tighter uppercase leading-none">Player</span>
+        <span id="displayRank" class="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Rookie</span>
+    </div>
+</div>
+
+<div id="profileModal" class="fixed inset-0 bg-black/90 z-[10000] hidden flex items-center justify-center p-4 backdrop-blur-md">
+    <div class="bg-[#2A2A2A] p-8 rounded-3xl border-2 border-[#7FFF00] w-full max-w-md">
+        <div class="text-center mb-6">
+            <h2 class="font-['Bungee_Inline'] text-3xl text-[#7FFF00]">PLAYER HUB</h2>
+            <p class="text-[9px] text-gray-500 uppercase tracking-widest">Global Ecosystem Stats</p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-8">
+            <div class="stat-card">
+                <div id="statsMatches" class="text-[#7FFF00] text-xl font-black">0</div>
+                <div class="text-[8px] text-gray-500 uppercase font-bold">Matches</div>
+            </div>
+            <div class="stat-card">
+                <div id="statsWins" class="text-blue-400 text-xl font-black">0</div>
+                <div class="text-[8px] text-gray-500 uppercase font-bold">Wins</div>
+            </div>
+            <div class="stat-card">
+                <div id="statsRank" class="text-purple-400 text-sm font-black pt-1">ROOKIE</div>
+                <div class="text-[8px] text-gray-500 uppercase font-bold">Rank</div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <input type="text" id="editName" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00]" placeholder="Username">
+            <input type="text" id="editPhoto" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00]" placeholder="Avatar URL">
+            <button onclick="saveProfile()" class="w-full bg-[#7FFF00] text-black font-black py-4 rounded-xl hover:scale-[1.02] active:scale-95 transition-all">SAVE IDENTITY</button>
+            <button id="logoutBtn" class="w-full text-gray-500 text-xs font-bold hover:text-red-500">Sign Out</button>
+        </div>
+
+        <div class="mt-8 pt-4 border-t border-[#444]">
+            <p id="mathTipDisplay" class="text-[11px] text-gray-400 italic text-center">"Loading math tip..."</p>
+        </div>
+    </div>
 </div>
 
 <div id="loginOverlay" class="fixed inset-0 bg-black bg-opacity-90 z-[2000] flex flex-center items-center justify-center">
@@ -729,6 +800,79 @@ const auth = firebase.auth();
 
 const loginOverlay = document.getElementById('loginOverlay');
 const googleBtn = document.getElementById('googleLoginBtn');
+
+// --- ECOSYSTEM STATS LOGIC ---
+function getStats(uid) {
+    const saved = localStorage.getItem(`numberhex_stats_${uid}`);
+    return saved ? JSON.parse(saved) : { matches: 0, wins: 0, rank: "Rookie" };
+}
+
+function saveStats(uid, stats) {
+    // Determine Rank
+    if (stats.wins > 50) stats.rank = "Math God";
+    else if (stats.wins > 20) stats.rank = "Hex Master";
+    else if (stats.wins > 5) stats.rank = "Scholar";
+    else stats.rank = "Rookie";
+
+    localStorage.setItem(`numberhex_stats_${uid}`, JSON.stringify(stats));
+    updateStatsUI(stats);
+}
+
+function updateStatsUI(stats) {
+    document.getElementById('statsMatches').textContent = stats.matches;
+    document.getElementById('statsWins').textContent = stats.wins;
+    document.getElementById('statsRank').textContent = stats.rank.toUpperCase();
+    document.getElementById('displayRank').textContent = stats.rank;
+}
+
+// --- INTEGRATING WITH GAME END ---
+// Call this inside your handleResignation() or winning logic:
+function recordGameEnd(isWin) {
+    const user = auth.currentUser;
+    if (!user) return;
+    let stats = getStats(user.uid);
+    stats.matches++;
+    if (isWin) stats.wins++;
+    saveStats(user.uid, stats);
+}
+
+// --- PROFILE ACTIONS ---
+function toggleProfileModal() {
+    const modal = document.getElementById('profileModal');
+    if (modal.classList.contains('hidden')) {
+        const user = auth.currentUser;
+        document.getElementById('editName').value = user.displayName || "";
+        document.getElementById('editPhoto').value = user.photoURL || "";
+        updateStatsUI(getStats(user.uid));
+        showNextTip(); 
+        modal.classList.remove('hidden');
+    } else {
+        modal.classList.add('hidden');
+    }
+}
+
+async function saveProfile() {
+    const user = auth.currentUser;
+    const name = document.getElementById('editName').value;
+    const photo = document.getElementById('editPhoto').value;
+    
+    if (user) {
+        await user.updateProfile({ displayName: name, photoURL: photo });
+        document.getElementById('userName').textContent = name.split(' ')[0];
+        document.getElementById('userAvatar').src = photo || 'https://via.placeholder.com/40';
+        socket.emit('authenticate', { uid: user.uid, name: name, photo: photo });
+        toggleProfileModal();
+    }
+}
+
+// Event Listeners
+document.getElementById('userProfile').addEventListener('click', (e) => {
+    if (!e.target.closest('#logoutBtn')) toggleProfileModal();
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    auth.signOut().then(() => location.reload());
+});
 
 // Handle Login
 // 1. Ensure the listener is assigned to the button ID
@@ -764,6 +908,39 @@ function toggleProfileModal() {
     }
 }
 
+
+// Initialize or load stats
+function getPlayerStats(uid) {
+    const stats = localStorage.getItem(`stats_${uid}`);
+    return stats ? JSON.parse(stats) : { matches: 0, wins: 0, losses: 0 };
+}
+
+function updatePlayerStats(uid, result) {
+    let stats = getPlayerStats(uid);
+    stats.matches += 1;
+    if (result === 'win') stats.wins += 1;
+    if (result === 'loss') stats.losses += 1;
+    localStorage.setItem(`stats_${uid}`, JSON.stringify(stats));
+    refreshStatsUI(stats);
+}
+
+function refreshStatsUI(stats) {
+    document.getElementById('statsMatches').textContent = stats.matches;
+    document.getElementById('statsWins').textContent = stats.wins;
+    
+    // Simple Rank Logic
+    let rank = "Rookie";
+    if (stats.wins > 5) rank = "Scholar";
+    if (stats.wins > 15) rank = "Math Lord";
+    if (stats.wins > 50) rank = "Hex Master";
+    document.getElementById('statsRank').textContent = rank;
+}
+
+// Trigger stats update when the game ends
+// Add this inside your handleResignation or showWinModal functions:
+// if (isWinner) updatePlayerStats(auth.currentUser.uid, 'win');
+// else updatePlayerStats(auth.currentUser.uid, 'loss');
+
 async function saveProfile() {
     const user = firebase.auth().currentUser;
     const newName = document.getElementById('editName').value;
@@ -781,7 +958,14 @@ async function saveProfile() {
             document.getElementById('userAvatar').src = newPhoto || 'https://via.placeholder.com/40';
             
             // Sync with game server
-            socket.emit('authenticate', { uid: user.uid, name: newName, photo: newPhoto });
+          // index.html
+            const myStats = getPlayerStats(user.uid);
+            socket.emit('authenticate', {
+                uid: user.uid,
+                name: user.displayName,
+                photo: user.photoURL,
+                wins: myStats.wins // Send your strength to the ecosystem
+            });
             
             toggleProfileModal();
             alert("Profile updated successfully!");
