@@ -114,6 +114,17 @@
 }
 /* Global Reset & Body - ARCADE STYLE */
 *{box-sizing:border-box}
+
+/* Custom Cursor - Large and Very Visible */
+html, body {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="%2300FF41" opacity="0.9" stroke="%23FFFFFF" stroke-width="3"/><circle cx="24" cy="24" r="6" fill="%23FFFFFF"/><circle cx="24" cy="24" r="2" fill="%23000000"/></svg>') 24 24, auto;
+}
+
+/* Make cursor more visible on interactive elements */
+button, .btn, .ghost, a, [role="button"] {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="%2300FF41" opacity="1" stroke="%23FFFFFF" stroke-width="4"/><circle cx="28" cy="28" r="8" fill="%23FFFFFF"/><circle cx="28" cy="28" r="3" fill="%23000000"/></svg>') 28 28, pointer;
+}
+
 html,body{
     height:100vh;
     margin:0;
@@ -122,6 +133,84 @@ html,body{
     color:var(--text-primary);
     overflow: hidden;
     position: relative;
+}
+
+/* Click/Tap Feedback - Mobile Responsive */
+.click-feedback {
+    position: fixed;
+    width: 80px;
+    height: 80px;
+    border: 4px solid var(--accent-blue);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+    animation: clickRipple 0.6s ease-out;
+    box-shadow: 
+        0 0 20px rgba(0, 255, 65, 0.8),
+        0 0 40px rgba(0, 255, 65, 0.4),
+        inset 0 0 20px rgba(0, 255, 65, 0.2);
+}
+
+@media (max-width: 768px) {
+    .click-feedback {
+        width: 100px;
+        height: 100px;
+        border-width: 5px;
+    }
+}
+
+@keyframes clickRipple {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+/* Landscape Orientation Prompt */
+#landscapePrompt {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 999999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: var(--accent-blue);
+    font-family: var(--font-title);
+    text-align: center;
+    padding: 20px;
+}
+
+#landscapePrompt.active {
+    display: flex;
+}
+
+#landscapePrompt h2 {
+    font-size: clamp(24px, 6vw, 48px);
+    margin-bottom: 20px;
+    color: var(--accent-blue);
+    text-shadow: 0 0 10px var(--accent-blue);
+}
+
+#landscapePrompt .rotate-icon {
+    font-size: 80px;
+    margin: 20px 0;
+    animation: rotateDevice 2s ease-in-out infinite;
+}
+
+@keyframes rotateDevice {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(90deg); }
 }
 
 /* Animated background grid effect */
@@ -159,62 +248,14 @@ body::after {
     overflow: hidden;
 }
 
-/* Rocket Decorations */
+/* Rocket Decorations - Random Motion via JavaScript */
 .rocket {
     position: fixed;
     font-size: 30px;
-    opacity: 0.3;
+    opacity: 0;
     pointer-events: none;
     z-index: 1;
-    animation: rocketFly 15s linear infinite;
-}
-
-.rocket:nth-child(1) { 
-    left: -50px; 
-    top: 10%;
-    animation-delay: 0s;
-    animation-duration: 12s;
-}
-.rocket:nth-child(2) { 
-    left: -50px; 
-    top: 30%;
-    animation-delay: 3s;
-    animation-duration: 14s;
-}
-.rocket:nth-child(3) { 
-    left: -50px; 
-    top: 50%;
-    animation-delay: 6s;
-    animation-duration: 13s;
-}
-.rocket:nth-child(4) { 
-    left: -50px; 
-    top: 70%;
-    animation-delay: 9s;
-    animation-duration: 15s;
-}
-.rocket:nth-child(5) { 
-    left: -50px; 
-    top: 85%;
-    animation-delay: 2s;
-    animation-duration: 11s;
-}
-
-@keyframes rocketFly {
-    0% {
-        transform: translateX(0) translateY(0) rotate(0deg);
-        opacity: 0;
-    }
-    10% {
-        opacity: 0.3;
-    }
-    90% {
-        opacity: 0.3;
-    }
-    100% {
-        transform: translateX(calc(100vw + 100px)) translateY(-50px) rotate(15deg);
-        opacity: 0;
-    }
+    will-change: transform;
 }
 
 /* Floating Stars/Decorations */
@@ -1333,6 +1374,15 @@ body::after {
         <button id="googleLoginBtn" class="btn w-full mb-4">Sign in with Google</button>
         <p class="text-xs text-gray-400">Join to track your wins and rank up!</p>
     </div>
+</div>
+
+<!-- Landscape Orientation Prompt -->
+<div id="landscapePrompt">
+    <div class="rotate-icon">📱</div>
+    <h2>ROTATE TO LANDSCAPE</h2>
+    <p style="font-size: 18px; margin-top: 20px; color: var(--text-secondary);">
+        For the best gaming experience,<br>please rotate your device to landscape mode
+    </p>
 </div>
 
 <!-- Win/Error Modal -->
@@ -3319,7 +3369,103 @@ modeSelect.addEventListener('change', (e)=>{
     init(); 
 });
 
-window.addEventListener('load', load); 
+// Random Rocket Motion System
+function initRandomRockets() {
+    const rockets = document.querySelectorAll('.rocket');
+    
+    rockets.forEach((rocket, index) => {
+        // Random starting position
+        const startX = Math.random() * window.innerWidth;
+        const startY = Math.random() * window.innerHeight;
+        
+        // Random circular/curved path parameters
+        const centerX = Math.random() * window.innerWidth;
+        const centerY = Math.random() * window.innerHeight;
+        const radius = 200 + Math.random() * 300;
+        const speed = 0.005 + Math.random() * 0.01;
+        const rotationSpeed = (Math.random() - 0.5) * 0.02;
+        
+        let angle = Math.random() * Math.PI * 2;
+        let rotation = Math.random() * 360;
+        
+        rocket.style.left = startX + 'px';
+        rocket.style.top = startY + 'px';
+        rocket.style.opacity = '0.3';
+        
+        function animateRocket() {
+            // Circular/curved motion
+            angle += speed;
+            rotation += rotationSpeed * 180 / Math.PI;
+            
+            // Add some random drift
+            const driftX = (Math.random() - 0.5) * 2;
+            const driftY = (Math.random() - 0.5) * 2;
+            
+            const x = centerX + Math.cos(angle) * radius + driftX;
+            const y = centerY + Math.sin(angle) * radius + driftY;
+            
+            // Wrap around screen edges
+            const wrappedX = ((x % window.innerWidth) + window.innerWidth) % window.innerWidth;
+            const wrappedY = ((y % window.innerHeight) + window.innerHeight) % window.innerHeight;
+            
+            rocket.style.transform = `translate(${wrappedX - startX}px, ${wrappedY - startY}px) rotate(${rotation}deg)`;
+            
+            requestAnimationFrame(animateRocket);
+        }
+        
+        // Start animation with random delay
+        setTimeout(() => {
+            animateRocket();
+        }, Math.random() * 2000);
+    });
+}
+
+// Click/Tap Feedback System
+function createClickFeedback(x, y) {
+    const feedback = document.createElement('div');
+    feedback.className = 'click-feedback';
+    feedback.style.left = x + 'px';
+    feedback.style.top = y + 'px';
+    document.body.appendChild(feedback);
+    
+    setTimeout(() => {
+        feedback.remove();
+    }, 600);
+}
+
+// Add click/tap listeners
+document.addEventListener('click', (e) => {
+    createClickFeedback(e.clientX, e.clientY);
+});
+
+document.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    createClickFeedback(touch.clientX, touch.clientY);
+}, { passive: true });
+
+// Landscape Orientation Detection
+function checkOrientation() {
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile && isPortrait) {
+        document.getElementById('landscapePrompt').classList.add('active');
+    } else {
+        document.getElementById('landscapePrompt').classList.remove('active');
+    }
+}
+
+// Check orientation on load and resize
+window.addEventListener('load', () => {
+    load();
+    initRandomRockets();
+    checkOrientation();
+});
+
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', () => {
+    setTimeout(checkOrientation, 100);
+}); 
 </script>
 </body>
 </html>
