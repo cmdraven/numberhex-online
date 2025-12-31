@@ -1176,22 +1176,10 @@ const HEX_W = HEX_R * Math.sqrt(3);
 
 // 2. SOCKET INITIALIZATION
 let socket;
-// Wait for socket.io to be available before initializing
-if (typeof io !== 'undefined') {
-    try {
-        socket = io(); // This will work perfectly on Render
-        console.log('Socket.io connected');
-    } catch (e) {
-        console.error("Socket initialization error:", e);
-    }
-} else {
-    console.warn("Socket.io not loaded, playing offline mode");
-    // Create a dummy socket object to prevent errors
-    socket = {
-        emit: () => {},
-        on: () => {},
-        to: () => ({ emit: () => {} })
-    };
+try {
+    socket = io(); // This will work perfectly on Render
+} catch (e) {
+    console.error("Socket not found, playing offline.");
 }
 
 // 3. GAME STATE
@@ -1215,14 +1203,9 @@ const HEX_FONT = `900 ${HEX_FONT_SIZE}px 'Bungee Inline', sans-serif`;
 const X_MARGIN = HEX_R * 1.5; 
 const Y_MARGIN = HEX_R * 1.5; 
 
-// Safe DOM element access with error handling
 const outputCanvas = document.getElementById('output');
-if (!outputCanvas) {
-    console.error('Canvas element not found!');
-}
-const ctx = outputCanvas ? outputCanvas.getContext("2d") : null;
-const dieAEl = document.getElementById('dieA');
-const dieBEl = document.getElementById('dieB');
+const ctx = outputCanvas.getContext("2d");
+const dieAEl = document.getElementById('dieA'), dieBEl = document.getElementById('dieB');
 const turnLabel = document.getElementById('turnLabel');
 const statusLogEl = document.getElementById('statusLog');
 const modeSelect = document.getElementById('modeSelect'); 
@@ -1238,11 +1221,6 @@ const lcmHelperBtn = document.getElementById('lcmHelperBtn');
 const helperModal = document.getElementById('helperModal');
 const helperContentEl = document.getElementById('helperContent');
 
-// Validate critical elements exist
-if (!outputCanvas || !ctx || !dieAEl || !dieBEl) {
-    console.error('Critical game elements missing! Canvas:', !!outputCanvas, 'DieA:', !!dieAEl, 'DieB:', !!dieBEl);
-}
-
 
 
 let boardValues = []; 
@@ -1255,20 +1233,14 @@ let active = true;
 let occupiedCount = 0; 
 let lastHoveredValid = [-1, -1]; 
 
-const matchBtn = document.getElementById('matchBtn');
-if (matchBtn) {
-    matchBtn.addEventListener('click', () => {
-        if (socket && socket.emit) {
-            socket.emit('findMatch');
-        }
-        matchBtn.textContent = "SEARCHING...";
-        // Note: isMultiplayer becomes true once 'matchFound' is received
-    });
-}
+document.getElementById('matchBtn').addEventListener('click', () => {
+    socket.emit('findMatch');
+    document.getElementById('matchBtn').textContent = "SEARCHING...";
+    // Note: isMultiplayer becomes true once 'matchFound' is received
+});
 
 // --- UPDATED MATCHMAKING LISTENER ---
-if (socket && socket.on) {
-    socket.on('matchFound', (data) => {
+socket.on('matchFound', (data) => {
     currentRoom = data.roomId;
     myRole = data.role;
     isMultiplayer = true;
@@ -1477,57 +1449,6 @@ socket.on('opponentMove', (data) => {
 // --- Game Constants and State ---
 
 
-function init() {
-
-    document.getElementById('newBtn').addEventListener('click', () => {
-    if (isMultiplayer) {
-        if (confirm("This will leave your current match. Are you sure?")) {
-            // Logic to leave room and reset
-            location.reload(); 
-        }
-    } else {
-        updateMenuButtons(); // Switch to "New Game"
-        init();
-    }
-});
-    // Reset core game state
-    board = [];
-    boardValues = [];
-    for (let i = 0; i < SIZE; i++) {
-        board[i] = [];
-        boardValues[i] = [];
-        for (let j = 0; j < SIZE; j++) {
-            board[i][j] = -1;
-            boardValues[i][j] = Math.floor(Math.random() * 90) + 10;
-        }
-    }
-    
-    sel = [-1, -1];
-    current = 1;
-    moveHistory = [];
-    occupiedCount = 0;
-    active = true; 
-    
-    // UI Resets
-    if (mainModalBackdrop) {
-        mainModalBackdrop.classList.add('hidden');
-    }
-    if (moveLogEl) {
-        moveLogEl.innerHTML = '';
-    }
-    log("🎮 New Game Started! Blue goes first.");
-    
-    updateTurnLabel();
-    renderSidebar();
-    draw();
-
-    // Trigger first turn
-    startTurn();
-}
-
-
-
-
 // Utility to get a CSS variable value
 function getCssVar(name) {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -1548,11 +1469,7 @@ function soundBotThink() { tone(150, 0.1, 0.08); setTimeout(() => tone(180, 0.1,
 
 
 function log(msg){ 
-    if (statusLogEl) {
-        statusLogEl.textContent = msg; 
-    } else {
-        console.log(msg);
-    }
+    statusLogEl.textContent = msg; 
 }
 function isIntClose(x){ const eps = 1e-9; return Math.abs(Math.round(x) - x) < eps; }
 
@@ -1568,10 +1485,6 @@ function getCanvasCenter(x, y) {
  * MODIFIED: On small screens, prioritizes filling width and allows vertical overflow.
  */
 function calculateCanvasSize() {
-    if (!outputCanvas) {
-        console.error('Cannot calculate canvas size: canvas not available');
-        return;
-    }
     const [maxXCenter, maxYCenter] = getCanvasCenter(SIZE - 1, SIZE - 1);
     const padding = HEX_R * 0.5; // Use smaller padding to maximize space
     
@@ -1814,10 +1727,6 @@ function getSel(e) {
 }
 
 function draw() {
-    if (!ctx || !outputCanvas) {
-        console.error('Cannot draw: canvas or context not available');
-        return;
-    }
     ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
 
     const ACCENT_BLUE = getCssVar('--accent-blue');
@@ -1943,21 +1852,11 @@ function getFactors(n) {
 // --- NEW SIDEBAR RENDER FUNCTION ---
 function renderSidebar() {
     // 1. Update Game Stats
-    if (sidebarModeEl) {
-        sidebarModeEl.textContent = mode === 'single' ? '🤖 SINGLE PLAYER' : '👥 MULTI PLAYER';
-    }
-    if (sidebarMovesEl) {
-        sidebarMovesEl.textContent = moveHistory.length;
-    }
-    if (sidebarOccupiedEl) {
-        sidebarOccupiedEl.textContent = `${occupiedCount} / ${TOTAL_CELLS}`;
-    }
+    sidebarModeEl.textContent = mode === 'single' ? '🤖 SINGLE PLAYER' : '👥 MULTI PLAYER';
+    sidebarMovesEl.textContent = moveHistory.length;
+    sidebarOccupiedEl.textContent = `${occupiedCount} / ${TOTAL_CELLS}`;
 
     // 2. Update Move Log
-    if (!moveLogEl) {
-        console.error('Move log element not found');
-        return;
-    }
     moveLogEl.innerHTML = ''; // Clear existing log
     let moveCounter = 1;
     
@@ -2153,28 +2052,11 @@ function startTurn() {
     // Stop if it's multiplayer and not yo
 
 
-// Ensure diceSynced listener updates the UI correctly
-socket.on('diceSynced', (data) => {
-    dieA = data.dice[0];
-    dieB = data.dice[1];
-    dieAEl.textContent = dieA;
-    dieBEl.textContent = dieB;
-    dieAEl.classList.add('ready');
-    dieBEl.classList.add('ready');
-    
-    processTurnStart(); // Re-calculate valid moves for the local player
-});
 
 function showWinModal(title, reason) {
     const modal = document.getElementById('modal-backdrop');
     const titleEl = document.getElementById('modal-title');
     const messageEl = document.getElementById('modal-message');
-
-    if (!modal || !titleEl || !messageEl) {
-        console.error('Modal elements not found');
-        alert(title + ': ' + reason);
-        return;
-    }
 
     titleEl.textContent = title;
     messageEl.textContent = reason;
@@ -2187,10 +2069,6 @@ function showWinModal(title, reason) {
 }
 
 function processTurnStart() {
-    if (!dieAEl || !dieBEl) {
-        console.error('Dice elements not found');
-        return;
-    }
 
     dieAEl.textContent = dieA;
     dieBEl.textContent = dieB;
@@ -2206,7 +2084,6 @@ function processTurnStart() {
         dieBEl.classList.add('ready');
     }, 10);
 
-    updateValidMoves();
     draw();
 
     // Check if any moves are valid for the current dice roll
@@ -2321,22 +2198,13 @@ function showCommonMultipleError(x, y) {
 
 
 function showCustomMessage(title, message, isGameOver = false) {
-    if (!mainModalBackdrop || !mainModalContent) {
-        console.error('Modal elements not found');
-        alert(title + ': ' + message);
-        return;
-    }
     const ACCENT_BLUE = getCssVar('--accent-blue');
     mainModalContent.classList.remove('error-modal');
     mainModalContent.style.borderColor = isGameOver ? ACCENT_BLUE : getCssVar('--muted');
 
-    const titleEl = document.getElementById('modal-title');
-    const messageEl = document.getElementById('modal-message');
-    if (titleEl && messageEl) {
-        titleEl.textContent = title;
-        titleEl.style.color = isGameOver ? ACCENT_BLUE : getCssVar('--text-dark');
-        messageEl.innerHTML = `<p style="color: ${getCssVar('--text-primary')}; font-size: 1.1em; font-weight: 600;">${message}</p>`;
-    }
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-title').style.color = isGameOver ? ACCENT_BLUE : getCssVar('--text-dark');
+    document.getElementById('modal-message').innerHTML = `<p style="color: ${getCssVar('--text-primary')}; font-size: 1.1em; font-weight: 600;">${message}</p>`;
     mainModalBackdrop.classList.add('active');
 }
 
@@ -2371,11 +2239,9 @@ function announceDraw(){
 }
 
 function closeModal() {
-    if (mainModalBackdrop) {
-        mainModalBackdrop.classList.remove('active');
-        // If the game was over, clicking the backdrop should trigger init
-        if (!active && moveHistory.length > 0) init();
-    }
+    mainModalBackdrop.classList.remove('active');
+    // If the game was over, clicking the backdrop should trigger init
+    if (!active && moveHistory.length > 0) init(); 
 }
 
 function showInstructions() {
@@ -2391,11 +2257,6 @@ function hideInstructions() {
 // --- NEW HELPER MODAL FUNCTIONS ---
 function showHelper() {
     soundClick();
-    
-    if (!helperModal || !helperContentEl) {
-        console.error('Helper modal elements not found');
-        return;
-    }
     
     if (dieA === null || dieB === null) {
         showCustomMessage('NO DICE ROLLED', 'Roll the dice first to use the Common Multiple Helper.');
@@ -2527,10 +2388,6 @@ function showFactorDetails(val, dieA, dieB) {
 
 function updateTurnLabel() {
     const label = document.getElementById('turnLabel');
-    if (!label) {
-        console.error('Turn label element not found');
-        return;
-    }
     const color = (current === 1) ? 'var(--accent-blue)' : 'var(--accent-red)';
     const name = (current === 1) ? 'BLUE' : 'RED';
     
@@ -2561,11 +2418,6 @@ function initBoardData() {
 }
 
 function init(){
-    if (!outputCanvas || !ctx) {
-        console.error('Cannot initialize: canvas not available');
-        return;
-    }
-    
     soundNewGame();
     initBoardData();
     moveHistory = [];
@@ -2579,14 +2431,8 @@ function init(){
     // Calculate size immediately to fit screen
     calculateCanvasSize(); 
 
-    if (dieAEl) {
-        dieAEl.textContent = '-';
-        dieAEl.classList.add('ready');
-    }
-    if (dieBEl) {
-        dieBEl.textContent = '-';
-        dieBEl.classList.add('ready');
-    }
+    dieAEl.textContent = '-'; dieBEl.textContent = '-';
+    dieAEl.classList.add('ready'); dieBEl.classList.add('ready');
     
     log('GAME STARTED! Blue rolls first.');
     
@@ -2597,23 +2443,15 @@ function init(){
 }
 
 function load() {
-    if (!modeSelect) {
-        console.error('Mode select not found');
-        return;
-    }
     mode = modeSelect.value;
-    const option = modeSelect.querySelector(`option[value="${mode}"]`);
-    if (option) {
-        option.selected = true;
-    }
+    modeSelect.querySelector(`option[value="${mode}"]`).selected = true;
     init();
 }
 
 
 // --- Event Listeners ---
-if (outputCanvas) {
-    outputCanvas.addEventListener('pointerdown', mouseDown);
-    outputCanvas.addEventListener('pointermove', (e) => {
+outputCanvas.addEventListener('pointerdown', mouseDown);
+outputCanvas.addEventListener('pointermove', (e) => {
     if (active) {
         let event = e.touches ? e.touches[0] : e;
         getSel(event);
@@ -2631,14 +2469,14 @@ if (outputCanvas) {
 
         draw();
     }
-    });
-    
-    outputCanvas.addEventListener('pointerleave', () => { 
-        sel = [-1, -1]; 
-        lastHoveredValid = [-1, -1]; 
-        draw(); 
-    });
-}
+}); 
+
+
+outputCanvas.addEventListener('pointerleave', () => { 
+    sel = [-1, -1]; 
+    lastHoveredValid = [-1, -1]; 
+    draw(); 
+});
 
 window.addEventListener('resize', () => { 
     // Recalculate size on window resize (especially helpful for mobile orientation change)
@@ -2728,50 +2566,33 @@ function updateMenuButtons() {
         newBtn.classList.remove('bg-red-600');
     }
 }
-const howToPlayBtn = document.getElementById('howToPlayBtn');
-if (howToPlayBtn) {
-    howToPlayBtn.addEventListener('click', showInstructions);
-}
-if (lcmHelperBtn) {
-    lcmHelperBtn.addEventListener('click', showHelper); // NEW HELPER BUTTON LISTENER
-}
+document.getElementById('howToPlayBtn').addEventListener('click', showInstructions);
+lcmHelperBtn.addEventListener('click', showHelper); // NEW HELPER BUTTON LISTENER
 
 // Close modals when clicking outside or on the close button
-const instructionsModal = document.getElementById('instructionsModal');
-if (instructionsModal) {
-    instructionsModal.addEventListener('click', (e) => {
-        if (e.target.id === 'instructionsModal' || e.target.classList.contains('modal-close-btn')) {
-            hideInstructions();
-        }
-    });
-}
-if (mainModalBackdrop) {
-    mainModalBackdrop.addEventListener('click', (e) => {
-        if (e.target.id === 'modal-backdrop' || e.target.classList.contains('modal-close-btn')) {
-            closeModal();
-        }
-    });
-}
-if (helperModal) {
-    helperModal.addEventListener('click', (e) => { // NEW HELPER MODAL LISTENER
-        if (e.target.id === 'helperModal' || e.target.classList.contains('modal-close-btn')) {
-            hideHelper();
-        }
-    });
-}
+document.getElementById('instructionsModal').addEventListener('click', (e) => {
+    if (e.target.id === 'instructionsModal' || e.target.classList.contains('modal-close-btn')) {
+        hideInstructions();
+    }
+});
+document.getElementById('modal-backdrop').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-backdrop' || e.target.classList.contains('modal-close-btn')) {
+        closeModal();
+    }
+});
+document.getElementById('helperModal').addEventListener('click', (e) => { // NEW HELPER MODAL LISTENER
+    if (e.target.id === 'helperModal' || e.target.classList.contains('modal-close-btn')) {
+        hideHelper();
+    }
+});
 
-if (modeSelect) {
-    modeSelect.addEventListener('change', (e)=>{ 
-        soundClick();
-        mode = e.target.value; 
-        init(); 
-    });
-}
+modeSelect.addEventListener('change', (e)=>{ 
+    soundClick();
+    mode = e.target.value; 
+    init(); 
+});
 
-window.addEventListener('load', () => {
-    // Wait a bit to ensure all DOM elements are ready
-    setTimeout(load, 100);
-}); 
+window.addEventListener('load', load); 
 </script>
 </body>
 </html>
