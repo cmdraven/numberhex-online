@@ -747,6 +747,23 @@ html,body{
     </div>
 </div>
 
+<!-- Win/Error Modal -->
+<div id="modal-backdrop" class="modal-overlay">
+    <div id="win-modal" class="modal-content">
+        <button class="modal-close-btn" onclick="closeModal()" aria-label="Close modal">&times;</button>
+        <h2 id="modal-title">GAME OVER</h2>
+        <div id="modal-message">Game has ended.</div>
+    </div>
+</div>
+
+<!-- Helper Modal -->
+<div id="helperModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close-btn" onclick="hideHelper()" aria-label="Close helper">&times;</button>
+        <h2>COMMON MULTIPLE HELPER 💡</h2>
+        <div id="helperContent"></div>
+    </div>
+</div>
 
 <script>
 
@@ -1159,10 +1176,22 @@ const HEX_W = HEX_R * Math.sqrt(3);
 
 // 2. SOCKET INITIALIZATION
 let socket;
-try {
-    socket = io(); // This will work perfectly on Render
-} catch (e) {
-    console.error("Socket not found, playing offline.");
+// Wait for socket.io to be available before initializing
+if (typeof io !== 'undefined') {
+    try {
+        socket = io(); // This will work perfectly on Render
+        console.log('Socket.io connected');
+    } catch (e) {
+        console.error("Socket initialization error:", e);
+    }
+} else {
+    console.warn("Socket.io not loaded, playing offline mode");
+    // Create a dummy socket object to prevent errors
+    socket = {
+        emit: () => {},
+        on: () => {},
+        to: () => ({ emit: () => {} })
+    };
 }
 
 // 3. GAME STATE
@@ -1186,9 +1215,14 @@ const HEX_FONT = `900 ${HEX_FONT_SIZE}px 'Bungee Inline', sans-serif`;
 const X_MARGIN = HEX_R * 1.5; 
 const Y_MARGIN = HEX_R * 1.5; 
 
+// Safe DOM element access with error handling
 const outputCanvas = document.getElementById('output');
-const ctx = outputCanvas.getContext("2d");
-const dieAEl = document.getElementById('dieA'), dieBEl = document.getElementById('dieB');
+if (!outputCanvas) {
+    console.error('Canvas element not found!');
+}
+const ctx = outputCanvas ? outputCanvas.getContext("2d") : null;
+const dieAEl = document.getElementById('dieA');
+const dieBEl = document.getElementById('dieB');
 const turnLabel = document.getElementById('turnLabel');
 const statusLogEl = document.getElementById('statusLog');
 const modeSelect = document.getElementById('modeSelect'); 
@@ -1204,6 +1238,11 @@ const lcmHelperBtn = document.getElementById('lcmHelperBtn');
 const helperModal = document.getElementById('helperModal');
 const helperContentEl = document.getElementById('helperContent');
 
+// Validate critical elements exist
+if (!outputCanvas || !ctx || !dieAEl || !dieBEl) {
+    console.error('Critical game elements missing! Canvas:', !!outputCanvas, 'DieA:', !!dieAEl, 'DieB:', !!dieBEl);
+}
+
 
 
 let boardValues = []; 
@@ -1216,14 +1255,20 @@ let active = true;
 let occupiedCount = 0; 
 let lastHoveredValid = [-1, -1]; 
 
-document.getElementById('matchBtn').addEventListener('click', () => {
-    socket.emit('findMatch');
-    document.getElementById('matchBtn').textContent = "SEARCHING...";
-    // Note: isMultiplayer becomes true once 'matchFound' is received
-});
+const matchBtn = document.getElementById('matchBtn');
+if (matchBtn) {
+    matchBtn.addEventListener('click', () => {
+        if (socket && socket.emit) {
+            socket.emit('findMatch');
+        }
+        matchBtn.textContent = "SEARCHING...";
+        // Note: isMultiplayer becomes true once 'matchFound' is received
+    });
+}
 
 // --- UPDATED MATCHMAKING LISTENER ---
-socket.on('matchFound', (data) => {
+if (socket && socket.on) {
+    socket.on('matchFound', (data) => {
     currentRoom = data.roomId;
     myRole = data.role;
     isMultiplayer = true;
@@ -1464,8 +1509,12 @@ function init() {
     active = true; 
     
     // UI Resets
-    mainModalBackdrop.classList.add('hidden');
-    moveLogEl.innerHTML = '';
+    if (mainModalBackdrop) {
+        mainModalBackdrop.classList.add('hidden');
+    }
+    if (moveLogEl) {
+        moveLogEl.innerHTML = '';
+    }
     log("🎮 New Game Started! Blue goes first.");
     
     updateTurnLabel();
@@ -1499,7 +1548,11 @@ function soundBotThink() { tone(150, 0.1, 0.08); setTimeout(() => tone(180, 0.1,
 
 
 function log(msg){ 
-    statusLogEl.textContent = msg; 
+    if (statusLogEl) {
+        statusLogEl.textContent = msg; 
+    } else {
+        console.log(msg);
+    }
 }
 function isIntClose(x){ const eps = 1e-9; return Math.abs(Math.round(x) - x) < eps; }
 
@@ -1515,6 +1568,10 @@ function getCanvasCenter(x, y) {
  * MODIFIED: On small screens, prioritizes filling width and allows vertical overflow.
  */
 function calculateCanvasSize() {
+    if (!outputCanvas) {
+        console.error('Cannot calculate canvas size: canvas not available');
+        return;
+    }
     const [maxXCenter, maxYCenter] = getCanvasCenter(SIZE - 1, SIZE - 1);
     const padding = HEX_R * 0.5; // Use smaller padding to maximize space
     
@@ -1757,6 +1814,10 @@ function getSel(e) {
 }
 
 function draw() {
+    if (!ctx || !outputCanvas) {
+        console.error('Cannot draw: canvas or context not available');
+        return;
+    }
     ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
 
     const ACCENT_BLUE = getCssVar('--accent-blue');
@@ -1882,11 +1943,21 @@ function getFactors(n) {
 // --- NEW SIDEBAR RENDER FUNCTION ---
 function renderSidebar() {
     // 1. Update Game Stats
-    sidebarModeEl.textContent = mode === 'single' ? '🤖 SINGLE PLAYER' : '👥 MULTI PLAYER';
-    sidebarMovesEl.textContent = moveHistory.length;
-    sidebarOccupiedEl.textContent = `${occupiedCount} / ${TOTAL_CELLS}`;
+    if (sidebarModeEl) {
+        sidebarModeEl.textContent = mode === 'single' ? '🤖 SINGLE PLAYER' : '👥 MULTI PLAYER';
+    }
+    if (sidebarMovesEl) {
+        sidebarMovesEl.textContent = moveHistory.length;
+    }
+    if (sidebarOccupiedEl) {
+        sidebarOccupiedEl.textContent = `${occupiedCount} / ${TOTAL_CELLS}`;
+    }
 
     // 2. Update Move Log
+    if (!moveLogEl) {
+        console.error('Move log element not found');
+        return;
+    }
     moveLogEl.innerHTML = ''; // Clear existing log
     let moveCounter = 1;
     
@@ -2099,6 +2170,12 @@ function showWinModal(title, reason) {
     const titleEl = document.getElementById('modal-title');
     const messageEl = document.getElementById('modal-message');
 
+    if (!modal || !titleEl || !messageEl) {
+        console.error('Modal elements not found');
+        alert(title + ': ' + reason);
+        return;
+    }
+
     titleEl.textContent = title;
     messageEl.textContent = reason;
 
@@ -2110,6 +2187,10 @@ function showWinModal(title, reason) {
 }
 
 function processTurnStart() {
+    if (!dieAEl || !dieBEl) {
+        console.error('Dice elements not found');
+        return;
+    }
 
     dieAEl.textContent = dieA;
     dieBEl.textContent = dieB;
@@ -2240,13 +2321,22 @@ function showCommonMultipleError(x, y) {
 
 
 function showCustomMessage(title, message, isGameOver = false) {
+    if (!mainModalBackdrop || !mainModalContent) {
+        console.error('Modal elements not found');
+        alert(title + ': ' + message);
+        return;
+    }
     const ACCENT_BLUE = getCssVar('--accent-blue');
     mainModalContent.classList.remove('error-modal');
     mainModalContent.style.borderColor = isGameOver ? ACCENT_BLUE : getCssVar('--muted');
 
-    document.getElementById('modal-title').textContent = title;
-    document.getElementById('modal-title').style.color = isGameOver ? ACCENT_BLUE : getCssVar('--text-dark');
-    document.getElementById('modal-message').innerHTML = `<p style="color: ${getCssVar('--text-primary')}; font-size: 1.1em; font-weight: 600;">${message}</p>`;
+    const titleEl = document.getElementById('modal-title');
+    const messageEl = document.getElementById('modal-message');
+    if (titleEl && messageEl) {
+        titleEl.textContent = title;
+        titleEl.style.color = isGameOver ? ACCENT_BLUE : getCssVar('--text-dark');
+        messageEl.innerHTML = `<p style="color: ${getCssVar('--text-primary')}; font-size: 1.1em; font-weight: 600;">${message}</p>`;
+    }
     mainModalBackdrop.classList.add('active');
 }
 
@@ -2281,9 +2371,11 @@ function announceDraw(){
 }
 
 function closeModal() {
-    mainModalBackdrop.classList.remove('active');
-    // If the game was over, clicking the backdrop should trigger init
-    if (!active && moveHistory.length > 0) init(); 
+    if (mainModalBackdrop) {
+        mainModalBackdrop.classList.remove('active');
+        // If the game was over, clicking the backdrop should trigger init
+        if (!active && moveHistory.length > 0) init();
+    }
 }
 
 function showInstructions() {
@@ -2299,6 +2391,11 @@ function hideInstructions() {
 // --- NEW HELPER MODAL FUNCTIONS ---
 function showHelper() {
     soundClick();
+    
+    if (!helperModal || !helperContentEl) {
+        console.error('Helper modal elements not found');
+        return;
+    }
     
     if (dieA === null || dieB === null) {
         showCustomMessage('NO DICE ROLLED', 'Roll the dice first to use the Common Multiple Helper.');
@@ -2430,6 +2527,10 @@ function showFactorDetails(val, dieA, dieB) {
 
 function updateTurnLabel() {
     const label = document.getElementById('turnLabel');
+    if (!label) {
+        console.error('Turn label element not found');
+        return;
+    }
     const color = (current === 1) ? 'var(--accent-blue)' : 'var(--accent-red)';
     const name = (current === 1) ? 'BLUE' : 'RED';
     
@@ -2460,6 +2561,11 @@ function initBoardData() {
 }
 
 function init(){
+    if (!outputCanvas || !ctx) {
+        console.error('Cannot initialize: canvas not available');
+        return;
+    }
+    
     soundNewGame();
     initBoardData();
     moveHistory = [];
@@ -2473,8 +2579,14 @@ function init(){
     // Calculate size immediately to fit screen
     calculateCanvasSize(); 
 
-    dieAEl.textContent = '-'; dieBEl.textContent = '-';
-    dieAEl.classList.add('ready'); dieBEl.classList.add('ready');
+    if (dieAEl) {
+        dieAEl.textContent = '-';
+        dieAEl.classList.add('ready');
+    }
+    if (dieBEl) {
+        dieBEl.textContent = '-';
+        dieBEl.classList.add('ready');
+    }
     
     log('GAME STARTED! Blue rolls first.');
     
@@ -2485,15 +2597,23 @@ function init(){
 }
 
 function load() {
+    if (!modeSelect) {
+        console.error('Mode select not found');
+        return;
+    }
     mode = modeSelect.value;
-    modeSelect.querySelector(`option[value="${mode}"]`).selected = true;
+    const option = modeSelect.querySelector(`option[value="${mode}"]`);
+    if (option) {
+        option.selected = true;
+    }
     init();
 }
 
 
 // --- Event Listeners ---
-outputCanvas.addEventListener('pointerdown', mouseDown);
-outputCanvas.addEventListener('pointermove', (e) => {
+if (outputCanvas) {
+    outputCanvas.addEventListener('pointerdown', mouseDown);
+    outputCanvas.addEventListener('pointermove', (e) => {
     if (active) {
         let event = e.touches ? e.touches[0] : e;
         getSel(event);
@@ -2511,15 +2631,14 @@ outputCanvas.addEventListener('pointermove', (e) => {
 
         draw();
     }
-}); 
-
-
-
-outputCanvas.addEventListener('pointerleave', () => { 
-    sel = [-1, -1]; 
-    lastHoveredValid = [-1, -1]; 
-    draw(); 
-});
+    });
+    
+    outputCanvas.addEventListener('pointerleave', () => { 
+        sel = [-1, -1]; 
+        lastHoveredValid = [-1, -1]; 
+        draw(); 
+    });
+}
 
 window.addEventListener('resize', () => { 
     // Recalculate size on window resize (especially helpful for mobile orientation change)
@@ -2609,33 +2728,50 @@ function updateMenuButtons() {
         newBtn.classList.remove('bg-red-600');
     }
 }
-document.getElementById('howToPlayBtn').addEventListener('click', showInstructions);
-lcmHelperBtn.addEventListener('click', showHelper); // NEW HELPER BUTTON LISTENER
+const howToPlayBtn = document.getElementById('howToPlayBtn');
+if (howToPlayBtn) {
+    howToPlayBtn.addEventListener('click', showInstructions);
+}
+if (lcmHelperBtn) {
+    lcmHelperBtn.addEventListener('click', showHelper); // NEW HELPER BUTTON LISTENER
+}
 
 // Close modals when clicking outside or on the close button
-document.getElementById('instructionsModal').addEventListener('click', (e) => {
-    if (e.target.id === 'instructionsModal' || e.target.classList.contains('modal-close-btn')) {
-        hideInstructions();
-    }
-});
-document.getElementById('modal-backdrop').addEventListener('click', (e) => {
-    if (e.target.id === 'modal-backdrop' || e.target.classList.contains('modal-close-btn')) {
-        closeModal();
-    }
-});
-document.getElementById('helperModal').addEventListener('click', (e) => { // NEW HELPER MODAL LISTENER
-    if (e.target.id === 'helperModal' || e.target.classList.contains('modal-close-btn')) {
-        hideHelper();
-    }
-});
+const instructionsModal = document.getElementById('instructionsModal');
+if (instructionsModal) {
+    instructionsModal.addEventListener('click', (e) => {
+        if (e.target.id === 'instructionsModal' || e.target.classList.contains('modal-close-btn')) {
+            hideInstructions();
+        }
+    });
+}
+if (mainModalBackdrop) {
+    mainModalBackdrop.addEventListener('click', (e) => {
+        if (e.target.id === 'modal-backdrop' || e.target.classList.contains('modal-close-btn')) {
+            closeModal();
+        }
+    });
+}
+if (helperModal) {
+    helperModal.addEventListener('click', (e) => { // NEW HELPER MODAL LISTENER
+        if (e.target.id === 'helperModal' || e.target.classList.contains('modal-close-btn')) {
+            hideHelper();
+        }
+    });
+}
 
-modeSelect.addEventListener('change', (e)=>{ 
-    soundClick();
-    mode = e.target.value; 
-    init(); 
-});
+if (modeSelect) {
+    modeSelect.addEventListener('change', (e)=>{ 
+        soundClick();
+        mode = e.target.value; 
+        init(); 
+    });
+}
 
-window.addEventListener('load', load); 
+window.addEventListener('load', () => {
+    // Wait a bit to ensure all DOM elements are ready
+    setTimeout(load, 100);
+}); 
 </script>
 </body>
 </html>
