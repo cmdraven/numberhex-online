@@ -295,48 +295,27 @@ body::after {
     color:var(--accent-blue);
     line-height:1.05; 
     letter-spacing: 8px; 
-    /* INTENSE NEON GLOW */
+    /* Balanced neon glow - visible but still arcade */
     text-shadow: 
-        0 0 10px var(--accent-blue),
-        0 0 20px var(--accent-blue),
-        0 0 30px var(--accent-blue),
-        0 0 40px var(--accent-blue),
-        0 0 70px var(--accent-blue);
-    animation: titlePulse 2s ease-in-out infinite;
+        0 0 8px var(--accent-blue),
+        0 0 15px rgba(0, 255, 65, 0.6),
+        0 0 25px rgba(0, 255, 65, 0.3);
+    animation: titlePulse 3s ease-in-out infinite;
     position: relative;
-}
-
-.title h1::before {
-    content: 'NUMBERHEX';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    color: transparent;
-    text-shadow: 
-        0 0 5px var(--accent-blue),
-        0 0 10px var(--accent-blue);
-    z-index: -1;
-    filter: blur(3px);
 }
 
 @keyframes titlePulse {
     0%, 100% { 
         text-shadow: 
-            0 0 10px var(--accent-blue),
-            0 0 20px var(--accent-blue),
-            0 0 30px var(--accent-blue),
-            0 0 40px var(--accent-blue),
-            0 0 70px var(--accent-blue);
+            0 0 8px var(--accent-blue),
+            0 0 15px rgba(0, 255, 65, 0.6),
+            0 0 25px rgba(0, 255, 65, 0.3);
     }
     50% { 
         text-shadow: 
-            0 0 15px var(--accent-blue),
-            0 0 30px var(--accent-blue),
-            0 0 45px var(--accent-blue),
-            0 0 60px var(--accent-blue),
-            0 0 90px var(--accent-blue);
+            0 0 12px var(--accent-blue),
+            0 0 20px rgba(0, 255, 65, 0.8),
+            0 0 35px rgba(0, 255, 65, 0.4);
     }
 }
 .controls { display: flex; gap: 12px; }
@@ -821,6 +800,144 @@ body::after {
 }
 .error-message strong {
     color: var(--accent-red);
+}
+
+/* Animated Error Explanation Styles */
+.error-explanation {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.error-header {
+    margin-bottom: 20px;
+}
+
+.error-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.check-item {
+    background: rgba(42, 42, 42, 0.6);
+    border-radius: 8px;
+    padding: 15px;
+    border: 2px solid var(--muted);
+}
+
+.check-header {
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+.check-result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 1.05em;
+    font-weight: 600;
+}
+
+.check-result.success {
+    background: rgba(0, 255, 65, 0.15);
+    border: 2px solid var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.check-result.error {
+    background: rgba(255, 23, 68, 0.15);
+    border: 2px solid var(--accent-red);
+    color: var(--accent-red);
+}
+
+.check-icon {
+    font-size: 1.5em;
+    animation: iconPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.error-tip {
+    font-size: 1em;
+    line-height: 1.6;
+}
+
+/* Animations for Error Explanations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes animated-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes animated-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes animated-pop-in {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes iconPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.3);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animated-fade-in {
+    animation: animated-fade-in 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.animated-slide-in {
+    animation: animated-slide-in 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.animated-pop-in {
+    animation: animated-pop-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    opacity: 0;
 }
 
 /* --- MOBILE SPECIFIC STYLES (Max-width 768px) --- */
@@ -2136,8 +2253,40 @@ function draw() {
             ctx.strokeStyle = prevStrokeStyle;
             ctx.lineWidth = prevLineWidth;
 
-            // 5. Draw Hover Outline
-            if (isHovered && owner === -1) { 
+            // 5. Draw Error Highlight (if this is the error tile)
+            if (window.errorTile && window.errorTile[0] === x && window.errorTile[1] === y) {
+                // Pulsing red outline for error tile - animated
+                const time = Date.now() / 200;
+                const pulse = Math.sin(time) * 0.3 + 0.7; // Pulse between 0.4 and 1.0
+                const glowSize = HEX_R + (5 * pulse);
+                
+                // Outer pulsing glow
+                ctx.save();
+                ctx.globalAlpha = pulse * 0.6;
+                drawHexagonOutline(
+                    ctx,
+                    cx,
+                    cy,
+                    glowSize,
+                    ACCENT_RED,
+                    HEX_BORDER_WIDTH + 6
+                );
+                ctx.globalAlpha = 1;
+                
+                // Inner solid outline
+                drawHexagonOutline(
+                    ctx,
+                    cx,
+                    cy,
+                    HEX_R + 2,
+                    ACCENT_RED,
+                    HEX_BORDER_WIDTH + 3
+                );
+                ctx.restore();
+            }
+            
+            // 6. Draw Hover Outline
+            if (isHovered && owner === -1 && (!window.errorTile || window.errorTile[0] !== x || window.errorTile[1] !== y)) { 
                 drawHexagonOutline(
                     ctx,
                     cx,
@@ -2478,41 +2627,148 @@ function rollDice(cb){
 }
 
 
+// Handle error clicks with animated explanation
+function handleErrorClick(x, y) {
+    soundError();
+    
+    // Check why it's invalid
+    const val = boardValues[x][y];
+    let errorReason = '';
+    let errorDetails = '';
+    
+    if (board[x][y] !== -1) {
+        errorReason = 'TILE ALREADY OCCUPIED!';
+        errorDetails = `This tile (${val}) is already taken by ${board[x][y] === 1 ? 'BLUE' : 'RED'} player.`;
+    } else if (dieA === null || dieB === null) {
+        errorReason = 'NO DICE ROLLED!';
+        errorDetails = 'You need to roll the dice first before placing a piece.';
+    } else {
+        // Not a common multiple
+        errorReason = 'NOT A COMMON MULTIPLE!';
+        showCommonMultipleError(x, y);
+        // Also highlight the tile on the board
+        highlightErrorTile(x, y);
+        return;
+    }
+    
+    // Show simple error for occupied or no dice
+    showAnimatedError(errorReason, errorDetails, x, y);
+    highlightErrorTile(x, y);
+}
+
+// Highlight the error tile with animation
+function highlightErrorTile(x, y) {
+    // Store the error tile position
+    window.errorTile = [x, y];
+    
+    // Animate the highlight by continuously redrawing
+    let frameCount = 0;
+    const maxFrames = 120; // 2 seconds at 60fps
+    
+    function animateError() {
+        if (frameCount < maxFrames && window.errorTile) {
+            draw();
+            frameCount++;
+            requestAnimationFrame(animateError);
+        } else {
+            window.errorTile = null;
+            draw();
+        }
+    }
+    
+    // Start animation
+    animateError();
+}
+
+// Show animated error explanation
 function showCommonMultipleError(x, y) {
     const val = boardValues[x][y];
-    
     const divA = val / dieA;
     const divB = val / dieB;
     
     const ACCENT_RED = getCssVar('--accent-red');
     const ACCENT_BLUE = getCssVar('--accent-blue');
+    const ACCENT_GREEN = getCssVar('--accent-blue');
     const TEXT_DARK = getCssVar('--text-dark');
     const TEXT_PRIMARY = getCssVar('--text-primary');
 
-    let message = `<div class="error-message"><strong style="font-size:1.2em; color: ${ACCENT_RED};">TILE ${val} IS NOT A COMMON MULTIPLE!</strong><br><br>`;
-    message += `The tile value must be a multiple of **both** dice rolls (${dieA} and ${dieB}).<br><br>`;
-
-    message += `<strong style="color:${TEXT_DARK};">Check 1: Divisible by ${dieA}?</strong><br>`;
-    if (isIntClose(divA)) {
-        message += `<span style="color:${ACCENT_BLUE}; font-weight: 700;">✅ YES:</span> ${val} / ${dieA} = ${Math.round(divA)}.<br>`;
-    } else {
-        message += `<span style="color:${ACCENT_RED}; font-weight: 700;">❌ NO:</span> ${val} / ${dieA} = ${divA.toFixed(2)}.<br>`;
-    }
+    let message = `<div class="error-explanation">`;
+    message += `<div class="error-header animated-fade-in">`;
+    message += `<h3 style="color: ${ACCENT_RED}; font-size: 1.5em; margin: 0 0 15px 0; animation: shake 0.5s;">🚫 TILE ${val} IS NOT VALID!</h3>`;
+    message += `<p style="font-size: 1.1em; margin-bottom: 20px;">The tile value must be a <strong>common multiple</strong> of both dice (${dieA} and ${dieB}).</p>`;
+    message += `</div>`;
     
-    message += `<br><strong style="color:${TEXT_DARK};">Check 2: Divisible by ${dieB}?</strong><br>`;
-    if (isIntClose(divB)) {
-        message += `<span style="color:${ACCENT_BLUE}; font-weight: 700;">✅ YES:</span> ${val} / ${dieB} = ${Math.round(divB)}.<br>`;
+    message += `<div class="error-checks">`;
+    
+    // Check 1 with animation
+    message += `<div class="check-item animated-slide-in" style="animation-delay: 0.2s;">`;
+    message += `<div class="check-header"><strong style="color:${TEXT_DARK}; font-size: 1.1em;">Check 1: Is ${val} divisible by ${dieA}?</strong></div>`;
+    if (isIntClose(divA)) {
+        message += `<div class="check-result success animated-pop-in" style="animation-delay: 0.4s;">`;
+        message += `<span class="check-icon">✅</span>`;
+        message += `<span><strong>YES!</strong> ${val} ÷ ${dieA} = ${Math.round(divA)} (Perfect division)</span>`;
+        message += `</div>`;
     } else {
-        message += `<span style="color:${ACCENT_RED}; font-weight: 700;">❌ NO:</span> ${val} / ${dieB} = ${divB.toFixed(2)}.<br>`;
+        message += `<div class="check-result error animated-pop-in" style="animation-delay: 0.4s;">`;
+        message += `<span class="check-icon">❌</span>`;
+        message += `<span><strong>NO!</strong> ${val} ÷ ${dieA} = ${divA.toFixed(2)} (Not a whole number)</span>`;
+        message += `</div>`;
     }
-
-    message += `<br><span style="font-weight: 600; color: ${getCssVar('--text-secondary')};">TIP:</span> Look for a multiple of the Least Common Multiple (LCM) of ${dieA} and ${dieB}.</div>`;
+    message += `</div>`;
+    
+    // Check 2 with animation
+    message += `<div class="check-item animated-slide-in" style="animation-delay: 0.6s;">`;
+    message += `<div class="check-header"><strong style="color:${TEXT_DARK}; font-size: 1.1em;">Check 2: Is ${val} divisible by ${dieB}?</strong></div>`;
+    if (isIntClose(divB)) {
+        message += `<div class="check-result success animated-pop-in" style="animation-delay: 0.8s;">`;
+        message += `<span class="check-icon">✅</span>`;
+        message += `<span><strong>YES!</strong> ${val} ÷ ${dieB} = ${Math.round(divB)} (Perfect division)</span>`;
+        message += `</div>`;
+    } else {
+        message += `<div class="check-result error animated-pop-in" style="animation-delay: 0.8s;">`;
+        message += `<span class="check-icon">❌</span>`;
+        message += `<span><strong>NO!</strong> ${val} ÷ ${dieB} = ${divB.toFixed(2)} (Not a whole number)</span>`;
+        message += `</div>`;
+    }
+    message += `</div>`;
+    message += `</div>`;
+    
+    // Tip with animation
+    const lcm = getLcm(dieA, dieB);
+    message += `<div class="error-tip animated-fade-in" style="animation-delay: 1s; margin-top: 20px; padding: 15px; background: rgba(0, 255, 65, 0.1); border-left: 4px solid ${ACCENT_GREEN}; border-radius: 4px;">`;
+    message += `<strong style="color: ${ACCENT_GREEN};">💡 TIP:</strong> Look for tiles that are multiples of the LCM(${dieA}, ${dieB}) = <strong>${lcm}</strong>.`;
+    message += ` Valid tiles include: ${lcm}, ${lcm * 2}, ${lcm * 3}, etc.`;
+    message += `</div>`;
+    
+    message += `</div>`;
     
     // Set custom styles for the error modal
     mainModalContent.style.borderColor = ACCENT_RED;
     mainModalContent.classList.add('error-modal');
 
-    document.getElementById('modal-title').textContent = '🚫 INCORRECT MULTIPLE!';
+    document.getElementById('modal-title').textContent = '🚫 INVALID MOVE!';
+    document.getElementById('modal-title').style.color = ACCENT_RED;
+    document.getElementById('modal-message').innerHTML = message;
+    mainModalBackdrop.classList.add('active');
+    
+    // Highlight the tile
+    highlightErrorTile(x, y);
+}
+
+function showAnimatedError(reason, details, x, y) {
+    const ACCENT_RED = getCssVar('--accent-red');
+    
+    let message = `<div class="error-explanation">`;
+    message += `<div class="error-header animated-fade-in">`;
+    message += `<h3 style="color: ${ACCENT_RED}; font-size: 1.5em; margin: 0 0 15px 0; animation: shake 0.5s;">🚫 ${reason}</h3>`;
+    message += `<p style="font-size: 1.1em;">${details}</p>`;
+    message += `</div>`;
+    message += `</div>`;
+    
+    mainModalContent.style.borderColor = ACCENT_RED;
+    mainModalContent.classList.add('error-modal');
+    
+    document.getElementById('modal-title').textContent = '⚠️ INVALID MOVE!';
     document.getElementById('modal-title').style.color = ACCENT_RED;
     document.getElementById('modal-message').innerHTML = message;
     mainModalBackdrop.classList.add('active');
