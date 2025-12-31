@@ -11,53 +11,55 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 <style>
-/* --- GAME-LIKE VIBRANT DARK THEME & FULL SCREEN LAYOUT --- */
+/* --- HIGH-OCTANE ARCADE E-SPORTS GAMING THEME --- */
 :root{
-  /* Base Colors - Dark Gaming Theme */
-  --bg-primary: #1A1A1A; /* Dark Game Console Black */
-  --bg-panel: #2A2A2A; /* Dark Grey Panel background */
-  --bg-light: #333333; /* Slightly lighter dark grey for elements */
+  /* Base Colors - Ultra Dark Gaming Theme */
+  --bg-primary: #0a0a0a; /* Deep black for maximum contrast */
+  --bg-panel: #1a1a1a; /* Slightly lighter for panels */
+  --bg-light: #252525; /* Lighter for elements */
   
-  --text-light: #E0E0E0; /* Light text for primary readability */
-  --text-dark: #B0B0B0; /* Lighter secondary text */
-  --muted: #444444; /* Dark grey for borders/muted elements */
+  --text-light: #FFFFFF; /* Pure white for maximum readability */
+  --text-dark: #CCCCCC; /* Light grey for secondary text */
+  --muted: #333333; /* Dark grey for borders */
   
-  /* Game Accents - Green-Themed & High Contrast */
-  --accent-blue: #7FFF00; /* Electric Lime Green - Player 1 (Replaces Blue) */
-  --accent-blue-light: #BFFF00; /* Lighter Lime for boundary */
-  --accent-blue-shadow: #4c8c00; /* Darker Green for Main Button Shadow */
-  --accent-red: #FF4500; /* Vibrant Orange-Red - Player 2 (Kept for contrast) */
-  --accent-red-light: #ff7559; /* Lighter Orange-Red for boundary */
-  --accent-dark: #FFFFFF; /* White for primary outlines/shadows */
-  --accent-success: #7FFF00; /* Match Player 1 color */
-  --accent-info: #00E0A0; /* Vibrant Teal/Cyan for info messages */
-  --accent-warning: #ffc107; /* Yellow for warnings (kept) */
-  --accent-danger: #FF4500; /* Match Player 2 color */
-  --ghost-shadow: #111111; /* Very dark shadow for ghost buttons */
+  /* E-SPORTS NEON ACCENTS - Maximum Intensity */
+  --accent-blue: #00FF41; /* Cyber Green - Player 1 */
+  --accent-blue-light: #7AFF9C; /* Bright green glow */
+  --accent-blue-shadow: #00CC33; /* Darker green shadow */
+  --accent-red: #FF1744; /* Electric Red - Player 2 */
+  --accent-red-light: #FF6B8A; /* Bright red glow */
+  --accent-dark: #FFFFFF;
+  --accent-success: #00FF88; /* Success green */
+  --accent-info: #00D9FF; /* Cyan info */
+  --accent-warning: #FFD700; /* Gold warning */
+  --accent-danger: #FF1744; /* Danger red */
+  --ghost-shadow: #000000;
   
-  --win: var(--accent-success); /* Use green for win path */
+  --win: var(--accent-success);
   
   --max-width: 1400px;
   --text-primary: var(--text-light); 
   --text-secondary: var(--text-dark);
   
-  /* --- NEW CYBERPUNK/NEON UI STYLING --- */
-  --radius-sharp: 5px; /* Sharp corners for modern look */
-  --radius-panel: 8px; /* Slightly more rounded for main containers */
+  /* ARCADE STYLING */
+  --radius-sharp: 3px; /* Sharper corners for arcade feel */
+  --radius-panel: 6px;
 
-  /* Shadows for Depth (Less depth, more glow/contrast) */
-  --shadow-l: 0 0 15px rgba(0,0,0,0.5); 
-  --shadow-m: 0 0 5px rgba(0,0,0,0.5);
-  --shadow-inset: inset 0 0 5px rgba(0,0,0,0.3);
+  /* INTENSE GLOW SHADOWS */
+  --shadow-l: 0 0 30px rgba(0, 255, 65, 0.4), 0 0 60px rgba(0, 255, 65, 0.2); 
+  --shadow-m: 0 0 15px rgba(0, 255, 65, 0.3);
+  --shadow-inset: inset 0 0 10px rgba(0,0,0,0.5);
+  --shadow-glow-blue: 0 0 20px rgba(0, 255, 65, 0.6), 0 0 40px rgba(0, 255, 65, 0.3);
+  --shadow-glow-red: 0 0 20px rgba(255, 23, 68, 0.6), 0 0 40px rgba(255, 23, 68, 0.3);
   
-  /* 2D button press variables */
-  --btn-offset: 4px; /* Offset distance for 2D look */
+  /* Button press variables */
+  --btn-offset: 5px;
   --btn-shadow-color: var(--accent-blue-shadow);
 
   --font-title: 'Bungee Inline', cursive;
-  --font-text: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue";
+  --font-text: 'Inter', system-ui, -apple-system, sans-serif;
 
-  /* Turn indicators for code logic */
+  /* Turn indicators */
   --glow-color-1: var(--accent-blue);
   --glow-color-2: var(--accent-red);
   --turn-indicator-1: var(--accent-blue);
@@ -110,15 +112,63 @@
         right: 20px;
     }
 }
-/* Global Reset & Body - DEFAULT (Desktop Non-Scrolling) */
+/* Global Reset & Body - ARCADE STYLE */
 *{box-sizing:border-box}
 html,body{
-    height:100vh; /* Fixed height for desktop/default */
+    height:100vh;
     margin:0;
     font-family:var(--font-text);
-    background:var(--bg-primary); 
+    background:var(--bg-primary);
     color:var(--text-primary);
-    overflow: hidden; /* Prevent scrolling on desktop/default */
+    overflow: hidden;
+    position: relative;
+}
+
+/* Animated background grid effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+    animation: gridPulse 4s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+/* Scanline effect for arcade feel */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: 10000;
+    animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(10px); }
 }
 .wrap{
     max-width:var(--max-width);
@@ -143,27 +193,54 @@ html,body{
     min-width: 0; 
 }
 .sidebar { 
-    width: 300px; /* Fixed width */
-    background: var(--bg-panel);
+    width: 300px;
+    background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 100%);
     border: 3px solid var(--accent-blue);
     border-radius: var(--radius-panel);
     padding: 15px;
-    box-shadow: var(--shadow-l);
+    box-shadow: 
+        var(--shadow-l),
+        inset 0 0 20px rgba(0, 255, 65, 0.1);
     flex-shrink: 0; 
     overflow-y: auto; 
     display: flex;
     flex-direction: column;
     gap: 15px;
-    height: 100%; /* Ensure it fills the height of main-layout */
+    height: 100%;
+    position: relative;
 }
+
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--accent-blue),
+        transparent
+    );
+    animation: sidebarTopGlow 3s ease-in-out infinite;
+}
+
+@keyframes sidebarTopGlow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
 .sidebar h3 {
     font-family: var(--font-title);
     color: var(--accent-blue);
-    font-size: 20px;
-    margin-bottom: 5px;
-    padding-bottom: 5px;
-    border-bottom: 2px solid var(--muted);
-    letter-spacing: 2px;
+    font-size: 22px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent-blue);
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px var(--accent-blue);
+    position: relative;
 }
 .sidebar p {
     font-size: 14px;
@@ -212,33 +289,100 @@ html,body{
 }
 .title h1{
     margin:0;
-    font-size: clamp(40px, 8vw, 75px); 
+    font-size: clamp(40px, 8vw, 85px); 
     font-weight:900;
     font-family:var(--font-title);
     color:var(--accent-blue);
     line-height:1.05; 
-    letter-spacing: 5px; 
-    /* Updated for sharper neon glow */
-    text-shadow: 0 0 5px var(--accent-blue), 0 0 15px rgba(127, 255, 0, 0.4);
+    letter-spacing: 8px; 
+    /* INTENSE NEON GLOW */
+    text-shadow: 
+        0 0 10px var(--accent-blue),
+        0 0 20px var(--accent-blue),
+        0 0 30px var(--accent-blue),
+        0 0 40px var(--accent-blue),
+        0 0 70px var(--accent-blue);
+    animation: titlePulse 2s ease-in-out infinite;
+    position: relative;
+}
+
+.title h1::before {
+    content: 'NUMBERHEX';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: transparent;
+    text-shadow: 
+        0 0 5px var(--accent-blue),
+        0 0 10px var(--accent-blue);
+    z-index: -1;
+    filter: blur(3px);
+}
+
+@keyframes titlePulse {
+    0%, 100% { 
+        text-shadow: 
+            0 0 10px var(--accent-blue),
+            0 0 20px var(--accent-blue),
+            0 0 30px var(--accent-blue),
+            0 0 40px var(--accent-blue),
+            0 0 70px var(--accent-blue);
+    }
+    50% { 
+        text-shadow: 
+            0 0 15px var(--accent-blue),
+            0 0 30px var(--accent-blue),
+            0 0 45px var(--accent-blue),
+            0 0 60px var(--accent-blue),
+            0 0 90px var(--accent-blue);
+    }
 }
 .controls { display: flex; gap: 12px; }
 
-/* Status/Control Strip */
+/* Status/Control Strip - TOURNAMENT STYLE */
 .status-strip {
     position: relative; 
     z-index: 10;      
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--bg-panel);
-    padding: 10px 20px; 
-    border-radius: var(--radius-panel); /* SQUARED */
-    box-shadow: var(--shadow-m);
+    background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 100%);
+    padding: 12px 24px; 
+    border-radius: var(--radius-panel);
+    box-shadow: 
+        var(--shadow-m),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     margin-bottom: 12px; 
     gap: 15px;
     flex-wrap: wrap;
-    border: 2px solid var(--muted); /* Reduced thickness */
-    flex-shrink: 0; 
+    border: 2px solid var(--accent-blue);
+    border-top: 3px solid var(--accent-blue);
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.status-strip::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 255, 65, 0.1),
+        transparent
+    );
+    animation: statusScan 3s linear infinite;
+}
+
+@keyframes statusScan {
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 .turn-info {
     flex-grow: 1;
@@ -257,15 +401,34 @@ html,body{
     margin-bottom: 4px;
 }
 .turn-indicator-bar {
-    border-radius: 4px; /* SQUARED */
-    padding: 4px 15px;
-    font-size: 18px;
+    border-radius: 4px;
+    padding: 6px 20px;
+    font-size: 20px;
     font-weight: 900;
     text-transform: uppercase;
-    background: var(--bg-light); 
-    border: 2px solid var(--muted);
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); 
-    font-family: var(--font-title); 
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-panel) 100%);
+    border: 2px solid var(--accent-blue);
+    box-shadow: 
+        inset 0 1px 3px rgba(0,0,0,0.6),
+        0 0 15px rgba(0, 255, 65, 0.4);
+    font-family: var(--font-title);
+    letter-spacing: 2px;
+    position: relative;
+    animation: turnIndicatorPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes turnIndicatorPulse {
+    0%, 100% { 
+        box-shadow: 
+            inset 0 1px 3px rgba(0,0,0,0.6),
+            0 0 15px rgba(0, 255, 65, 0.4);
+    }
+    50% { 
+        box-shadow: 
+            inset 0 1px 3px rgba(0,0,0,0.6),
+            0 0 25px rgba(0, 255, 65, 0.7),
+            0 0 40px rgba(0, 255, 65, 0.4);
+    }
 }
 
 /* Inputs/Selects - Dark Style */
@@ -280,93 +443,243 @@ html,body{
     font-weight: 600;
 }
 
-/* Button Styling (NEW 2D/OFFSET SHADOW LOOK) */
+/* Button Styling - ARCADE BUTTONS */
 .btn{
-    background:var(--accent-blue);
-    color:var(--bg-panel); 
-    padding:10px 20px;
-    border-radius:var(--radius-sharp); /* SQUARED */
-    border:none;
-    font-weight:800;
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-shadow) 100%);
+    color: #000000; 
+    padding:12px 24px;
+    border-radius:var(--radius-sharp);
+    border: 2px solid var(--accent-blue-light);
+    font-weight:900;
     cursor:pointer;
-    transition:transform 0.1s, box-shadow 0.1s; 
-    /* Offset shadow for 2D "game button" feel */
-    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--btn-shadow-color);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        var(--btn-offset) var(--btn-offset) 0px var(--btn-shadow-color),
+        0 0 20px rgba(0, 255, 65, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.btn:hover{
-    /* Slight shift up-left */
-    transform:translate(-1px, -1px); 
-    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--btn-shadow-color);
-}
-.btn:active{
-    /* Press down and right (shadow disappears) */
-    transform:translate(var(--btn-offset), var(--btn-offset)); 
-    box-shadow: 0 0 0px var(--btn-shadow-color);
-}
-.ghost{
-    background:var(--bg-light);
-    border:2px solid var(--muted);
-    color:var(--text-primary);
-    padding:10px 14px;
-    border-radius:var(--radius-sharp); /* SQUARED */
-    font-weight:700;
-    cursor:pointer;
-    transition:background 0.1s, transform 0.1s;
-    /* Offset shadow for 2D "game button" feel */
-    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--ghost-shadow);
-}
-.ghost:hover{
-    background:var(--muted); 
-    transform:translate(-1px, -1px);
-    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--ghost-shadow);
-}
-.ghost:active{
-    transform:translate(var(--btn-offset), var(--btn-offset));
-    box-shadow: 0 0 0px var(--ghost-shadow);
+    letter-spacing: 1px;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Dice Area - MORE PROMINENT */
-.dice{display:flex;gap:15px;align-items:center}
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn:hover{
+    transform:translate(-2px, -2px) scale(1.02); 
+    box-shadow: 
+        calc(var(--btn-offset) + 2px) calc(var(--btn-offset) + 2px) 0px var(--btn-shadow-color),
+        0 0 30px rgba(0, 255, 65, 0.8),
+        0 0 50px rgba(0, 255, 65, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn:active{
+    transform:translate(var(--btn-offset), var(--btn-offset)) scale(0.98); 
+    box-shadow: 
+        0 0 0px var(--btn-shadow-color),
+        0 0 15px rgba(0, 255, 65, 0.6),
+        inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.ghost{
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-panel) 100%);
+    border:2px solid var(--accent-blue);
+    color:var(--accent-blue);
+    padding:10px 18px;
+    border-radius:var(--radius-sharp);
+    font-weight:800;
+    cursor:pointer;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        var(--btn-offset) var(--btn-offset) 0px var(--ghost-shadow),
+        0 0 10px rgba(0, 255, 65, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+}
+.ghost:hover{
+    background:var(--bg-panel);
+    border-color: var(--accent-blue-light);
+    color: var(--accent-blue-light);
+    transform:translate(-2px, -2px) scale(1.02);
+    box-shadow: 
+        calc(var(--btn-offset) + 2px) calc(var(--btn-offset) + 2px) 0px var(--ghost-shadow),
+        0 0 20px rgba(0, 255, 65, 0.5),
+        0 0 30px rgba(0, 255, 65, 0.2);
+}
+.ghost:active{
+    transform:translate(var(--btn-offset), var(--btn-offset)) scale(0.98);
+    box-shadow: 
+        0 0 0px var(--ghost-shadow),
+        0 0 10px rgba(0, 255, 65, 0.4);
+}
+
+/* Dice Area - ARCADE STYLE */
+.dice{display:flex;gap:20px;align-items:center}
 .die{
-    width:70px; 
-    height:70px; 
-    border-radius:var(--radius-sharp); /* SQUARED */
-    background:var(--bg-panel); 
-    color:var(--text-dark); 
+    width:80px; 
+    height:80px; 
+    border-radius:var(--radius-sharp);
+    background: linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-light) 100%);
+    color:var(--text-light); 
     display:flex;
     align-items:center;
     justify-content:center;
     font-weight:900;
-    font-size:40px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+    font-size:45px; 
+    box-shadow: 
+        0 6px 20px rgba(0,0,0,0.6),
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        inset 0 -2px 4px rgba(0,0,0,0.3); 
     border:4px solid var(--muted);
     animation:diceRoll 0.1s infinite alternate; 
-    transition: all 0.2s; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
     line-height: 1;
-    font-family: var(--font-title); 
+    font-family: var(--font-title);
+    position: relative;
+    text-shadow: 0 0 10px currentColor;
 }
-.die.ready{animation:none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);} 
-.die.ready:nth-child(1){border-color: var(--accent-blue);}
-.die.ready:nth-child(2){border-color: var(--accent-red);}
-@keyframes diceRoll {from {transform: rotate(0deg) scale(1);} to {transform: rotate(2deg) scale(1.02);} }
 
-/* Grid/Board Panel - Main content area */
-.panel{
-    background:var(--bg-panel);
-    padding:12px; 
-    border-radius:var(--radius-panel); /* SQUARED */
-    border:3px solid var(--muted); 
-    /* MODIFIED: Sharper, more intense neon glow */
+.die::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: var(--radius-sharp);
+    padding: 2px;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.die.ready::before {
+    opacity: 1;
+    animation: borderGlow 2s ease-in-out infinite;
+}
+
+.die.ready{
+    animation:none;
     box-shadow: 
-        0 0 8px rgba(0,0,0,0.8), /* Dark shadow for depth */
-        0 0 10px var(--accent-blue), /* Stronger central glow */
-        0 0 25px rgba(127, 255, 0, 0.2); /* Wider halo */
+        0 6px 20px rgba(0,0,0,0.6),
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        inset 0 -2px 4px rgba(0,0,0,0.3);
+} 
+
+.die.ready:nth-child(1){
+    border-color: var(--accent-blue);
+    box-shadow: 
+        0 6px 20px rgba(0,0,0,0.6),
+        0 0 20px rgba(0, 255, 65, 0.6),
+        0 0 40px rgba(0, 255, 65, 0.3),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+    color: var(--accent-blue);
+}
+
+.die.ready:nth-child(2){
+    border-color: var(--accent-red);
+    box-shadow: 
+        0 6px 20px rgba(0,0,0,0.6),
+        0 0 20px rgba(255, 23, 68, 0.6),
+        0 0 40px rgba(255, 23, 68, 0.3),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+    color: var(--accent-red);
+}
+
+@keyframes diceRoll {
+    from {
+        transform: rotate(-5deg) scale(0.95);
+    } 
+    to {
+        transform: rotate(5deg) scale(1.05);
+    }
+}
+
+@keyframes borderGlow {
+    0%, 100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Grid/Board Panel - TOURNAMENT ARENA */
+.panel{
+    background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 50%, var(--bg-panel) 100%);
+    padding:15px; 
+    border-radius:var(--radius-panel);
+    border:3px solid var(--accent-blue);
+    box-shadow: 
+        0 0 20px rgba(0,0,0,0.9),
+        0 0 40px rgba(0, 255, 65, 0.4),
+        0 0 60px rgba(0, 255, 65, 0.2),
+        inset 0 0 30px rgba(0, 255, 65, 0.05);
     flex-grow: 1; 
     min-height: 0; 
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(0, 255, 65, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(255, 23, 68, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.panel::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(0, 255, 65, 0.03) 50%,
+        transparent 70%
+    );
+    animation: panelShine 8s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes panelShine {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 .board-scroll{
     border-radius:4px; /* SQUARED */
@@ -431,29 +744,38 @@ html,body{
     opacity: 1;
 }
 .modal-content { 
-    background: var(--bg-panel); 
+    background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 100%); 
     border: 3px solid var(--accent-blue); 
     color: var(--text-primary); 
-    padding: 25px;
-    border-radius: var(--radius-panel); /* SQUARED */
+    padding: 30px;
+    border-radius: var(--radius-panel);
     max-width: 90%;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: var(--shadow-l);
+    box-shadow: 
+        var(--shadow-l),
+        0 0 50px rgba(0, 255, 65, 0.5),
+        inset 0 0 30px rgba(0, 255, 65, 0.1);
     position: relative;
-    transform: scale(0.95);
-    transition: transform 0.3s ease-out;
-    width: 500px; /* Default width for new modals */
+    transform: scale(0.9);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 500px;
 }
+
 .modal-overlay.active .modal-content {
     transform: scale(1);
 }
+
 .modal-content h2 { 
     border-bottom: 3px solid var(--accent-blue); 
     color: var(--accent-blue); 
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    text-shadow: none; 
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    text-shadow: 
+        0 0 10px var(--accent-blue),
+        0 0 20px var(--accent-blue);
+    font-size: 28px;
+    letter-spacing: 2px;
 }
 .modal-content h3 { 
     color: var(--text-primary); 
