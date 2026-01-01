@@ -490,18 +490,18 @@ body::after {
 
 /* Status/Control Strip - TOURNAMENT STYLE */
 .status-strip {
-    position: relative;
-    z-index: 10;
+    position: relative; 
+    z-index: 10;      
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 100%);
-    padding: 12px 24px;
+    padding: 12px 24px; 
     border-radius: var(--radius-panel);
-    box-shadow:
+    box-shadow: 
         var(--shadow-m),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    margin-bottom: 12px;
+    margin-bottom: 12px; 
     gap: 15px;
     flex-wrap: wrap;
     border: 2px solid var(--accent-blue);
@@ -509,17 +509,6 @@ body::after {
     flex-shrink: 0;
     position: relative;
     overflow: hidden;
-}
-
-.dice-mode-buttons {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-.dice-mode-buttons .btn {
-    padding: 8px 16px;
-    font-size: 12px;
 }
 
 .status-strip::before {
@@ -1222,19 +1211,96 @@ body::after {
 <div class="rocket">🚀</div>
 <div class="rocket">🚀</div>
 <div class="rocket">🚀</div>
-<div class="rocket">🚀</div> id="sidebar-mode">SINGLE PLAYER</span></p>
+<div class="rocket">🚀</div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="floating-number">42</div>
+<div class="floating-number">88</div>
+<div class="floating-number">24</div>
+<div class="floating-number">66</div>
+<div class="floating-number">12</div>
+
+<div class="wrap">
+  <div class="header">
+    <div class="title">
+      <h1>NUMBERHEX</h1>
+    </div>
+
+    <div class="controls">
+      <button id="howToPlayBtn" class="ghost">RULEBOOK ❓</button>
+      <button id="lcmHelperBtn" class="ghost" style="--ghost-shadow: var(--accent-blue-shadow);">HELPER 💡</button>
+      <button id="newBtn" class="btn">NEW GAME</button>
+      <button id="matchBtn" class="btn" style="background: var(--accent-info); --btn-shadow-color: #008f66;">FIND MATCH</button>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    <div class="main-game-area">
+
+        <div class="status-strip">
+            <div style="display:flex; gap: 12px; flex-shrink: 0;">
+                <select id="modeSelect" class="select">
+                    <option value="single">🤖 SINGLE PLAYER</option>
+                    <option value="multi">👥 MULTI PLAYER</option>
+                </select>
+                <select id="diceModeSelect" class="select">
+                    <option value="simple">🎲 SIMPLE (1-6)</option>
+                    <option value="master" selected>🎲 MASTER (1-10)</option>
+                </select>
+                <button id="undoBtn" class="ghost">↩️ UNDO</button>
+            </div>
+            
+            <div class="turn-info">
+              <div id="statusLog" class="log-status">Ready to play!</div>
+              <div class="turn-indicator-bar">
+                <span id="turnLabel" class="turn-indicator js-accent-blue">BLUE</span>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:20px; flex-shrink: 0;">
+                <div class="dice">
+                  <div id="dieA" class="die ready">-</div>
+                  <div id="dieB" class="die ready">-</div>
+                </div>
+                <button id="passBtn" class="ghost">PASS 🔁</button>
+            </div>
+        </div>
+
+
+        <section class="panel board-panel">
+            <div class="board-scroll">
+              <div class="grid-container">
+                  <canvas id="output">Canvas not supported...</canvas>
+              </div>
+            </div>
+
+            <div class="legend">
+              <div><span style="color:var(--accent-blue);">🔵</span> LEFT &mdash; RIGHT GOAL</div>
+              <div><span style="color:var(--accent-red);">🔴</span> TOP &mdash; BOTTOM GOAL</div>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="sidebar"> 
+        <h3>GAME STATS</h3>
+        <div id="game-stats">
+            <p><strong>Mode:</strong> <span id="sidebar-mode">SINGLE PLAYER</span></p>
             <p><strong>Total Moves:</strong> <span id="sidebar-moves">0</span></p>
             <p><strong>Occupied Tiles:</strong> <span id="sidebar-occupied">0 / 121</span></p>
-            </div>
-
-            <div class="dice-mode-buttons">
-                <button id="easyDiceBtn" class="btn">Easy Dice</button>
-                <button id="hardDiceBtn" class="btn">Hard Dice</button>
-            </div>
-
-            <!-- other stuff -->
-
         </div>
+        
+        <h3>MOVE HISTORY</h3>
+        <div id="moveLog" class="move-log">
+            </div>
     </div>
   </div>
 
@@ -1249,7 +1315,7 @@ body::after {
         <p>The Blue Player wins by connecting the Left edge to the Right edge. The Red Player wins by connecting the Top edge to the Bottom edge.</p>
 
         <h3>THE PLACEMENT RULE 🎲</h3>
-        <p>On your turn, two dice are rolled (either 1-6 for easy mode or 1-10 for hard mode). You must place your piece on a tile whose value is a common multiple of both dice rolls.</p>
+        <p>On your turn, two dice (1-10) are rolled. You must place your piece on a tile whose value is a common multiple of both dice rolls.</p>
         <p>A tile value N is valid if and only if:</p>
         <ol style="margin-left: 15px; list-style-type: decimal; font-family: var(--font-text); background: var(--bg-light); padding: 10px; border-radius: 5px; margin-top: 10px; color: var(--text-dark);">
             <li>N is perfectly divisible by Die A.</li>
@@ -1314,6 +1380,32 @@ body::after {
     </div>
 </div>
 
+<!-- Landscape Orientation Prompt -->
+<div id="landscapePrompt">
+    <div class="rotate-icon">📱</div>
+    <h2>ROTATE TO LANDSCAPE</h2>
+    <p style="font-size: 18px; margin-top: 20px; color: var(--text-secondary);">
+        For the best gaming experience,<br>please rotate your device to landscape mode
+    </p>
+</div>
+
+<!-- Win/Error Modal -->
+<div id="modal-backdrop" class="modal-overlay">
+    <div id="win-modal" class="modal-content">
+        <button class="modal-close-btn" onclick="closeModal()" aria-label="Close modal">&times;</button>
+        <h2 id="modal-title">GAME OVER</h2>
+        <div id="modal-message">Game has ended.</div>
+    </div>
+</div>
+
+<!-- Helper Modal -->
+<div id="helperModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close-btn" onclick="hideHelper()" aria-label="Close helper">&times;</button>
+        <h2>COMMON MULTIPLE HELPER 💡</h2>
+        <div id="helperContent"></div>
+    </div>
+</div>
 
 <script>
 
@@ -1690,33 +1782,23 @@ firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // 2. Listen for User State (This triggers automatically on page load for returning users)
 auth.onAuthStateChanged(user => {
-    const loginOverlay = document.getElementById('loginOverlay');
-    const userProfile = document.getElementById('userProfile');
-
     if (user) {
-        // 1. Hide login and show profile
+        // User is found in local storage, skip login screen
         loginOverlay.style.display = 'none';
         userProfile.classList.remove('hidden');
-        userProfile.style.display = 'flex';
+        userProfile.classList.add('flex');
+        
+        userAvatar.src = user.photoURL || 'https://via.placeholder.com/40';
+        userName.textContent = user.displayName ? user.displayName.split(' ')[0] : "Player";
 
-        // 2. Setup Ecosystem Identity
-        const stats = getEcosystemStats(user.uid);
-        const rank = calculateRank(stats.wins);
-        document.getElementById('userName').textContent = user.displayName ? user.displayName.split(' ')[0] : "Player";
-        document.getElementById('userAvatar').src = user.photoURL || 'https://via.placeholder.com/40';
-        document.getElementById('displayRank').textContent = rank.title;
-
-        // 3. Sync with Server
-        socket.emit('authenticate', { uid: user.uid, name: user.displayName, photo: user.photoURL });
-
-        // 4. THE FIX: Initialize the board here if it's empty
-        if (board.length === 0) {
-            console.log("Initializing board...");
-            init(); 
-        }
+        socket.emit('authenticate', {
+            uid: user.uid,
+            name: user.displayName,
+            photo: user.photoURL
+        });
     } else {
         loginOverlay.style.display = 'flex';
-        userProfile.style.display = 'none';
+        userProfile.classList.add('hidden');
     }
 });
 
@@ -1769,6 +1851,7 @@ const dieAEl = document.getElementById('dieA'), dieBEl = document.getElementById
 const turnLabel = document.getElementById('turnLabel');
 const statusLogEl = document.getElementById('statusLog');
 const modeSelect = document.getElementById('modeSelect'); 
+const diceModeSelect = document.getElementById('diceModeSelect');
 const mainModalBackdrop = document.getElementById('modal-backdrop');
 const mainModalContent = document.getElementById('win-modal');
 
@@ -1789,10 +1872,10 @@ let sel = [-1, -1];
 let dieA = null, dieB = null;
 let moveHistory = [];
 let mode = 'single';
-let diceMode = 'hard'; // 'easy' or 'hard'
-let active = true;
-let occupiedCount = 0;
-let lastHoveredValid = [-1, -1];
+let diceMax = 10;
+let active = true; 
+let occupiedCount = 0; 
+let lastHoveredValid = [-1, -1]; 
 
 document.getElementById('matchBtn').addEventListener('click', () => {
     socket.emit('findMatch');
@@ -1803,7 +1886,7 @@ document.getElementById('matchBtn').addEventListener('click', () => {
 // --- UPDATED MATCHMAKING LISTENER ---
 socket.on('matchFound', (data) => {
     currentRoom = data.roomId;
-    myRole = data.role; 
+    myRole = data.role;
     isMultiplayer = true;
     
     // Update the UI log
@@ -2008,53 +2091,6 @@ socket.on('opponentMove', (data) => {
 
 
 // --- Game Constants and State ---
-
-
-function init() {
-
-    document.getElementById('newBtn').addEventListener('click', () => {
-    if (isMultiplayer) {
-        if (confirm("This will leave your current match. Are you sure?")) {
-            // Logic to leave room and reset
-            location.reload(); 
-        }
-    } else {
-        updateMenuButtons(); // Switch to "New Game"
-        init();
-    }
-});
-    // Reset core game state
-    board = [];
-    boardValues = [];
-    for (let i = 0; i < SIZE; i++) {
-        board[i] = [];
-        boardValues[i] = [];
-        for (let j = 0; j < SIZE; j++) {
-            board[i][j] = -1;
-            boardValues[i][j] = Math.floor(Math.random() * 90) + 10;
-        }
-    }
-    
-    sel = [-1, -1];
-    current = 1;
-    moveHistory = [];
-    occupiedCount = 0;
-    active = true; 
-    
-    // UI Resets
-    mainModalBackdrop.classList.add('hidden');
-    moveLogEl.innerHTML = '';
-    log("🎮 New Game Started! Blue goes first.");
-    
-    updateTurnLabel();
-    renderSidebar();
-    draw();
-
-    // Trigger first turn
-    startTurn();
-}
-
-
 
 
 // Utility to get a CSS variable value
@@ -2422,8 +2458,40 @@ function draw() {
             ctx.strokeStyle = prevStrokeStyle;
             ctx.lineWidth = prevLineWidth;
 
-            // 5. Draw Hover Outline
-            if (isHovered && owner === -1) { 
+            // 5. Draw Error Highlight (if this is the error tile)
+            if (window.errorTile && window.errorTile[0] === x && window.errorTile[1] === y) {
+                // Pulsing red outline for error tile - animated
+                const time = Date.now() / 200;
+                const pulse = Math.sin(time) * 0.3 + 0.7; // Pulse between 0.4 and 1.0
+                const glowSize = HEX_R + (5 * pulse);
+                
+                // Outer pulsing glow
+                ctx.save();
+                ctx.globalAlpha = pulse * 0.6;
+                drawHexagonOutline(
+                    ctx,
+                    cx,
+                    cy,
+                    glowSize,
+                    ACCENT_RED,
+                    HEX_BORDER_WIDTH + 6
+                );
+                ctx.globalAlpha = 1;
+                
+                // Inner solid outline
+                drawHexagonOutline(
+                    ctx,
+                    cx,
+                    cy,
+                    HEX_R + 2,
+                    ACCENT_RED,
+                    HEX_BORDER_WIDTH + 3
+                );
+                ctx.restore();
+            }
+            
+            // 6. Draw Hover Outline
+            if (isHovered && owner === -1 && (!window.errorTile || window.errorTile[0] !== x || window.errorTile[1] !== y)) { 
                 drawHexagonOutline(
                     ctx,
                     cx,
@@ -2643,13 +2711,12 @@ function botMove(){
 
 function startTurn() {
     if (isMultiplayer && current !== myRole) {
-        return;
+        return; 
     }
 
-    const maxDie = diceMode === 'easy' ? 6 : 10;
-    dieA = Math.floor(Math.random() * maxDie) + 1;
-    dieB = Math.floor(Math.random() * maxDie) + 1;
-
+    dieA = Math.floor(Math.random() * diceMax) + 1;
+    dieB = Math.floor(Math.random() * diceMax) + 1;
+    
     if (isMultiplayer) {
         socket.emit('syncDice', { roomId: currentRoom, dice: [dieA, dieB] });
     }
@@ -2661,17 +2728,6 @@ function startTurn() {
     // Stop if it's multiplayer and not yo
 
 
-// Ensure diceSynced listener updates the UI correctly
-socket.on('diceSynced', (data) => {
-    dieA = data.dice[0];
-    dieB = data.dice[1];
-    dieAEl.textContent = dieA;
-    dieBEl.textContent = dieB;
-    dieAEl.classList.add('ready');
-    dieBEl.classList.add('ready');
-    
-    processTurnStart(); // Re-calculate valid moves for the local player
-});
 
 function showWinModal(title, reason) {
     const modal = document.getElementById('modal-backdrop');
@@ -2704,7 +2760,6 @@ function processTurnStart() {
         dieBEl.classList.add('ready');
     }, 10);
 
-    updateValidMoves();
     draw();
 
     // Check if any moves are valid for the current dice roll
@@ -2759,14 +2814,14 @@ function rollDice(cb){
     
     let frames = 10;
     const iv = setInterval(()=>{
-        dieAEl.textContent = Math.floor(Math.random()*10)+1;
-        dieBEl.textContent = Math.floor(Math.random()*10)+1;
+        dieAEl.textContent = Math.floor(Math.random()*diceMax)+1;
+        dieBEl.textContent = Math.floor(Math.random()*diceMax)+1;
         tone(220 + Math.random()*200, 0.04, 0.05);
         frames--;
         if (frames <= 0){
             clearInterval(iv);
-            dieA = Math.floor(Math.random()*10)+1;
-            dieB = Math.floor(Math.random()*10)+1;
+            dieA = Math.floor(Math.random()*diceMax)+1;
+            dieB = Math.floor(Math.random()*diceMax)+1;
             dieAEl.textContent = dieA; dieBEl.textContent = dieB;
             dieAEl.classList.add('ready'); dieBEl.classList.add('ready');
             soundDice();
@@ -2777,41 +2832,148 @@ function rollDice(cb){
 }
 
 
+// Handle error clicks with animated explanation
+function handleErrorClick(x, y) {
+    soundError();
+    
+    // Check why it's invalid
+    const val = boardValues[x][y];
+    let errorReason = '';
+    let errorDetails = '';
+    
+    if (board[x][y] !== -1) {
+        errorReason = 'TILE ALREADY OCCUPIED!';
+        errorDetails = `This tile (${val}) is already taken by ${board[x][y] === 1 ? 'BLUE' : 'RED'} player.`;
+    } else if (dieA === null || dieB === null) {
+        errorReason = 'NO DICE ROLLED!';
+        errorDetails = 'You need to roll the dice first before placing a piece.';
+    } else {
+        // Not a common multiple
+        errorReason = 'NOT A COMMON MULTIPLE!';
+        showCommonMultipleError(x, y);
+        // Also highlight the tile on the board
+        highlightErrorTile(x, y);
+        return;
+    }
+    
+    // Show simple error for occupied or no dice
+    showAnimatedError(errorReason, errorDetails, x, y);
+    highlightErrorTile(x, y);
+}
+
+// Highlight the error tile with animation
+function highlightErrorTile(x, y) {
+    // Store the error tile position
+    window.errorTile = [x, y];
+    
+    // Animate the highlight by continuously redrawing
+    let frameCount = 0;
+    const maxFrames = 120; // 2 seconds at 60fps
+    
+    function animateError() {
+        if (frameCount < maxFrames && window.errorTile) {
+            draw();
+            frameCount++;
+            requestAnimationFrame(animateError);
+        } else {
+            window.errorTile = null;
+            draw();
+        }
+    }
+    
+    // Start animation
+    animateError();
+}
+
+// Show animated error explanation
 function showCommonMultipleError(x, y) {
     const val = boardValues[x][y];
-    
     const divA = val / dieA;
     const divB = val / dieB;
     
     const ACCENT_RED = getCssVar('--accent-red');
     const ACCENT_BLUE = getCssVar('--accent-blue');
+    const ACCENT_GREEN = getCssVar('--accent-blue');
     const TEXT_DARK = getCssVar('--text-dark');
     const TEXT_PRIMARY = getCssVar('--text-primary');
 
-    let message = `<div class="error-message"><strong style="font-size:1.2em; color: ${ACCENT_RED};">TILE ${val} IS NOT A COMMON MULTIPLE!</strong><br><br>`;
-    message += `The tile value must be a multiple of **both** dice rolls (${dieA} and ${dieB}).<br><br>`;
-
-    message += `<strong style="color:${TEXT_DARK};">Check 1: Divisible by ${dieA}?</strong><br>`;
-    if (isIntClose(divA)) {
-        message += `<span style="color:${ACCENT_BLUE}; font-weight: 700;">✅ YES:</span> ${val} / ${dieA} = ${Math.round(divA)}.<br>`;
-    } else {
-        message += `<span style="color:${ACCENT_RED}; font-weight: 700;">❌ NO:</span> ${val} / ${dieA} = ${divA.toFixed(2)}.<br>`;
-    }
+    let message = `<div class="error-explanation">`;
+    message += `<div class="error-header animated-fade-in">`;
+    message += `<h3 style="color: ${ACCENT_RED}; font-size: 1.5em; margin: 0 0 15px 0; animation: shake 0.5s;">🚫 TILE ${val} IS NOT VALID!</h3>`;
+    message += `<p style="font-size: 1.1em; margin-bottom: 20px;">The tile value must be a <strong>common multiple</strong> of both dice (${dieA} and ${dieB}).</p>`;
+    message += `</div>`;
     
-    message += `<br><strong style="color:${TEXT_DARK};">Check 2: Divisible by ${dieB}?</strong><br>`;
-    if (isIntClose(divB)) {
-        message += `<span style="color:${ACCENT_BLUE}; font-weight: 700;">✅ YES:</span> ${val} / ${dieB} = ${Math.round(divB)}.<br>`;
+    message += `<div class="error-checks">`;
+    
+    // Check 1 with animation
+    message += `<div class="check-item animated-slide-in" style="animation-delay: 0.2s;">`;
+    message += `<div class="check-header"><strong style="color:${TEXT_DARK}; font-size: 1.1em;">Check 1: Is ${val} divisible by ${dieA}?</strong></div>`;
+    if (isIntClose(divA)) {
+        message += `<div class="check-result success animated-pop-in" style="animation-delay: 0.4s;">`;
+        message += `<span class="check-icon">✅</span>`;
+        message += `<span><strong>YES!</strong> ${val} ÷ ${dieA} = ${Math.round(divA)} (Perfect division)</span>`;
+        message += `</div>`;
     } else {
-        message += `<span style="color:${ACCENT_RED}; font-weight: 700;">❌ NO:</span> ${val} / ${dieB} = ${divB.toFixed(2)}.<br>`;
+        message += `<div class="check-result error animated-pop-in" style="animation-delay: 0.4s;">`;
+        message += `<span class="check-icon">❌</span>`;
+        message += `<span><strong>NO!</strong> ${val} ÷ ${dieA} = ${divA.toFixed(2)} (Not a whole number)</span>`;
+        message += `</div>`;
     }
-
-    message += `<br><span style="font-weight: 600; color: ${getCssVar('--text-secondary')};">TIP:</span> Look for a multiple of the Least Common Multiple (LCM) of ${dieA} and ${dieB}.</div>`;
+    message += `</div>`;
+    
+    // Check 2 with animation
+    message += `<div class="check-item animated-slide-in" style="animation-delay: 0.6s;">`;
+    message += `<div class="check-header"><strong style="color:${TEXT_DARK}; font-size: 1.1em;">Check 2: Is ${val} divisible by ${dieB}?</strong></div>`;
+    if (isIntClose(divB)) {
+        message += `<div class="check-result success animated-pop-in" style="animation-delay: 0.8s;">`;
+        message += `<span class="check-icon">✅</span>`;
+        message += `<span><strong>YES!</strong> ${val} ÷ ${dieB} = ${Math.round(divB)} (Perfect division)</span>`;
+        message += `</div>`;
+    } else {
+        message += `<div class="check-result error animated-pop-in" style="animation-delay: 0.8s;">`;
+        message += `<span class="check-icon">❌</span>`;
+        message += `<span><strong>NO!</strong> ${val} ÷ ${dieB} = ${divB.toFixed(2)} (Not a whole number)</span>`;
+        message += `</div>`;
+    }
+    message += `</div>`;
+    message += `</div>`;
+    
+    // Tip with animation
+    const lcm = getLcm(dieA, dieB);
+    message += `<div class="error-tip animated-fade-in" style="animation-delay: 1s; margin-top: 20px; padding: 15px; background: rgba(0, 255, 65, 0.1); border-left: 4px solid ${ACCENT_GREEN}; border-radius: 4px;">`;
+    message += `<strong style="color: ${ACCENT_GREEN};">💡 TIP:</strong> Look for tiles that are multiples of the LCM(${dieA}, ${dieB}) = <strong>${lcm}</strong>.`;
+    message += ` Valid tiles include: ${lcm}, ${lcm * 2}, ${lcm * 3}, etc.`;
+    message += `</div>`;
+    
+    message += `</div>`;
     
     // Set custom styles for the error modal
     mainModalContent.style.borderColor = ACCENT_RED;
     mainModalContent.classList.add('error-modal');
 
-    document.getElementById('modal-title').textContent = '🚫 INCORRECT MULTIPLE!';
+    document.getElementById('modal-title').textContent = '🚫 INVALID MOVE!';
+    document.getElementById('modal-title').style.color = ACCENT_RED;
+    document.getElementById('modal-message').innerHTML = message;
+    mainModalBackdrop.classList.add('active');
+    
+    // Highlight the tile
+    highlightErrorTile(x, y);
+}
+
+function showAnimatedError(reason, details, x, y) {
+    const ACCENT_RED = getCssVar('--accent-red');
+    
+    let message = `<div class="error-explanation">`;
+    message += `<div class="error-header animated-fade-in">`;
+    message += `<h3 style="color: ${ACCENT_RED}; font-size: 1.5em; margin: 0 0 15px 0; animation: shake 0.5s;">🚫 ${reason}</h3>`;
+    message += `<p style="font-size: 1.1em;">${details}</p>`;
+    message += `</div>`;
+    message += `</div>`;
+    
+    mainModalContent.style.borderColor = ACCENT_RED;
+    mainModalContent.classList.add('error-modal');
+    
+    document.getElementById('modal-title').textContent = '⚠️ INVALID MOVE!';
     document.getElementById('modal-title').style.color = ACCENT_RED;
     document.getElementById('modal-message').innerHTML = message;
     mainModalBackdrop.classList.add('active');
@@ -3066,6 +3228,7 @@ function init(){
 function load() {
     mode = modeSelect.value;
     modeSelect.querySelector(`option[value="${mode}"]`).selected = true;
+    diceMax = diceModeSelect.value === 'simple' ? 6 : 10;
     init();
 }
 
@@ -3091,7 +3254,6 @@ outputCanvas.addEventListener('pointermove', (e) => {
         draw();
     }
 }); 
-
 
 
 outputCanvas.addEventListener('pointerleave', () => { 
@@ -3208,47 +3370,115 @@ document.getElementById('helperModal').addEventListener('click', (e) => { // NEW
     }
 });
 
-modeSelect.addEventListener('change', (e)=>{
+modeSelect.addEventListener('change', (e)=>{ 
     soundClick();
-    mode = e.target.value;
-    init();
+    mode = e.target.value; 
+    init(); 
 });
 
-// Dice mode buttons
-document.getElementById('easyDiceBtn').addEventListener('click', () => {
+diceModeSelect.addEventListener('change', (e)=>{ 
     soundClick();
-    diceMode = 'easy';
-    updateDiceModeButtons();
+    diceMax = e.target.value === 'simple' ? 6 : 10; 
+    init(); 
 });
 
-document.getElementById('hardDiceBtn').addEventListener('click', () => {
-    soundClick();
-    diceMode = 'hard';
-    updateDiceModeButtons();
+// Random Rocket Motion System
+function initRandomRockets() {
+    const rockets = document.querySelectorAll('.rocket');
+    
+    rockets.forEach((rocket, index) => {
+        // Random starting position
+        const startX = Math.random() * window.innerWidth;
+        const startY = Math.random() * window.innerHeight;
+        
+        // Random circular/curved path parameters
+        const centerX = Math.random() * window.innerWidth;
+        const centerY = Math.random() * window.innerHeight;
+        const radius = 200 + Math.random() * 300;
+        const speed = 0.005 + Math.random() * 0.01;
+        const rotationSpeed = (Math.random() - 0.5) * 0.02;
+        
+        let angle = Math.random() * Math.PI * 2;
+        let rotation = Math.random() * 360;
+        
+        rocket.style.left = startX + 'px';
+        rocket.style.top = startY + 'px';
+        rocket.style.opacity = '0.3';
+        
+        function animateRocket() {
+            // Circular/curved motion
+            angle += speed;
+            rotation += rotationSpeed * 180 / Math.PI;
+            
+            // Add some random drift
+            const driftX = (Math.random() - 0.5) * 2;
+            const driftY = (Math.random() - 0.5) * 2;
+            
+            const x = centerX + Math.cos(angle) * radius + driftX;
+            const y = centerY + Math.sin(angle) * radius + driftY;
+            
+            // Wrap around screen edges
+            const wrappedX = ((x % window.innerWidth) + window.innerWidth) % window.innerWidth;
+            const wrappedY = ((y % window.innerHeight) + window.innerHeight) % window.innerHeight;
+            
+            rocket.style.transform = `translate(${wrappedX - startX}px, ${wrappedY - startY}px) rotate(${rotation}deg)`;
+            
+            requestAnimationFrame(animateRocket);
+        }
+        
+        // Start animation with random delay
+        setTimeout(() => {
+            animateRocket();
+        }, Math.random() * 2000);
+    });
+}
+
+// Click/Tap Feedback System
+function createClickFeedback(x, y) {
+    const feedback = document.createElement('div');
+    feedback.className = 'click-feedback';
+    feedback.style.left = x + 'px';
+    feedback.style.top = y + 'px';
+    document.body.appendChild(feedback);
+    
+    setTimeout(() => {
+        feedback.remove();
+    }, 600);
+}
+
+// Add click/tap listeners
+document.addEventListener('click', (e) => {
+    createClickFeedback(e.clientX, e.clientY);
 });
 
-// Function to update button styles based on current mode
-function updateDiceModeButtons() {
-    const easyBtn = document.getElementById('easyDiceBtn');
-    const hardBtn = document.getElementById('hardDiceBtn');
+document.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    createClickFeedback(touch.clientX, touch.clientY);
+}, { passive: true });
 
-    if (diceMode === 'easy') {
-        easyBtn.style.background = 'linear-gradient(135deg, var(--accent-success) 0%, var(--accent-success) 100%)';
-        easyBtn.style.color = '#000000';
-        hardBtn.style.background = 'linear-gradient(135deg, var(--bg-light) 0%, var(--bg-panel) 100%)';
-        hardBtn.style.color = 'var(--accent-blue)';
+// Landscape Orientation Detection
+function checkOrientation() {
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile && isPortrait) {
+        document.getElementById('landscapePrompt').classList.add('active');
     } else {
-        hardBtn.style.background = 'linear-gradient(135deg, var(--accent-success) 0%, var(--accent-success) 100%)';
-        hardBtn.style.color = '#000000';
-        easyBtn.style.background = 'linear-gradient(135deg, var(--bg-light) 0%, var(--bg-panel) 100%)';
-        easyBtn.style.color = 'var(--accent-blue)';
+        document.getElementById('landscapePrompt').classList.remove('active');
     }
 }
 
+// Check orientation on load and resize
 window.addEventListener('load', () => {
     load();
-    updateDiceModeButtons();
+    initRandomRockets();
+    checkOrientation();
 });
+
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', () => {
+    setTimeout(checkOrientation, 100);
+}); 
 </script>
 </body>
 </html>
