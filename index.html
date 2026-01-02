@@ -829,36 +829,32 @@ body::after {
     0% { transform: translate(-50%, -50%) rotate(0deg); }
     100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
-
-.board-scroll {
-    border-radius: 4px;
-    padding: 10px;
-    background: var(--bg-light);
-    display: flex;
-    justify-content: center; /* Center horizontally */
-    align-items: center;     /* Center vertically */
-    box-shadow: var(--shadow-inset);
-    margin: 0;
-    flex-grow: 1;
+.board-scroll{
+    border-radius:4px; /* SQUARED */
+    padding: 10px; 
+    background: var(--bg-light); 
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    box-shadow: var(--shadow-inset); 
+    margin: 0; 
+    flex-grow: 1; 
     min-height: 0;
-    overflow: hidden;        /* REMOVED SCROLL: Changed from 'auto' to 'hidden' */
+    overflow: auto; 
     width: 100%;
+
 }
-
-
 .grid-container {
     position: relative;
-    display: flex;           /* Changed to flex for better centering */
-    justify-content: center;
-    align-items: center;
+    display: inline-block;
     user-select: none;
-    touch-action: manipulation;
+    touch-action: manipulation; 
     background-color: transparent;
-    margin: auto;
+    margin: auto; /* Center the board if it's smaller than the container */
+    /* Ensure the container doesn't exceed the parent */
     max-width: 100%;
     max-height: 100%;
 }
-
 #output {
     transition: filter 0.5s ease, opacity 0.5s ease;
 }
@@ -1256,19 +1252,14 @@ body::after {
   <div class="main-layout">
     <div class="main-game-area">
 
-      <div class="status-strip">
-    <div style="display:flex; gap: 12px; flex-shrink: 0; flex-wrap: wrap;">
-        <select id="modeSelect" class="select">
-            <option value="single">🤖 SINGLE PLAYER</option>
-            <option value="multi">👥 MULTI PLAYER</option>
-        </select>
-        <select id="diceModeSelect" class="select" style="border-color: var(--accent-warning);">
-            <option value="simple">🎲 SIMPLE (1-6)</option>
-            <option value="master">🔥 MASTER (1-10)</option>
-        </select>
-        <button id="undoBtn" class="ghost">↩️ UNDO</button>
-    </div>
-    </div>
+        <div class="status-strip">
+            <div style="display:flex; gap: 12px; flex-shrink: 0;">
+                <select id="modeSelect" class="select">
+                    <option value="single">🤖 SINGLE PLAYER</option>
+                    <option value="multi">👥 MULTI PLAYER</option>
+                </select>
+                <button id="undoBtn" class="ghost">↩️ UNDO</button>
+            </div>
             
             <div class="turn-info">
               <div id="statusLog" class="log-status">Ready to play!</div>
@@ -1442,7 +1433,20 @@ const googleBtn = document.getElementById('googleLoginBtn');
 // Locate where your code creates the SVG (likely inside a function called drawGrid)
 // Instead of fixed widths, use this configuration:
 
-// This space is intentionally left blank after removing erroneous code.
+// Replace the existing SVG attribute lines with these:
+const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
+// Use 100% so it fits the container exactly
+svg.setAttribute("width", "100%");
+svg.setAttribute("height", "100%");
+
+// FIX: Use boardPixelWidth/Height instead of totalWidth/Height
+svg.setAttribute("viewBox", `0 0 ${boardPixelWidth} ${boardPixelHeight}`);
+
+// Ensure the SVG respects the container boundaries
+svg.style.maxWidth = "100%";
+svg.style.maxHeight = "100%";
+svg.style.display = "block";
 
 // --- ECOSYSTEM STATS LOGIC ---
 function getStats(uid) {
@@ -2822,46 +2826,30 @@ function processTurnStart() {
 }
   
 
-function rollDice() {
-    if (gameState.gameOver || (gameState.mode === 'multi' && gameState.turn !== gameState.myPlayerNum)) return;
-    if (gameState.diceRolled) return;
-
-    const die1 = document.getElementById('die1');
-    const die2 = document.getElementById('die2');
-    const diceMode = document.getElementById('diceModeSelect').value;
+function rollDice(cb){
+    dieA = null; dieB = null;
+    dieAEl.classList.remove('ready'); dieBEl.classList.remove('ready');
+    dieAEl.textContent = '?'; dieBEl.textContent = '?';
     
-    // Determine range based on mode
-    const maxRange = (diceMode === 'master') ? 10 : 6;
-
-    die1.classList.remove('ready');
-    die2.classList.remove('ready');
-
-    let rolls = 0;
-    const interval = setInterval(() => {
-        // Simple: 1-6, Master: 1-10
-        die1.textContent = Math.floor(Math.random() * maxRange) + 1;
-        die2.textContent = Math.floor(Math.random() * maxRange) + 1;
-        rolls++;
-        if (rolls > 10) {
-            clearInterval(interval);
-            gameState.dice = [
-                Math.floor(Math.random() * maxRange) + 1,
-                Math.floor(Math.random() * maxRange) + 1
-            ];
-            die1.textContent = gameState.dice[0];
-            die2.textContent = gameState.dice[1];
-            die1.classList.add('ready');
-            die2.classList.add('ready');
-            gameState.diceRolled = true;
+    let frames = 10;
+    const iv = setInterval(()=>{
+        dieAEl.textContent = Math.floor(Math.random()*10)+1;
+        dieBEl.textContent = Math.floor(Math.random()*10)+1;
+        tone(220 + Math.random()*200, 0.04, 0.05);
+        frames--;
+        if (frames <= 0){
+            clearInterval(iv);
+            dieA = Math.floor(Math.random()*10)+1;
+            dieB = Math.floor(Math.random()*10)+1;
+            dieAEl.textContent = dieA; dieBEl.textContent = dieB;
+            dieAEl.classList.add('ready'); dieBEl.classList.add('ready');
+            soundDice();
             
-            updateStatus(`Rolled ${gameState.dice[0]} and ${gameState.dice[1]}. Find a common multiple!`);
-            
-            if (gameState.mode === 'multi') {
-                socket.emit('diceRolled', { room: gameState.room, dice: gameState.dice });
-            }
+            if (cb) cb();
         }
-    }, 50);
+    }, 70);
 }
+
 
 // Handle error clicks with animated explanation
 function handleErrorClick(x, y) {
