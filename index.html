@@ -1251,10 +1251,6 @@ body::after {
                     <option value="single">🤖 SINGLE PLAYER</option>
                     <option value="multi">👥 MULTI PLAYER</option>
                 </select>
-                <select id="diceMode" class="select">
-                    <option value="normal">🎲 NORMAL (1-6)</option>
-                    <option value="master">⚡ MASTER (1-10)</option>
-                </select>
                 <button id="undoBtn" class="ghost">↩️ UNDO</button>
             </div>
             
@@ -1296,6 +1292,15 @@ body::after {
             <p><strong>Mode:</strong> <span id="sidebar-mode">SINGLE PLAYER</span></p>
             <p><strong>Total Moves:</strong> <span id="sidebar-moves">0</span></p>
             <p><strong>Occupied Tiles:</strong> <span id="sidebar-occupied">0 / 121</span></p>
+        </div>
+        
+        <h3>DICE MODE</h3>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <select id="diceMode" class="select" style="width: 100%;">
+                <option value="normal">🎲 NORMAL (1-6)</option>
+                <option value="master">⚡ MASTER (1-10)</option>
+            </select>
+            <button id="rollDiceBtn" class="ghost" style="width: 100%;">🎲 ROLL DICE</button>
         </div>
         
         <h3>MOVE HISTORY</h3>
@@ -1819,18 +1824,30 @@ const HEX_W = HEX_R * Math.sqrt(3);
 // 2. SOCKET INITIALIZATION
 let socket;
 try {
-    socket = io('http://localhost:3000'); // Connect to local server
+    // Detect if we're on Render or localhost
+    const isRender = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+    const serverUrl = isRender ? window.location.origin : 'http://localhost:3000';
+    
+    socket = io(serverUrl);
     
     // Socket connection status
     socket.on('connect', () => {
-        console.log('Connected to server!');
+        console.log('Connected to server at:', serverUrl);
+        log('🟢 Connected to multiplayer server!');
     });
 
     socket.on('disconnect', () => {
         console.log('Disconnected from server');
+        log('🔴 Disconnected from server');
+    });
+
+    socket.on('connect_error', (error) => {
+        console.log('Connection error:', error);
+        log('❌ Failed to connect to server');
     });
 } catch (e) {
-    console.error("Socket not found, playing offline.");
+    console.error("Socket not available, playing offline.");
+    log('⚠️ Multiplayer not available - offline mode');
 }
 
 // 3. GAME STATE
@@ -1900,6 +1917,24 @@ document.getElementById('matchBtn').addEventListener('click', () => {
 diceModeSelect.addEventListener('change', (e) => {
     diceMode = e.target.value;
     log(`Dice mode changed to ${diceMode.toUpperCase()} (${diceMode === 'normal' ? '1-6' : '1-10'})`);
+});
+
+// Roll dice button handler
+document.getElementById('rollDiceBtn').addEventListener('click', () => {
+    if (!active) return;
+    
+    // Only allow rolling in single player mode or when it's your turn in multiplayer
+    if (isMultiplayer && current !== myRole) {
+        log("⚠️ It's not your turn to roll!");
+        return;
+    }
+    
+    if (!isMultiplayer && current !== 1) {
+        log("⚠️ It's the bot's turn!");
+        return;
+    }
+    
+    rollDice();
 });
 
 // Mode change handler
@@ -2125,7 +2160,35 @@ function getCssVar(name) {
 
 // --- Sound Functions ---
 let audioCtx;
-function tone(freq, t=0.08, vol=0.06){ try{ if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='sine'; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + t);}catch(e){} }
+let audioInitialized = false;
+
+function initAudio() {
+    if (!audioInitialized) {
+        try {
+            audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+            audioInitialized = true;
+        } catch(e) {
+            console.log("Audio not available");
+        }
+    }
+}
+
+function tone(freq, t=0.08, vol=0.06){ 
+    try{ 
+        if (!audioCtx) initAudio();
+        if (!audioCtx) return;
+        
+        const o = audioCtx.createOscillator(); 
+        const g = audioCtx.createGain(); 
+        o.type='sine'; 
+        o.frequency.value=freq; 
+        g.gain.value=vol; 
+        o.connect(g); 
+        g.connect(audioCtx.destination); 
+        o.start(); 
+        o.stop(audioCtx.currentTime + t);
+    }catch(e){} 
+}
 function soundWin() { tone(880, 0.15, 0.1); setTimeout(()=>tone(1320, 0.25, 0.1), 160); }
 function soundError() { tone(180, 0.1, 0.1); setTimeout(()=>tone(130, 0.1, 0.1), 100); }
 function soundDice() { tone(440, 0.08); }
