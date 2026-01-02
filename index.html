@@ -1433,17 +1433,17 @@ const googleBtn = document.getElementById('googleLoginBtn');
 // Locate where your code creates the SVG (likely inside a function called drawGrid)
 // Instead of fixed widths, use this configuration:
 
+// Replace the existing SVG attribute lines with these:
 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 
-// 1. Set width and height to 100% so it fills the .grid-container
+// Use 100% so it fits the container exactly
 svg.setAttribute("width", "100%");
 svg.setAttribute("height", "100%");
 
-// 2. Add a viewBox so the board scales internally without "popping out"
-// Replace 'totalWidth' and 'totalHeight' with your grid's actual calculated size
-svg.setAttribute("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
+// FIX: Use boardPixelWidth/Height instead of totalWidth/Height
+svg.setAttribute("viewBox", `0 0 ${boardPixelWidth} ${boardPixelHeight}`);
 
-// 3. Ensure it stays contained
+// Ensure the SVG respects the container boundaries
 svg.style.maxWidth = "100%";
 svg.style.maxHeight = "100%";
 svg.style.display = "block";
