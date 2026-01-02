@@ -6,58 +6,60 @@
 <title>NumberHex: Common Multiple Challenge</title>
 <link rel="icon" type="image/png" href="logo.png" />
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 <style>
-/* --- GAME-LIKE VIBRANT DARK THEME & FULL SCREEN LAYOUT --- */
+/* --- HIGH-OCTANE ARCADE E-SPORTS GAMING THEME --- */
 :root{
-  /* Base Colors - Dark Gaming Theme */
-  --bg-primary: #1A1A1A; /* Dark Game Console Black */
-  --bg-panel: #2A2A2A; /* Dark Grey Panel background */
-  --bg-light: #333333; /* Slightly lighter dark grey for elements */
+  /* Base Colors - Ultra Dark Gaming Theme */
+  --bg-primary: #0a0a0a; /* Deep black for maximum contrast */
+  --bg-panel: #1a1a1a; /* Slightly lighter for panels */
+  --bg-light: #252525; /* Lighter for elements */
   
-  --text-light: #E0E0E0; /* Light text for primary readability */
-  --text-dark: #B0B0B0; /* Lighter secondary text */
-  --muted: #444444; /* Dark grey for borders/muted elements */
+  --text-light: #FFFFFF; /* Pure white for maximum readability */
+  --text-dark: #CCCCCC; /* Light grey for secondary text */
+  --muted: #333333; /* Dark grey for borders */
   
-  /* Game Accents - Green-Themed & High Contrast */
-  --accent-blue: #7FFF00; /* Electric Lime Green - Player 1 (Replaces Blue) */
-  --accent-blue-light: #BFFF00; /* Lighter Lime for boundary */
-  --accent-blue-shadow: #4c8c00; /* Darker Green for Main Button Shadow */
-  --accent-red: #FF4500; /* Vibrant Orange-Red - Player 2 (Kept for contrast) */
-  --accent-red-light: #ff7559; /* Lighter Orange-Red for boundary */
-  --accent-dark: #FFFFFF; /* White for primary outlines/shadows */
-  --accent-success: #7FFF00; /* Match Player 1 color */
-  --accent-info: #00E0A0; /* Vibrant Teal/Cyan for info messages */
-  --accent-warning: #ffc107; /* Yellow for warnings (kept) */
-  --accent-danger: #FF4500; /* Match Player 2 color */
-  --ghost-shadow: #111111; /* Very dark shadow for ghost buttons */
+  /* E-SPORTS NEON ACCENTS - Maximum Intensity */
+  --accent-blue: #00FF41; /* Cyber Green - Player 1 */
+  --accent-blue-light: #7AFF9C; /* Bright green glow */
+  --accent-blue-shadow: #00CC33; /* Darker green shadow */
+  --accent-red: #FF1744; /* Electric Red - Player 2 */
+  --accent-red-light: #FF6B8A; /* Bright red glow */
+  --accent-dark: #FFFFFF;
+  --accent-success: #00FF88; /* Success green */
+  --accent-info: #00D9FF; /* Cyan info */
+  --accent-warning: #FFD700; /* Gold warning */
+  --accent-danger: #FF1744; /* Danger red */
+  --ghost-shadow: #000000;
   
-  --win: var(--accent-success); /* Use green for win path */
+  --win: var(--accent-success);
   
   --max-width: 1400px;
   --text-primary: var(--text-light); 
   --text-secondary: var(--text-dark);
   
-  /* --- NEW CYBERPUNK/NEON UI STYLING --- */
-  --radius-sharp: 5px; /* Sharp corners for modern look */
-  --radius-panel: 8px; /* Slightly more rounded for main containers */
+  /* ARCADE STYLING */
+  --radius-sharp: 3px; /* Sharper corners for arcade feel */
+  --radius-panel: 6px;
 
-  /* Shadows for Depth (Less depth, more glow/contrast) */
-  --shadow-l: 0 0 15px rgba(0,0,0,0.5); 
-  --shadow-m: 0 0 5px rgba(0,0,0,0.5);
-  --shadow-inset: inset 0 0 5px rgba(0,0,0,0.3);
+  /* INTENSE GLOW SHADOWS */
+  --shadow-l: 0 0 30px rgba(0, 255, 65, 0.4), 0 0 60px rgba(0, 255, 65, 0.2); 
+  --shadow-m: 0 0 15px rgba(0, 255, 65, 0.3);
+  --shadow-inset: inset 0 0 10px rgba(0,0,0,0.5);
+  --shadow-glow-blue: 0 0 20px rgba(0, 255, 65, 0.6), 0 0 40px rgba(0, 255, 65, 0.3);
+  --shadow-glow-red: 0 0 20px rgba(255, 23, 68, 0.6), 0 0 40px rgba(255, 23, 68, 0.3);
   
-  /* 2D button press variables */
-  --btn-offset: 4px; /* Offset distance for 2D look */
+  /* Button press variables */
+  --btn-offset: 5px;
   --btn-shadow-color: var(--accent-blue-shadow);
 
   --font-title: 'Bungee Inline', cursive;
-  --font-text: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue";
+  --font-text: 'Inter', system-ui, -apple-system, sans-serif;
 
-  /* Turn indicators for code logic */
+  /* Turn indicators */
   --glow-color-1: var(--accent-blue);
   --glow-color-2: var(--accent-red);
   --turn-indicator-1: var(--accent-blue);
@@ -110,15 +112,249 @@
         right: 20px;
     }
 }
-/* Global Reset & Body - DEFAULT (Desktop Non-Scrolling) */
+/* Global Reset & Body - ARCADE STYLE */
 *{box-sizing:border-box}
+
+/* Custom Cursor - Large and Very Visible */
+html, body {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="%2300FF41" opacity="0.9" stroke="%23FFFFFF" stroke-width="3"/><circle cx="24" cy="24" r="6" fill="%23FFFFFF"/><circle cx="24" cy="24" r="2" fill="%23000000"/></svg>') 24 24, auto;
+}
+
+/* Make cursor more visible on interactive elements */
+button, .btn, .ghost, a, [role="button"] {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="%2300FF41" opacity="1" stroke="%23FFFFFF" stroke-width="4"/><circle cx="28" cy="28" r="8" fill="%23FFFFFF"/><circle cx="28" cy="28" r="3" fill="%23000000"/></svg>') 28 28, pointer;
+}
+
 html,body{
-    height:100vh; /* Fixed height for desktop/default */
+    height:100vh;
     margin:0;
     font-family:var(--font-text);
-    background:var(--bg-primary); 
+    background:var(--bg-primary);
     color:var(--text-primary);
-    overflow: hidden; /* Prevent scrolling on desktop/default */
+    overflow: hidden;
+    position: relative;
+}
+
+/* Click/Tap Feedback - Mobile Responsive */
+.click-feedback {
+    position: fixed;
+    width: 80px;
+    height: 80px;
+    border: 4px solid var(--accent-blue);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+    animation: clickRipple 0.6s ease-out;
+    box-shadow: 
+        0 0 20px rgba(0, 255, 65, 0.8),
+        0 0 40px rgba(0, 255, 65, 0.4),
+        inset 0 0 20px rgba(0, 255, 65, 0.2);
+}
+
+@media (max-width: 768px) {
+    .click-feedback {
+        width: 100px;
+        height: 100px;
+        border-width: 5px;
+    }
+}
+
+@keyframes clickRipple {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+/* Landscape Orientation Prompt */
+#landscapePrompt {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 999999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: var(--accent-blue);
+    font-family: var(--font-title);
+    text-align: center;
+    padding: 20px;
+}
+
+#landscapePrompt.active {
+    display: flex;
+}
+
+#landscapePrompt h2 {
+    font-size: clamp(24px, 6vw, 48px);
+    margin-bottom: 20px;
+    color: var(--accent-blue);
+    text-shadow: 0 0 10px var(--accent-blue);
+}
+
+#landscapePrompt .rotate-icon {
+    font-size: 80px;
+    margin: 20px 0;
+    animation: rotateDevice 2s ease-in-out infinite;
+}
+
+@keyframes rotateDevice {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(90deg); }
+}
+
+/* Animated background grid effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+    animation: gridPulse 4s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+/* Arcade Background Decorations Container */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+/* Rocket Decorations - Random Motion via JavaScript */
+.rocket {
+    position: fixed;
+    font-size: 30px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    will-change: transform;
+}
+
+/* Floating Stars/Decorations */
+.star {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    background: var(--accent-blue);
+    border-radius: 50%;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow: 0 0 6px var(--accent-blue);
+    animation: starFloat 8s ease-in-out infinite;
+}
+
+.star:nth-child(6) { left: 10%; top: 20%; animation-delay: 0s; }
+.star:nth-child(7) { left: 25%; top: 60%; animation-delay: 1s; }
+.star:nth-child(8) { left: 45%; top: 15%; animation-delay: 2s; }
+.star:nth-child(9) { left: 60%; top: 80%; animation-delay: 3s; }
+.star:nth-child(10) { left: 75%; top: 40%; animation-delay: 4s; }
+.star:nth-child(11) { left: 85%; top: 70%; animation-delay: 5s; }
+.star:nth-child(12) { left: 15%; top: 90%; animation-delay: 6s; }
+.star:nth-child(13) { left: 35%; top: 35%; animation-delay: 7s; }
+.star:nth-child(14) { left: 55%; top: 65%; animation-delay: 0.5s; }
+.star:nth-child(15) { left: 90%; top: 25%; animation-delay: 1.5s; }
+
+@keyframes starFloat {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.2;
+    }
+    50% {
+        transform: translateY(-30px) scale(1.5);
+        opacity: 0.6;
+    }
+}
+
+/* Floating Numbers (Arcade Style) */
+.floating-number {
+    position: fixed;
+    font-family: var(--font-title);
+    font-size: 24px;
+    color: var(--accent-blue);
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 1;
+    font-weight: 900;
+    animation: numberFloat 10s ease-in-out infinite;
+}
+
+.floating-number:nth-child(16) { left: 5%; top: 10%; animation-delay: 0s; }
+.floating-number:nth-child(17) { left: 20%; top: 50%; animation-delay: 2s; }
+.floating-number:nth-child(18) { left: 40%; top: 5%; animation-delay: 4s; }
+.floating-number:nth-child(19) { left: 70%; top: 75%; animation-delay: 6s; }
+.floating-number:nth-child(20) { left: 95%; top: 30%; animation-delay: 8s; }
+
+@keyframes numberFloat {
+    0%, 100% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0.1;
+    }
+    25% {
+        transform: translateY(-20px) translateX(10px) rotate(5deg);
+        opacity: 0.2;
+    }
+    50% {
+        transform: translateY(-40px) translateX(-10px) rotate(-5deg);
+        opacity: 0.15;
+    }
+    75% {
+        transform: translateY(-20px) translateX(5px) rotate(3deg);
+        opacity: 0.2;
+    }
+}
+
+/* Scanline effect for arcade feel */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: 10000;
+    animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(10px); }
 }
 .wrap{
     max-width:var(--max-width);
@@ -127,6 +363,8 @@ html,body{
     height: 100vh; /* Fixed height for desktop/default */
     display: flex;
     flex-direction: column;
+    position: relative;
+    z-index: 10; /* Above background decorations */
 } 
 
 /* NEW LAYOUT FOR SIDEBAR */
@@ -143,27 +381,54 @@ html,body{
     min-width: 0; 
 }
 .sidebar { 
-    width: 300px; /* Fixed width */
-    background: var(--bg-panel);
+    width: 300px;
+    background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 100%);
     border: 3px solid var(--accent-blue);
     border-radius: var(--radius-panel);
     padding: 15px;
-    box-shadow: var(--shadow-l);
+    box-shadow: 
+        var(--shadow-l),
+        inset 0 0 20px rgba(0, 255, 65, 0.1);
     flex-shrink: 0; 
     overflow-y: auto; 
     display: flex;
     flex-direction: column;
     gap: 15px;
-    height: 100%; /* Ensure it fills the height of main-layout */
+    height: 100%;
+    position: relative;
 }
+
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--accent-blue),
+        transparent
+    );
+    animation: sidebarTopGlow 3s ease-in-out infinite;
+}
+
+@keyframes sidebarTopGlow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
 .sidebar h3 {
     font-family: var(--font-title);
     color: var(--accent-blue);
-    font-size: 20px;
-    margin-bottom: 5px;
-    padding-bottom: 5px;
-    border-bottom: 2px solid var(--muted);
-    letter-spacing: 2px;
+    font-size: 22px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent-blue);
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px var(--accent-blue);
+    position: relative;
 }
 .sidebar p {
     font-size: 14px;
@@ -212,33 +477,59 @@ html,body{
 }
 .title h1{
     margin:0;
-    font-size: clamp(40px, 8vw, 75px); 
+    font-size: clamp(40px, 8vw, 85px); 
     font-weight:900;
     font-family:var(--font-title);
     color:var(--accent-blue);
     line-height:1.05; 
-    letter-spacing: 5px; 
-    /* Updated for sharper neon glow */
-    text-shadow: 0 0 5px var(--accent-blue), 0 0 15px rgba(127, 255, 0, 0.4);
+    letter-spacing: 8px; 
+    position: relative;
+    text-shadow: none;
 }
 .controls { display: flex; gap: 12px; }
 
-/* Status/Control Strip */
+/* Status/Control Strip - TOURNAMENT STYLE */
 .status-strip {
     position: relative; 
     z-index: 10;      
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--bg-panel);
-    padding: 10px 20px; 
-    border-radius: var(--radius-panel); /* SQUARED */
-    box-shadow: var(--shadow-m);
+    background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 100%);
+    padding: 12px 24px; 
+    border-radius: var(--radius-panel);
+    box-shadow: 
+        var(--shadow-m),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     margin-bottom: 12px; 
     gap: 15px;
     flex-wrap: wrap;
-    border: 2px solid var(--muted); /* Reduced thickness */
-    flex-shrink: 0; 
+    border: 2px solid var(--accent-blue);
+    border-top: 3px solid var(--accent-blue);
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.status-strip::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 255, 65, 0.1),
+        transparent
+    );
+    animation: statusScan 3s linear infinite;
+}
+
+@keyframes statusScan {
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 .turn-info {
     flex-grow: 1;
@@ -257,15 +548,34 @@ html,body{
     margin-bottom: 4px;
 }
 .turn-indicator-bar {
-    border-radius: 4px; /* SQUARED */
-    padding: 4px 15px;
-    font-size: 18px;
+    border-radius: 4px;
+    padding: 6px 20px;
+    font-size: 20px;
     font-weight: 900;
     text-transform: uppercase;
-    background: var(--bg-light); 
-    border: 2px solid var(--muted);
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); 
-    font-family: var(--font-title); 
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-panel) 100%);
+    border: 2px solid var(--accent-blue);
+    box-shadow: 
+        inset 0 1px 3px rgba(0,0,0,0.6),
+        0 0 15px rgba(0, 255, 65, 0.4);
+    font-family: var(--font-title);
+    letter-spacing: 2px;
+    position: relative;
+    animation: turnIndicatorPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes turnIndicatorPulse {
+    0%, 100% { 
+        box-shadow: 
+            inset 0 1px 3px rgba(0,0,0,0.6),
+            0 0 15px rgba(0, 255, 65, 0.4);
+    }
+    50% { 
+        box-shadow: 
+            inset 0 1px 3px rgba(0,0,0,0.6),
+            0 0 25px rgba(0, 255, 65, 0.7),
+            0 0 40px rgba(0, 255, 65, 0.4);
+    }
 }
 
 /* Inputs/Selects - Dark Style */
@@ -280,93 +590,243 @@ html,body{
     font-weight: 600;
 }
 
-/* Button Styling (NEW 2D/OFFSET SHADOW LOOK) */
+/* Button Styling - ARCADE BUTTONS */
 .btn{
-    background:var(--accent-blue);
-    color:var(--bg-panel); 
-    padding:10px 20px;
-    border-radius:var(--radius-sharp); /* SQUARED */
-    border:none;
-    font-weight:800;
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-shadow) 100%);
+    color: #000000; 
+    padding:12px 24px;
+    border-radius:var(--radius-sharp);
+    border: 2px solid var(--accent-blue-light);
+    font-weight:900;
     cursor:pointer;
-    transition:transform 0.1s, box-shadow 0.1s; 
-    /* Offset shadow for 2D "game button" feel */
-    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--btn-shadow-color);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        var(--btn-offset) var(--btn-offset) 0px var(--btn-shadow-color),
+        0 0 20px rgba(0, 255, 65, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.btn:hover{
-    /* Slight shift up-left */
-    transform:translate(-1px, -1px); 
-    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--btn-shadow-color);
-}
-.btn:active{
-    /* Press down and right (shadow disappears) */
-    transform:translate(var(--btn-offset), var(--btn-offset)); 
-    box-shadow: 0 0 0px var(--btn-shadow-color);
-}
-.ghost{
-    background:var(--bg-light);
-    border:2px solid var(--muted);
-    color:var(--text-primary);
-    padding:10px 14px;
-    border-radius:var(--radius-sharp); /* SQUARED */
-    font-weight:700;
-    cursor:pointer;
-    transition:background 0.1s, transform 0.1s;
-    /* Offset shadow for 2D "game button" feel */
-    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--ghost-shadow);
-}
-.ghost:hover{
-    background:var(--muted); 
-    transform:translate(-1px, -1px);
-    box-shadow: var(--btn-offset) var(--btn-offset) 0px var(--ghost-shadow);
-}
-.ghost:active{
-    transform:translate(var(--btn-offset), var(--btn-offset));
-    box-shadow: 0 0 0px var(--ghost-shadow);
+    letter-spacing: 1px;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Dice Area - MORE PROMINENT */
-.dice{display:flex;gap:15px;align-items:center}
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn:hover{
+    transform:translate(-2px, -2px) scale(1.02); 
+    box-shadow: 
+        calc(var(--btn-offset) + 2px) calc(var(--btn-offset) + 2px) 0px var(--btn-shadow-color),
+        0 0 30px rgba(0, 255, 65, 0.8),
+        0 0 50px rgba(0, 255, 65, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn:active{
+    transform:translate(var(--btn-offset), var(--btn-offset)) scale(0.98); 
+    box-shadow: 
+        0 0 0px var(--btn-shadow-color),
+        0 0 15px rgba(0, 255, 65, 0.6),
+        inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.ghost{
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-panel) 100%);
+    border:2px solid var(--accent-blue);
+    color:var(--accent-blue);
+    padding:10px 18px;
+    border-radius:var(--radius-sharp);
+    font-weight:800;
+    cursor:pointer;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        var(--btn-offset) var(--btn-offset) 0px var(--ghost-shadow),
+        0 0 10px rgba(0, 255, 65, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+}
+.ghost:hover{
+    background:var(--bg-panel);
+    border-color: var(--accent-blue-light);
+    color: var(--accent-blue-light);
+    transform:translate(-2px, -2px) scale(1.02);
+    box-shadow: 
+        calc(var(--btn-offset) + 2px) calc(var(--btn-offset) + 2px) 0px var(--ghost-shadow),
+        0 0 20px rgba(0, 255, 65, 0.5),
+        0 0 30px rgba(0, 255, 65, 0.2);
+}
+.ghost:active{
+    transform:translate(var(--btn-offset), var(--btn-offset)) scale(0.98);
+    box-shadow: 
+        0 0 0px var(--ghost-shadow),
+        0 0 10px rgba(0, 255, 65, 0.4);
+}
+
+/* Dice Area - ARCADE STYLE */
+.dice{display:flex;gap:20px;align-items:center}
 .die{
-    width:70px; 
-    height:70px; 
-    border-radius:var(--radius-sharp); /* SQUARED */
-    background:var(--bg-panel); 
-    color:var(--text-dark); 
+    width:80px; 
+    height:80px; 
+    border-radius:var(--radius-sharp);
+    background: linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-light) 100%);
+    color:var(--text-light); 
     display:flex;
     align-items:center;
     justify-content:center;
     font-weight:900;
-    font-size:40px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+    font-size:45px; 
+    box-shadow: 
+        0 6px 20px rgba(0,0,0,0.6),
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        inset 0 -2px 4px rgba(0,0,0,0.3); 
     border:4px solid var(--muted);
     animation:diceRoll 0.1s infinite alternate; 
-    transition: all 0.2s; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
     line-height: 1;
-    font-family: var(--font-title); 
+    font-family: var(--font-title);
+    position: relative;
+    text-shadow: 0 0 10px currentColor;
 }
-.die.ready{animation:none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);} 
-.die.ready:nth-child(1){border-color: var(--accent-blue);}
-.die.ready:nth-child(2){border-color: var(--accent-red);}
-@keyframes diceRoll {from {transform: rotate(0deg) scale(1);} to {transform: rotate(2deg) scale(1.02);} }
 
-/* Grid/Board Panel - Main content area */
-.panel{
-    background:var(--bg-panel);
-    padding:12px; 
-    border-radius:var(--radius-panel); /* SQUARED */
-    border:3px solid var(--muted); 
-    /* MODIFIED: Sharper, more intense neon glow */
+.die::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: var(--radius-sharp);
+    padding: 2px;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.die.ready::before {
+    opacity: 1;
+    animation: borderGlow 2s ease-in-out infinite;
+}
+
+.die.ready{
+    animation:none;
     box-shadow: 
-        0 0 8px rgba(0,0,0,0.8), /* Dark shadow for depth */
-        0 0 10px var(--accent-blue), /* Stronger central glow */
-        0 0 25px rgba(127, 255, 0, 0.2); /* Wider halo */
+        0 6px 20px rgba(0,0,0,0.6),
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        inset 0 -2px 4px rgba(0,0,0,0.3);
+} 
+
+.die.ready:nth-child(1){
+    border-color: var(--accent-blue);
+    box-shadow: 
+        0 6px 20px rgba(0,0,0,0.6),
+        0 0 20px rgba(0, 255, 65, 0.6),
+        0 0 40px rgba(0, 255, 65, 0.3),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+    color: var(--accent-blue);
+}
+
+.die.ready:nth-child(2){
+    border-color: var(--accent-red);
+    box-shadow: 
+        0 6px 20px rgba(0,0,0,0.6),
+        0 0 20px rgba(255, 23, 68, 0.6),
+        0 0 40px rgba(255, 23, 68, 0.3),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+    color: var(--accent-red);
+}
+
+@keyframes diceRoll {
+    from {
+        transform: rotate(-5deg) scale(0.95);
+    } 
+    to {
+        transform: rotate(5deg) scale(1.05);
+    }
+}
+
+@keyframes borderGlow {
+    0%, 100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Grid/Board Panel - TOURNAMENT ARENA */
+.panel{
+    background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 50%, var(--bg-panel) 100%);
+    padding:15px; 
+    border-radius:var(--radius-panel);
+    border:3px solid var(--accent-blue);
+    box-shadow: 
+        0 0 20px rgba(0,0,0,0.9),
+        0 0 40px rgba(0, 255, 65, 0.4),
+        0 0 60px rgba(0, 255, 65, 0.2),
+        inset 0 0 30px rgba(0, 255, 65, 0.05);
     flex-grow: 1; 
     min-height: 0; 
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(0, 255, 65, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(255, 23, 68, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.panel::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(0, 255, 65, 0.03) 50%,
+        transparent 70%
+    );
+    animation: panelShine 8s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes panelShine {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 .board-scroll{
     border-radius:4px; /* SQUARED */
@@ -431,29 +891,38 @@ html,body{
     opacity: 1;
 }
 .modal-content { 
-    background: var(--bg-panel); 
+    background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 100%); 
     border: 3px solid var(--accent-blue); 
     color: var(--text-primary); 
-    padding: 25px;
-    border-radius: var(--radius-panel); /* SQUARED */
+    padding: 30px;
+    border-radius: var(--radius-panel);
     max-width: 90%;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: var(--shadow-l);
+    box-shadow: 
+        var(--shadow-l),
+        0 0 50px rgba(0, 255, 65, 0.5),
+        inset 0 0 30px rgba(0, 255, 65, 0.1);
     position: relative;
-    transform: scale(0.95);
-    transition: transform 0.3s ease-out;
-    width: 500px; /* Default width for new modals */
+    transform: scale(0.9);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 500px;
 }
+
 .modal-overlay.active .modal-content {
     transform: scale(1);
 }
+
 .modal-content h2 { 
     border-bottom: 3px solid var(--accent-blue); 
     color: var(--accent-blue); 
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    text-shadow: none; 
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    text-shadow: 
+        0 0 10px var(--accent-blue),
+        0 0 20px var(--accent-blue);
+    font-size: 28px;
+    letter-spacing: 2px;
 }
 .modal-content h3 { 
     color: var(--text-primary); 
@@ -499,6 +968,144 @@ html,body{
 }
 .error-message strong {
     color: var(--accent-red);
+}
+
+/* Animated Error Explanation Styles */
+.error-explanation {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.error-header {
+    margin-bottom: 20px;
+}
+
+.error-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.check-item {
+    background: rgba(42, 42, 42, 0.6);
+    border-radius: 8px;
+    padding: 15px;
+    border: 2px solid var(--muted);
+}
+
+.check-header {
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+.check-result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 1.05em;
+    font-weight: 600;
+}
+
+.check-result.success {
+    background: rgba(0, 255, 65, 0.15);
+    border: 2px solid var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.check-result.error {
+    background: rgba(255, 23, 68, 0.15);
+    border: 2px solid var(--accent-red);
+    color: var(--accent-red);
+}
+
+.check-icon {
+    font-size: 1.5em;
+    animation: iconPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.error-tip {
+    font-size: 1em;
+    line-height: 1.6;
+}
+
+/* Animations for Error Explanations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes animated-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes animated-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes animated-pop-in {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes iconPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.3);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animated-fade-in {
+    animation: animated-fade-in 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.animated-slide-in {
+    animation: animated-slide-in 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.animated-pop-in {
+    animation: animated-pop-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    opacity: 0;
 }
 
 /* --- MOBILE SPECIFIC STYLES (Max-width 768px) --- */
@@ -599,6 +1206,28 @@ html,body{
 </style>
 </head>
 <body>
+<!-- Arcade Background Decorations -->
+<div class="rocket">🚀</div>
+<div class="rocket">🚀</div>
+<div class="rocket">🚀</div>
+<div class="rocket">🚀</div>
+<div class="rocket">🚀</div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="floating-number">42</div>
+<div class="floating-number">88</div>
+<div class="floating-number">24</div>
+<div class="floating-number">66</div>
+<div class="floating-number">12</div>
+
 <div class="wrap">
   <div class="header">
     <div class="title">
@@ -621,6 +1250,10 @@ html,body{
                 <select id="modeSelect" class="select">
                     <option value="single">🤖 SINGLE PLAYER</option>
                     <option value="multi">👥 MULTI PLAYER</option>
+                </select>
+                <select id="diceMode" class="select">
+                    <option value="normal">🎲 NORMAL (1-6)</option>
+                    <option value="master">⚡ MASTER (1-10)</option>
                 </select>
                 <button id="undoBtn" class="ghost">↩️ UNDO</button>
             </div>
@@ -682,7 +1315,7 @@ html,body{
         <p>The Blue Player wins by connecting the Left edge to the Right edge. The Red Player wins by connecting the Top edge to the Bottom edge.</p>
 
         <h3>THE PLACEMENT RULE 🎲</h3>
-        <p>On your turn, two dice (1-10) are rolled. You must place your piece on a tile whose value is a common multiple of both dice rolls.</p>
+        <p>On your turn, two dice are rolled. In Normal mode dice range is 1-6, in Master mode it's 1-10. You must place your piece on a tile whose value is a common multiple of both dice rolls.</p>
         <p>A tile value N is valid if and only if:</p>
         <ol style="margin-left: 15px; list-style-type: decimal; font-family: var(--font-text); background: var(--bg-light); padding: 10px; border-radius: 5px; margin-top: 10px; color: var(--text-dark);">
             <li>N is perfectly divisible by Die A.</li>
@@ -747,6 +1380,32 @@ html,body{
     </div>
 </div>
 
+<!-- Landscape Orientation Prompt -->
+<div id="landscapePrompt">
+    <div class="rotate-icon">📱</div>
+    <h2>ROTATE TO LANDSCAPE</h2>
+    <p style="font-size: 18px; margin-top: 20px; color: var(--text-secondary);">
+        For the best gaming experience,<br>please rotate your device to landscape mode
+    </p>
+</div>
+
+<!-- Win/Error Modal -->
+<div id="modal-backdrop" class="modal-overlay">
+    <div id="win-modal" class="modal-content">
+        <button class="modal-close-btn" onclick="closeModal()" aria-label="Close modal">&times;</button>
+        <h2 id="modal-title">GAME OVER</h2>
+        <div id="modal-message">Game has ended.</div>
+    </div>
+</div>
+
+<!-- Helper Modal -->
+<div id="helperModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close-btn" onclick="hideHelper()" aria-label="Close helper">&times;</button>
+        <h2>COMMON MULTIPLE HELPER 💡</h2>
+        <div id="helperContent"></div>
+    </div>
+</div>
 
 <script>
 
@@ -1160,7 +1819,16 @@ const HEX_W = HEX_R * Math.sqrt(3);
 // 2. SOCKET INITIALIZATION
 let socket;
 try {
-    socket = io(); // This will work perfectly on Render
+    socket = io('http://localhost:3000'); // Connect to local server
+    
+    // Socket connection status
+    socket.on('connect', () => {
+        console.log('Connected to server!');
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+    });
 } catch (e) {
     console.error("Socket not found, playing offline.");
 }
@@ -1191,7 +1859,8 @@ const ctx = outputCanvas.getContext("2d");
 const dieAEl = document.getElementById('dieA'), dieBEl = document.getElementById('dieB');
 const turnLabel = document.getElementById('turnLabel');
 const statusLogEl = document.getElementById('statusLog');
-const modeSelect = document.getElementById('modeSelect'); 
+const modeSelect = document.getElementById('modeSelect');
+const diceModeSelect = document.getElementById('diceMode'); 
 const mainModalBackdrop = document.getElementById('modal-backdrop');
 const mainModalContent = document.getElementById('win-modal');
 
@@ -1212,67 +1881,88 @@ let sel = [-1, -1];
 let dieA = null, dieB = null;
 let moveHistory = [];
 let mode = 'single';
+let diceMode = 'normal'; // 'normal' or 'master'
 let active = true; 
 let occupiedCount = 0; 
 let lastHoveredValid = [-1, -1]; 
 
 document.getElementById('matchBtn').addEventListener('click', () => {
-    socket.emit('findMatch');
-    document.getElementById('matchBtn').textContent = "SEARCHING...";
+    if (socket) {
+        socket.emit('findMatch');
+        document.getElementById('matchBtn').textContent = "SEARCHING...";
+    } else {
+        log('❌ Not connected to server!');
+    }
     // Note: isMultiplayer becomes true once 'matchFound' is received
 });
 
-// --- UPDATED MATCHMAKING LISTENER ---
-socket.on('matchFound', (data) => {
-    currentRoom = data.roomId;
-    myRole = data.role;
-    isMultiplayer = true;
-    
-    // Update the UI log
-    log(`Matched! Playing against ${data.opponentName}`);
-    
-    // Optional: If you want to show the opponent's photo on the sidebar
-    const statsArea = document.getElementById('game-stats');
-    statsArea.innerHTML += `
-        <div class="flex items-center gap-2 mt-4 p-2 bg-black rounded">
-            <img src="${data.opponentPhoto || 'https://via.placeholder.com/30'}" class="w-6 h-6 rounded-full border border-red-500">
-            <span class="text-xs text-red-500">Opponent: ${data.opponentName}</span>
-        </div>
-    `;
+// Dice mode change handler
+diceModeSelect.addEventListener('change', (e) => {
+    diceMode = e.target.value;
+    log(`Dice mode changed to ${diceMode.toUpperCase()} (${diceMode === 'normal' ? '1-6' : '1-10'})`);
+});
 
-    // Ensure the game starts
-    modeSelect.value = "multi";
-    mode = "multi";
-    active = true;
-    updateMenuButtons();
-
-    if (myRole === 1) {
-        init(); // Blue player (Role 1) starts the first roll
+// Mode change handler
+modeSelect.addEventListener('change', (e) => {
+    mode = e.target.value;
+    if (mode === 'single') {
+        isMultiplayer = false;
+        document.getElementById('matchBtn').textContent = "FIND MATCH";
     }
+    log(`Mode changed to ${mode === 'single' ? 'SINGLE PLAYER' : 'MULTI PLAYER'}`);
 });
 
-socket.on('startGame', () => {
-    active = true;
-    init(); 
-});
+// --- UPDATED MATCHMAKING LISTENER ---
+if (socket) {
+    socket.on('matchFound', (data) => {
+        currentRoom = data.roomId;
+        myRole = data.role;
+        isMultiplayer = true;
+        
+        // Update the UI log
+        log(`Matched! Playing against ${data.opponentName}`);
+        
+        // Optional: If you want to show the opponent's photo on the sidebar
+        const statsArea = document.getElementById('game-stats');
+        
+        // Update button states
+        document.getElementById('matchBtn').textContent = "MATCHED";
+        document.getElementById('matchBtn').disabled = true;
+        
+        // Switch to multiplayer mode
+        modeSelect.value = "multi";
+        mode = "multi";
+        active = true;
+        updateMenuButtons();
 
-socket.on('leaveRoom', (data) => {
-    socket.leave(data.roomId);
-    console.log(`User left room: ${data.roomId}`);
-});
+        if (myRole === 1) {
+            init(); // Blue player (Role 1) starts the first roll
+        }
+    });
 
-// Also handle if a player just closes the tab
-socket.on('disconnect', () => {
-    // If a player disconnects mid-game, you could trigger 'opponentResigned' here
-    console.log('A user disconnected');
-});
+    socket.on('startGame', () => {
+        active = true;
+        init(); 
+    });
 
-// index.html
-// 1. Listen for the "letter" from the server
-socket.on('opponentResigned', (data) => {
-    log("🏳️ Opponent has resigned!");
-    handleResignation(data.playerId); 
-});
+    socket.on('leaveRoom', (data) => {
+        socket.leave(data.roomId);
+        console.log(`User left room: ${data.roomId}`);
+    });
+
+    // Also handle if a player just closes the tab
+    socket.on('disconnect', () => {
+        // If a player disconnects mid-game, you could trigger 'opponentResigned' here
+        console.log('A user disconnected');
+    });
+
+    // index.html
+    // 1. Listen for the "letter" from the server
+    socket.on('opponentResigned', (data) => {
+        log("🏳️ Opponent has resigned!");
+        handleResignation(data.playerId); 
+    });
+}
 
 // 2. The logic that actually clears the board and shows the modal
 function handleResignation(resignerId) {
@@ -1331,51 +2021,60 @@ function handleResignation(resignerId) {
 
 
 
-socket.on('diceSynced', (data) => {
-    dieA = data.dice[0];
-    dieB = data.dice[1];
-    
-    // Force the UI elements to update their text
-    dieAEl.textContent = dieA;
-    dieBEl.textContent = dieB;
+if (socket) {
+    socket.on('diceSynced', (data) => {
+        dieA = data.dice[0];
+        dieB = data.dice[1];
+        
+        // Force the UI elements to update their text
+        dieAEl.textContent = dieA;
+        dieBEl.textContent = dieB;
 
-    // Trigger the visual "ready" state for the dice graphics
-    dieAEl.classList.add('ready');
-    dieBEl.classList.add('ready');
+        // Trigger the visual "ready" state for the dice graphics
+        dieAEl.classList.add('ready');
+        dieBEl.classList.add('ready');
 
-    // Calculate valid moves so the opponent knows where they can click
-    processTurnStart(); 
-    
-    log(`Dice synced: ${dieA} & ${dieB}`);
-});
+        // Calculate valid moves so the opponent knows where they can click
+        processTurnStart(); 
+        
+        log(`Dice synced: ${dieA} & ${dieB}`);
+    });
 
+    socket.on('opponentMove', (data) => {
+        // 1. Use 'owner' (not role) to place the piece with the correct color
+        place(data.x, data.y, data.owner);
+        soundPlace(data.owner);
 
+        // 2. Set the current turn to the player who just moved
+        current = data.owner;
 
-function updateDiceUI() {
-    dieAEl.textContent = dieA || '-';
-    dieBEl.textContent = dieB || '-';
+        // 3. Immediately swap the turn to the OTHER player
+        current = (current === 1) ? 2 : 1; 
+
+        // 4. Update UI
+        updateTurnLabel();
+        renderSidebar();
+        draw();
+
+        // 5. If it is now YOUR turn, roll the dice!
+        if (current === myRole) {
+            log("Your turn! Rolling...");
+            setTimeout(startTurn, 500); 
+        } else {
+            log("Opponent's turn. Waiting for roll...");
+        }
+    });
 }
 
 // --- UPDATED INPUT HANDLER ---
-// --- UPDATED INPUT HANDLER ---
 function mouseDown(e) {
- if (!active) return;
+    if (!active) return;
 
-    // --- THE GATEKEEPER ---
-    // If multiplayer is active and it's NOT your turn, ignore the click entirely
-   
-
-    if (isMultiplayer) {
-        if (current === myRole) {
-            // It is MY turn: brighten the screen
-            outputCanvas.classList.remove('board-locked');
-        } else {
-            // It is OPPONENT'S turn: dim the screen
-            outputCanvas.classList.add('board-locked');
-        }
+    // The Gatekeeper: Blocks your click if it's the opponent's turn
+    if (isMultiplayer && current !== myRole) {
+        log("⚠️ It's not your turn! Wait for the opponent.");
+        return;
     }
-
-    const rect = outputCanvas.getBoundingClientRect();
 
     getSel(e);
     const [x, y] = sel;
@@ -1386,13 +2085,13 @@ function mouseDown(e) {
         return;
     }
 
+    // If it is your turn, place the piece and tell the server
     place(x, y, current);
-
-    if (socket && isMultiplayer) {
+    
+    if (isMultiplayer && socket) {
         socket.emit('emitMove', {
-            x,
-            y,
-            owner: myRole,
+            x, y,
+            owner: myRole, // Send your role so the other side knows who moved
             dice: [dieA, dieB],
             roomId: currentRoom
         });
@@ -1401,82 +2100,22 @@ function mouseDown(e) {
     afterPlacement();
 }
 
-// --- RECEIVE OPPONENT MOVES ---
-socket.on('opponentMove', (data) => {
-    // 1. Use 'owner' (not role) to place the piece with the correct color
-    place(data.x, data.y, data.owner);
-    soundPlace(data.owner);
 
-    // 2. Set the current turn to the player who just moved
-    current = data.owner;
-
-    // 3. Immediately swap the turn to the OTHER player
-    current = (current === 1) ? 2 : 1; 
-
-    // 4. Update UI
-    updateTurnLabel();
-    renderSidebar();
-    draw();
-
-    // 5. If it is now YOUR turn, roll the dice!
-    if (current === myRole) {
-        log("Your turn! Rolling...");
-        setTimeout(startTurn, 500); 
-    } else {
-        log("Opponent's turn. Waiting for roll...");
-    }
-});
-// Sync dice separately if needed (optional but safer)
-
-
-// --- Game Constants and State ---
-
-
-function init() {
-
-    document.getElementById('newBtn').addEventListener('click', () => {
-    if (isMultiplayer) {
-        if (confirm("This will leave your current match. Are you sure?")) {
-            // Logic to leave room and reset
-            location.reload(); 
-        }
-    } else {
-        updateMenuButtons(); // Switch to "New Game"
-        init();
-    }
-});
-    // Reset core game state
-    board = [];
-    boardValues = [];
-    for (let i = 0; i < SIZE; i++) {
-        board[i] = [];
-        boardValues[i] = [];
-        for (let j = 0; j < SIZE; j++) {
-            board[i][j] = -1;
-            boardValues[i][j] = Math.floor(Math.random() * 90) + 10;
-        }
-    }
-    
-    sel = [-1, -1];
-    current = 1;
-    moveHistory = [];
-    occupiedCount = 0;
-    active = true; 
-    
-    // UI Resets
-    mainModalBackdrop.classList.add('hidden');
-    moveLogEl.innerHTML = '';
-    log("🎮 New Game Started! Blue goes first.");
-    
-    updateTurnLabel();
-    renderSidebar();
-    draw();
-
-    // Trigger first turn
-    startTurn();
+function updateDiceUI() {
+    dieAEl.textContent = dieA || '-';
+    dieBEl.textContent = dieB || '-';
 }
 
-
+function updateMenuButtons() {
+    // Update button states based on game mode
+    if (isMultiplayer) {
+        document.getElementById('matchBtn').textContent = "IN MATCH";
+        document.getElementById('matchBtn').disabled = true;
+    } else {
+        document.getElementById('matchBtn').textContent = "FIND MATCH";
+        document.getElementById('matchBtn').disabled = false;
+    }
+}
 
 
 // Utility to get a CSS variable value
@@ -1844,8 +2483,40 @@ function draw() {
             ctx.strokeStyle = prevStrokeStyle;
             ctx.lineWidth = prevLineWidth;
 
-            // 5. Draw Hover Outline
-            if (isHovered && owner === -1) { 
+            // 5. Draw Error Highlight (if this is the error tile)
+            if (window.errorTile && window.errorTile[0] === x && window.errorTile[1] === y) {
+                // Pulsing red outline for error tile - animated
+                const time = Date.now() / 200;
+                const pulse = Math.sin(time) * 0.3 + 0.7; // Pulse between 0.4 and 1.0
+                const glowSize = HEX_R + (5 * pulse);
+                
+                // Outer pulsing glow
+                ctx.save();
+                ctx.globalAlpha = pulse * 0.6;
+                drawHexagonOutline(
+                    ctx,
+                    cx,
+                    cy,
+                    glowSize,
+                    ACCENT_RED,
+                    HEX_BORDER_WIDTH + 6
+                );
+                ctx.globalAlpha = 1;
+                
+                // Inner solid outline
+                drawHexagonOutline(
+                    ctx,
+                    cx,
+                    cy,
+                    HEX_R + 2,
+                    ACCENT_RED,
+                    HEX_BORDER_WIDTH + 3
+                );
+                ctx.restore();
+            }
+            
+            // 6. Draw Hover Outline
+            if (isHovered && owner === -1 && (!window.errorTile || window.errorTile[0] !== x || window.errorTile[1] !== y)) { 
                 drawHexagonOutline(
                     ctx,
                     cx,
@@ -1969,7 +2640,14 @@ function afterPlacement() {
     // 1. Check for a winner
     if (checkWin(current)) {
         active = false;
-        showWinModal(`PLAYER ${current === 1 ? 'BLUE' : 'RED'} WINS!`);
+        const winner = current === 1 ? 'BLUE' : 'RED';
+        showWinModal(`${winner} WINS!`, `${winner} successfully connected their edges!`);
+        
+        // Record game result for stats
+        if (auth.currentUser) {
+            const didWin = (current === myRole);
+            recordGameResult(didWin);
+        }
         return;
     }
 
@@ -2068,8 +2746,10 @@ function startTurn() {
         return; 
     }
 
-    dieA = Math.floor(Math.random() * 10) + 1;
-    dieB = Math.floor(Math.random() * 10) + 1;
+    // Use dice mode to determine range
+    const maxDice = diceMode === 'normal' ? 6 : 10;
+    dieA = Math.floor(Math.random() * maxDice) + 1;
+    dieB = Math.floor(Math.random() * maxDice) + 1;
     
     if (isMultiplayer) {
         socket.emit('syncDice', { roomId: currentRoom, dice: [dieA, dieB] });
@@ -2082,17 +2762,6 @@ function startTurn() {
     // Stop if it's multiplayer and not yo
 
 
-// Ensure diceSynced listener updates the UI correctly
-socket.on('diceSynced', (data) => {
-    dieA = data.dice[0];
-    dieB = data.dice[1];
-    dieAEl.textContent = dieA;
-    dieBEl.textContent = dieB;
-    dieAEl.classList.add('ready');
-    dieBEl.classList.add('ready');
-    
-    processTurnStart(); // Re-calculate valid moves for the local player
-});
 
 function showWinModal(title, reason) {
     const modal = document.getElementById('modal-backdrop');
@@ -2125,7 +2794,6 @@ function processTurnStart() {
         dieBEl.classList.add('ready');
     }, 10);
 
-    updateValidMoves();
     draw();
 
     // Check if any moves are valid for the current dice roll
@@ -2178,16 +2846,19 @@ function rollDice(cb){
     dieAEl.classList.remove('ready'); dieBEl.classList.remove('ready');
     dieAEl.textContent = '?'; dieBEl.textContent = '?';
     
+    // Use dice mode to determine range
+    const maxDice = diceMode === 'normal' ? 6 : 10;
+    
     let frames = 10;
     const iv = setInterval(()=>{
-        dieAEl.textContent = Math.floor(Math.random()*10)+1;
-        dieBEl.textContent = Math.floor(Math.random()*10)+1;
+        dieAEl.textContent = Math.floor(Math.random()*maxDice)+1;
+        dieBEl.textContent = Math.floor(Math.random()*maxDice)+1;
         tone(220 + Math.random()*200, 0.04, 0.05);
         frames--;
         if (frames <= 0){
             clearInterval(iv);
-            dieA = Math.floor(Math.random()*10)+1;
-            dieB = Math.floor(Math.random()*10)+1;
+            dieA = Math.floor(Math.random()*maxDice)+1;
+            dieB = Math.floor(Math.random()*maxDice)+1;
             dieAEl.textContent = dieA; dieBEl.textContent = dieB;
             dieAEl.classList.add('ready'); dieBEl.classList.add('ready');
             soundDice();
@@ -2198,41 +2869,148 @@ function rollDice(cb){
 }
 
 
+// Handle error clicks with animated explanation
+function handleErrorClick(x, y) {
+    soundError();
+    
+    // Check why it's invalid
+    const val = boardValues[x][y];
+    let errorReason = '';
+    let errorDetails = '';
+    
+    if (board[x][y] !== -1) {
+        errorReason = 'TILE ALREADY OCCUPIED!';
+        errorDetails = `This tile (${val}) is already taken by ${board[x][y] === 1 ? 'BLUE' : 'RED'} player.`;
+    } else if (dieA === null || dieB === null) {
+        errorReason = 'NO DICE ROLLED!';
+        errorDetails = 'You need to roll the dice first before placing a piece.';
+    } else {
+        // Not a common multiple
+        errorReason = 'NOT A COMMON MULTIPLE!';
+        showCommonMultipleError(x, y);
+        // Also highlight the tile on the board
+        highlightErrorTile(x, y);
+        return;
+    }
+    
+    // Show simple error for occupied or no dice
+    showAnimatedError(errorReason, errorDetails, x, y);
+    highlightErrorTile(x, y);
+}
+
+// Highlight the error tile with animation
+function highlightErrorTile(x, y) {
+    // Store the error tile position
+    window.errorTile = [x, y];
+    
+    // Animate the highlight by continuously redrawing
+    let frameCount = 0;
+    const maxFrames = 120; // 2 seconds at 60fps
+    
+    function animateError() {
+        if (frameCount < maxFrames && window.errorTile) {
+            draw();
+            frameCount++;
+            requestAnimationFrame(animateError);
+        } else {
+            window.errorTile = null;
+            draw();
+        }
+    }
+    
+    // Start animation
+    animateError();
+}
+
+// Show animated error explanation
 function showCommonMultipleError(x, y) {
     const val = boardValues[x][y];
-    
     const divA = val / dieA;
     const divB = val / dieB;
     
     const ACCENT_RED = getCssVar('--accent-red');
     const ACCENT_BLUE = getCssVar('--accent-blue');
+    const ACCENT_GREEN = getCssVar('--accent-blue');
     const TEXT_DARK = getCssVar('--text-dark');
     const TEXT_PRIMARY = getCssVar('--text-primary');
 
-    let message = `<div class="error-message"><strong style="font-size:1.2em; color: ${ACCENT_RED};">TILE ${val} IS NOT A COMMON MULTIPLE!</strong><br><br>`;
-    message += `The tile value must be a multiple of **both** dice rolls (${dieA} and ${dieB}).<br><br>`;
-
-    message += `<strong style="color:${TEXT_DARK};">Check 1: Divisible by ${dieA}?</strong><br>`;
-    if (isIntClose(divA)) {
-        message += `<span style="color:${ACCENT_BLUE}; font-weight: 700;">✅ YES:</span> ${val} / ${dieA} = ${Math.round(divA)}.<br>`;
-    } else {
-        message += `<span style="color:${ACCENT_RED}; font-weight: 700;">❌ NO:</span> ${val} / ${dieA} = ${divA.toFixed(2)}.<br>`;
-    }
+    let message = `<div class="error-explanation">`;
+    message += `<div class="error-header animated-fade-in">`;
+    message += `<h3 style="color: ${ACCENT_RED}; font-size: 1.5em; margin: 0 0 15px 0; animation: shake 0.5s;">🚫 TILE ${val} IS NOT VALID!</h3>`;
+    message += `<p style="font-size: 1.1em; margin-bottom: 20px;">The tile value must be a <strong>common multiple</strong> of both dice (${dieA} and ${dieB}).</p>`;
+    message += `</div>`;
     
-    message += `<br><strong style="color:${TEXT_DARK};">Check 2: Divisible by ${dieB}?</strong><br>`;
-    if (isIntClose(divB)) {
-        message += `<span style="color:${ACCENT_BLUE}; font-weight: 700;">✅ YES:</span> ${val} / ${dieB} = ${Math.round(divB)}.<br>`;
+    message += `<div class="error-checks">`;
+    
+    // Check 1 with animation
+    message += `<div class="check-item animated-slide-in" style="animation-delay: 0.2s;">`;
+    message += `<div class="check-header"><strong style="color:${TEXT_DARK}; font-size: 1.1em;">Check 1: Is ${val} divisible by ${dieA}?</strong></div>`;
+    if (isIntClose(divA)) {
+        message += `<div class="check-result success animated-pop-in" style="animation-delay: 0.4s;">`;
+        message += `<span class="check-icon">✅</span>`;
+        message += `<span><strong>YES!</strong> ${val} ÷ ${dieA} = ${Math.round(divA)} (Perfect division)</span>`;
+        message += `</div>`;
     } else {
-        message += `<span style="color:${ACCENT_RED}; font-weight: 700;">❌ NO:</span> ${val} / ${dieB} = ${divB.toFixed(2)}.<br>`;
+        message += `<div class="check-result error animated-pop-in" style="animation-delay: 0.4s;">`;
+        message += `<span class="check-icon">❌</span>`;
+        message += `<span><strong>NO!</strong> ${val} ÷ ${dieA} = ${divA.toFixed(2)} (Not a whole number)</span>`;
+        message += `</div>`;
     }
-
-    message += `<br><span style="font-weight: 600; color: ${getCssVar('--text-secondary')};">TIP:</span> Look for a multiple of the Least Common Multiple (LCM) of ${dieA} and ${dieB}.</div>`;
+    message += `</div>`;
+    
+    // Check 2 with animation
+    message += `<div class="check-item animated-slide-in" style="animation-delay: 0.6s;">`;
+    message += `<div class="check-header"><strong style="color:${TEXT_DARK}; font-size: 1.1em;">Check 2: Is ${val} divisible by ${dieB}?</strong></div>`;
+    if (isIntClose(divB)) {
+        message += `<div class="check-result success animated-pop-in" style="animation-delay: 0.8s;">`;
+        message += `<span class="check-icon">✅</span>`;
+        message += `<span><strong>YES!</strong> ${val} ÷ ${dieB} = ${Math.round(divB)} (Perfect division)</span>`;
+        message += `</div>`;
+    } else {
+        message += `<div class="check-result error animated-pop-in" style="animation-delay: 0.8s;">`;
+        message += `<span class="check-icon">❌</span>`;
+        message += `<span><strong>NO!</strong> ${val} ÷ ${dieB} = ${divB.toFixed(2)} (Not a whole number)</span>`;
+        message += `</div>`;
+    }
+    message += `</div>`;
+    message += `</div>`;
+    
+    // Tip with animation
+    const lcm = getLcm(dieA, dieB);
+    message += `<div class="error-tip animated-fade-in" style="animation-delay: 1s; margin-top: 20px; padding: 15px; background: rgba(0, 255, 65, 0.1); border-left: 4px solid ${ACCENT_GREEN}; border-radius: 4px;">`;
+    message += `<strong style="color: ${ACCENT_GREEN};">💡 TIP:</strong> Look for tiles that are multiples of the LCM(${dieA}, ${dieB}) = <strong>${lcm}</strong>.`;
+    message += ` Valid tiles include: ${lcm}, ${lcm * 2}, ${lcm * 3}, etc.`;
+    message += `</div>`;
+    
+    message += `</div>`;
     
     // Set custom styles for the error modal
     mainModalContent.style.borderColor = ACCENT_RED;
     mainModalContent.classList.add('error-modal');
 
-    document.getElementById('modal-title').textContent = '🚫 INCORRECT MULTIPLE!';
+    document.getElementById('modal-title').textContent = '🚫 INVALID MOVE!';
+    document.getElementById('modal-title').style.color = ACCENT_RED;
+    document.getElementById('modal-message').innerHTML = message;
+    mainModalBackdrop.classList.add('active');
+    
+    // Highlight the tile
+    highlightErrorTile(x, y);
+}
+
+function showAnimatedError(reason, details, x, y) {
+    const ACCENT_RED = getCssVar('--accent-red');
+    
+    let message = `<div class="error-explanation">`;
+    message += `<div class="error-header animated-fade-in">`;
+    message += `<h3 style="color: ${ACCENT_RED}; font-size: 1.5em; margin: 0 0 15px 0; animation: shake 0.5s;">🚫 ${reason}</h3>`;
+    message += `<p style="font-size: 1.1em;">${details}</p>`;
+    message += `</div>`;
+    message += `</div>`;
+    
+    mainModalContent.style.borderColor = ACCENT_RED;
+    mainModalContent.classList.add('error-modal');
+    
+    document.getElementById('modal-title').textContent = '⚠️ INVALID MOVE!';
     document.getElementById('modal-title').style.color = ACCENT_RED;
     document.getElementById('modal-message').innerHTML = message;
     mainModalBackdrop.classList.add('active');
@@ -2514,7 +3292,6 @@ outputCanvas.addEventListener('pointermove', (e) => {
 }); 
 
 
-
 outputCanvas.addEventListener('pointerleave', () => { 
     sel = [-1, -1]; 
     lastHoveredValid = [-1, -1]; 
@@ -2635,7 +3412,103 @@ modeSelect.addEventListener('change', (e)=>{
     init(); 
 });
 
-window.addEventListener('load', load); 
+// Random Rocket Motion System
+function initRandomRockets() {
+    const rockets = document.querySelectorAll('.rocket');
+    
+    rockets.forEach((rocket, index) => {
+        // Random starting position
+        const startX = Math.random() * window.innerWidth;
+        const startY = Math.random() * window.innerHeight;
+        
+        // Random circular/curved path parameters
+        const centerX = Math.random() * window.innerWidth;
+        const centerY = Math.random() * window.innerHeight;
+        const radius = 200 + Math.random() * 300;
+        const speed = 0.005 + Math.random() * 0.01;
+        const rotationSpeed = (Math.random() - 0.5) * 0.02;
+        
+        let angle = Math.random() * Math.PI * 2;
+        let rotation = Math.random() * 360;
+        
+        rocket.style.left = startX + 'px';
+        rocket.style.top = startY + 'px';
+        rocket.style.opacity = '0.3';
+        
+        function animateRocket() {
+            // Circular/curved motion
+            angle += speed;
+            rotation += rotationSpeed * 180 / Math.PI;
+            
+            // Add some random drift
+            const driftX = (Math.random() - 0.5) * 2;
+            const driftY = (Math.random() - 0.5) * 2;
+            
+            const x = centerX + Math.cos(angle) * radius + driftX;
+            const y = centerY + Math.sin(angle) * radius + driftY;
+            
+            // Wrap around screen edges
+            const wrappedX = ((x % window.innerWidth) + window.innerWidth) % window.innerWidth;
+            const wrappedY = ((y % window.innerHeight) + window.innerHeight) % window.innerHeight;
+            
+            rocket.style.transform = `translate(${wrappedX - startX}px, ${wrappedY - startY}px) rotate(${rotation}deg)`;
+            
+            requestAnimationFrame(animateRocket);
+        }
+        
+        // Start animation with random delay
+        setTimeout(() => {
+            animateRocket();
+        }, Math.random() * 2000);
+    });
+}
+
+// Click/Tap Feedback System
+function createClickFeedback(x, y) {
+    const feedback = document.createElement('div');
+    feedback.className = 'click-feedback';
+    feedback.style.left = x + 'px';
+    feedback.style.top = y + 'px';
+    document.body.appendChild(feedback);
+    
+    setTimeout(() => {
+        feedback.remove();
+    }, 600);
+}
+
+// Add click/tap listeners
+document.addEventListener('click', (e) => {
+    createClickFeedback(e.clientX, e.clientY);
+});
+
+document.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    createClickFeedback(touch.clientX, touch.clientY);
+}, { passive: true });
+
+// Landscape Orientation Detection
+function checkOrientation() {
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile && isPortrait) {
+        document.getElementById('landscapePrompt').classList.add('active');
+    } else {
+        document.getElementById('landscapePrompt').classList.remove('active');
+    }
+}
+
+// Check orientation on load and resize
+window.addEventListener('load', () => {
+    load();
+    initRandomRockets();
+    checkOrientation();
+});
+
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', () => {
+    setTimeout(checkOrientation, 100);
+}); 
 </script>
 </body>
 </html>
