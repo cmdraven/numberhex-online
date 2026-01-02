@@ -774,11 +774,11 @@ body::after {
 }
 
 /* Grid/Board Panel - TOURNAMENT ARENA */
-.panel{
+.panel {
     background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 50%, var(--bg-panel) 100%);
-    padding:15px; 
-    border-radius:var(--radius-panel);
-    border:3px solid var(--accent-blue);
+    padding: 15px; 
+    border-radius: var(--radius-panel);
+    border: 3px solid var(--accent-blue);
     box-shadow: 
         0 0 20px rgba(0,0,0,0.9),
         0 0 40px rgba(0, 255, 65, 0.4),
@@ -789,7 +789,8 @@ body::after {
     display: flex;
     flex-direction: column;
     position: relative;
-    overflow: hidden;
+    /* Ensure nothing spills out of the main panel */
+    overflow: hidden; 
 }
 
 .panel::before {
@@ -839,14 +840,20 @@ body::after {
     margin: 0; 
     flex-grow: 1; 
     min-height: 0;
+    overflow: auto; 
+    width: 100%;
+
 }
-.grid-container{
-    position:relative;
-    display:inline-block;
-    user-select:none;
-    touch-action:manipulation; 
+.grid-container {
+    position: relative;
+    display: inline-block;
+    user-select: none;
+    touch-action: manipulation; 
     background-color: transparent;
-    margin: 0 auto; 
+    margin: auto; /* Center the board if it's smaller than the container */
+    /* Ensure the container doesn't exceed the parent */
+    max-width: 100%;
+    max-height: 100%;
 }
 #output {
     transition: filter 0.5s ease, opacity 0.5s ease;
@@ -1251,10 +1258,6 @@ body::after {
                     <option value="single">🤖 SINGLE PLAYER</option>
                     <option value="multi">👥 MULTI PLAYER</option>
                 </select>
-                <select id="diceModeSelect" class="select">
-                    <option value="simple">🎲 SIMPLE (1-6)</option>
-                    <option value="master" selected>🎲 MASTER (1-10)</option>
-                </select>
                 <button id="undoBtn" class="ghost">↩️ UNDO</button>
             </div>
             
@@ -1426,6 +1429,24 @@ const auth = firebase.auth();
 
 const loginOverlay = document.getElementById('loginOverlay');
 const googleBtn = document.getElementById('googleLoginBtn');
+
+// Locate where your code creates the SVG (likely inside a function called drawGrid)
+// Instead of fixed widths, use this configuration:
+
+const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
+// 1. Set width and height to 100% so it fills the .grid-container
+svg.setAttribute("width", "100%");
+svg.setAttribute("height", "100%");
+
+// 2. Add a viewBox so the board scales internally without "popping out"
+// Replace 'totalWidth' and 'totalHeight' with your grid's actual calculated size
+svg.setAttribute("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
+
+// 3. Ensure it stays contained
+svg.style.maxWidth = "100%";
+svg.style.maxHeight = "100%";
+svg.style.display = "block";
 
 // --- ECOSYSTEM STATS LOGIC ---
 function getStats(uid) {
@@ -1851,7 +1872,6 @@ const dieAEl = document.getElementById('dieA'), dieBEl = document.getElementById
 const turnLabel = document.getElementById('turnLabel');
 const statusLogEl = document.getElementById('statusLog');
 const modeSelect = document.getElementById('modeSelect'); 
-const diceModeSelect = document.getElementById('diceModeSelect');
 const mainModalBackdrop = document.getElementById('modal-backdrop');
 const mainModalContent = document.getElementById('win-modal');
 
@@ -1872,7 +1892,6 @@ let sel = [-1, -1];
 let dieA = null, dieB = null;
 let moveHistory = [];
 let mode = 'single';
-let diceMax = 10;
 let active = true; 
 let occupiedCount = 0; 
 let lastHoveredValid = [-1, -1]; 
@@ -2714,8 +2733,8 @@ function startTurn() {
         return; 
     }
 
-    dieA = Math.floor(Math.random() * diceMax) + 1;
-    dieB = Math.floor(Math.random() * diceMax) + 1;
+    dieA = Math.floor(Math.random() * 10) + 1;
+    dieB = Math.floor(Math.random() * 10) + 1;
     
     if (isMultiplayer) {
         socket.emit('syncDice', { roomId: currentRoom, dice: [dieA, dieB] });
@@ -2814,14 +2833,14 @@ function rollDice(cb){
     
     let frames = 10;
     const iv = setInterval(()=>{
-        dieAEl.textContent = Math.floor(Math.random()*diceMax)+1;
-        dieBEl.textContent = Math.floor(Math.random()*diceMax)+1;
+        dieAEl.textContent = Math.floor(Math.random()*10)+1;
+        dieBEl.textContent = Math.floor(Math.random()*10)+1;
         tone(220 + Math.random()*200, 0.04, 0.05);
         frames--;
         if (frames <= 0){
             clearInterval(iv);
-            dieA = Math.floor(Math.random()*diceMax)+1;
-            dieB = Math.floor(Math.random()*diceMax)+1;
+            dieA = Math.floor(Math.random()*10)+1;
+            dieB = Math.floor(Math.random()*10)+1;
             dieAEl.textContent = dieA; dieBEl.textContent = dieB;
             dieAEl.classList.add('ready'); dieBEl.classList.add('ready');
             soundDice();
@@ -3228,7 +3247,6 @@ function init(){
 function load() {
     mode = modeSelect.value;
     modeSelect.querySelector(`option[value="${mode}"]`).selected = true;
-    diceMax = diceModeSelect.value === 'simple' ? 6 : 10;
     init();
 }
 
@@ -3373,12 +3391,6 @@ document.getElementById('helperModal').addEventListener('click', (e) => { // NEW
 modeSelect.addEventListener('change', (e)=>{ 
     soundClick();
     mode = e.target.value; 
-    init(); 
-});
-
-diceModeSelect.addEventListener('change', (e)=>{ 
-    soundClick();
-    diceMax = e.target.value === 'simple' ? 6 : 10; 
     init(); 
 });
 
