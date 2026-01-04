@@ -1109,7 +1109,201 @@ body::after {
     opacity: 0;
 }
 
-/* --- MOBILE SPECIFIC STYLES (Max-width 768px) --- */
+/* --- USER SIDEBAR STYLES --- */
+.user-sidebar {
+    width: 280px;
+    background: var(--bg-dark);
+    border: 2px solid var(--accent-green);
+    border-radius: var(--radius-sharp);
+    padding: 16px;
+    height: fit-content;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--muted);
+}
+
+.sidebar-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-green);
+    object-fit: cover;
+}
+
+.profile-info h4 {
+    color: var(--accent-green);
+    font-family: var(--font-header);
+    font-size: 16px;
+    margin: 0 0 4px 0;
+}
+
+.rank-badge {
+    background: var(--bg-light);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.stat-item {
+    text-align: center;
+    background: var(--bg-light);
+    padding: 8px 4px;
+    border-radius: 8px;
+}
+
+.stat-value {
+    display: block;
+    color: var(--accent-green);
+    font-size: 18px;
+    font-weight: bold;
+    font-family: var(--font-header);
+}
+
+.stat-label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 10px;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.profile-bio {
+    margin-bottom: 16px;
+}
+
+.profile-bio h4 {
+    color: var(--text-primary);
+    font-size: 14px;
+    margin: 0 0 8px 0;
+}
+
+.profile-bio p {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0;
+    min-height: 40px;
+}
+
+.edit-profile-btn {
+    width: 100%;
+    background: var(--accent-green);
+    color: var(--bg-dark);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+}
+
+.edit-profile-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(127, 255, 0, 0.3);
+}
+
+.opponent-info {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--muted);
+}
+
+.opponent-info h4 {
+    color: var(--text-primary);
+    font-size: 14px;
+    margin: 0 0 12px 0;
+}
+
+.opponent-profile {
+    display: flex;
+    gap: 12px;
+}
+
+.opponent-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-red);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.opponent-details h5 {
+    color: var(--accent-red);
+    font-family: var(--font-header);
+    font-size: 14px;
+    margin: 0 0 4px 0;
+}
+
+.opponent-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.opponent-bio {
+    color: var(--text-secondary);
+    font-size: 11px;
+    line-height: 1.3;
+    margin: 0;
+    font-style: italic;
+}
+
+/* --- ADJUST MAIN LAYOUT FOR TWO SIDEBARS --- */
+.main-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px 280px;
+    gap: 16px;
+    height: 100%;
+    align-items: start;
+}
+
+@media (max-width: 1200px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .sidebar, .user-sidebar {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar, .user-sidebar {
+        width: auto;
+        height: 300px;
+        order: 3;
+    }
+}
 @media (max-width: 768px) {
     /* ENABLE SCROLLING FOR MOBILE */
     html, body {
@@ -1308,6 +1502,56 @@ body::after {
         <div id="moveLog" class="move-log">
             </div>
     </div>
+    
+    <div class="user-sidebar" id="userSidebar">
+        <h3>👤 PLAYER PROFILE</h3>
+        
+        <div class="profile-header">
+            <img id="sidebarAvatar" src="https://via.placeholder.com/60" alt="Avatar" class="sidebar-avatar">
+            <div class="profile-info">
+                <h4 id="sidebarName">Player</h4>
+                <span id="sidebarRank" class="rank-badge">ROOKIE</span>
+            </div>
+        </div>
+        
+        <div class="profile-stats">
+            <div class="stat-item">
+                <span class="stat-value" id="sidebarMatches">0</span>
+                <span class="stat-label">Matches</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="sidebarWins">0</span>
+                <span class="stat-label">Wins</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="sidebarWinRate">0%</span>
+                <span class="stat-label">Win Rate</span>
+            </div>
+        </div>
+        
+        <div class="profile-bio">
+            <h4>📝 About Me</h4>
+            <p id="sidebarBio">No bio yet...</p>
+        </div>
+        
+        <button id="editProfileBtn" class="edit-profile-btn">✏️ Edit Profile</button>
+        
+        <div class="opponent-info" id="opponentInfo" style="display: none;">
+            <h4>🎯 OPPONENT</h4>
+            <div class="opponent-profile">
+                <img id="opponentAvatar" src="https://via.placeholder.com/40" alt="Opponent" class="opponent-avatar">
+                <div class="opponent-details">
+                    <h5 id="opponentName">Opponent</h5>
+                    <span id="opponentRank" class="rank-badge">ROOKIE</span>
+                    <div class="opponent-stats">
+                        <span>🎮 <span id="opponentMatches">0</span> matches</span>
+                        <span>🏆 <span id="opponentWins">0</span> wins</span>
+                    </div>
+                    <p id="opponentBio" class="opponent-bio">No bio available...</p>
+                </div>
+            </div>
+        </div>
+    </div>
   </div>
 
 </div>
@@ -1344,7 +1588,7 @@ body::after {
     <div class="bg-[#2A2A2A] p-8 rounded-3xl border-2 border-[#7FFF00] w-full max-w-md shadow-[0_0_40px_rgba(127,255,0,0.2)]">
         <div class="text-center mb-6">
             <h2 class="font-['Bungee_Inline'] text-3xl text-[#7FFF00]">PLAYER HUB</h2>
-            <p class="text-[9px] text-gray-500 uppercase tracking-widest">Global Ecosystem Statistics</p>
+            <p class="text-[9px] text-gray-500 uppercase tracking-widest">Customize Your Identity</p>
         </div>
 
         <div class="grid grid-cols-3 gap-3 mb-8">
@@ -1358,31 +1602,116 @@ body::after {
             </div>
             <div class="bg-[#1A1A1A] p-3 rounded-xl border border-[#444] text-center">
                 <div id="statsRank" class="text-purple-400 text-[10px] font-black pt-2">ROOKIE</div>
-                <div class="text-[8px] text-gray-500 uppercase font-bold">Ecosystem Rank</div>
+                <div class="text-[8px] text-gray-500 uppercase font-bold">Rank</div>
             </div>
         </div>
 
         <div class="space-y-4">
             <div>
-                <label class="text-[9px] text-gray-500 uppercase ml-1 mb-1 block">Custom Username</label>
-                <input type="text" id="editName" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00] transition-all" placeholder="Enter name...">
+                <label class="text-[9px] text-gray-500 uppercase ml-1 mb-1 block">Display Name</label>
+                <input type="text" id="editName" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00] transition-all" placeholder="Enter your name..." maxlength="20">
             </div>
             <div>
                 <label class="text-[9px] text-gray-500 uppercase ml-1 mb-1 block">Avatar URL</label>
                 <input type="text" id="editPhoto" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00] transition-all" placeholder="Paste image link...">
             </div>
+            <div>
+                <label class="text-[9px] text-gray-500 uppercase ml-1 mb-1 block">Bio</label>
+                <textarea id="editBio" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00] transition-all resize-none" placeholder="Tell other players about yourself..." rows="3" maxlength="150"></textarea>
+                <div class="text-[8px] text-gray-500 text-right mt-1">
+                    <span id="bioCharCount">0</span>/150
+                </div>
+            </div>
             
-            <button onclick="saveProfile()" class="w-full bg-[#7FFF00] text-black font-black py-4 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg">SAVE IDENTITY</button>
-            <button id="logoutBtn" class="w-full text-gray-500 text-xs font-bold hover:text-red-500 transition-colors pt-2">Sign Out of Ecosystem</button>
+            <button onclick="saveProfile()" class="w-full bg-[#7FFF00] text-black font-black py-4 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg">SAVE PROFILE</button>
+            <button id="logoutBtn" class="w-full text-gray-500 text-xs font-bold hover:text-red-500 transition-colors pt-2">Sign Out</button>
         </div>
     </div>
 </div>
 
-<div id="loginOverlay" class="fixed inset-0 bg-black bg-opacity-90 z-[2000] flex flex-center items-center justify-center">
-    <div class="bg-[#2A2A2A] p-8 rounded-lg border-2 border-[#7FFF00] text-center max-w-sm">
-        <h2 class="font-['Bungee_Inline'] text-2xl text-[#7FFF00] mb-6">NUMBERHEX LOGIN</h2>
-        <button id="googleLoginBtn" class="btn w-full mb-4">Sign in with Google</button>
-        <p class="text-xs text-gray-400">Join to track your wins and rank up!</p>
+<div id="loginOverlay" class="fixed inset-0 bg-black bg-opacity-90 z-[2000] flex flex-center items-center justify-center p-4">
+    <div class="bg-[#2A2A2A] p-8 rounded-lg border-2 border-[#7FFF00] text-center max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="login-header">
+            <img src="logo.png" alt="NumberHex Logo" class="login-logo" style="width: 80px; height: 80px; margin: 0 auto 20px;">
+            <h2 class="font-['Bungee_Inline'] text-3xl text-[#7FFF00] mb-2">NumberHex</h2>
+            <p class="text-gray-400 mb-8">Strategic Multiplayer Dice Game</p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-8 text-left">
+            <div class="login-info">
+                <h3 class="text-xl text-white mb-4">🎮 Welcome to NumberHex!</h3>
+                <p class="text-gray-300 mb-6">Connect with players worldwide in this strategic multiplayer dice game where mathematics meets strategy.</p>
+                
+                <div class="space-y-4 mb-6">
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl">👥</span>
+                        <div>
+                            <strong class="text-white">Multiplayer Battles</strong>
+                            <p class="text-gray-400 text-sm">Compete with players globally in real-time matches</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl">🎲</span>
+                        <div>
+                            <strong class="text-white">Strategic Gameplay</strong>
+                            <p class="text-gray-400 text-sm">Master dice probabilities and board control tactics</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl">🏆</span>
+                        <div>
+                            <strong class="text-white">Track Your Progress</strong>
+                            <p class="text-gray-400 text-sm">Build your multiplayer legacy and climb the ranks</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="login-actions">
+                <div class="bg-[#1A1A1A] p-4 rounded-lg mb-6">
+                    <h4 class="text-white font-bold mb-3">🔐 Why Google Login Required?</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span class="text-gray-300">Required for multiplayer matchmaking</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span class="text-gray-300">Displays your stats to opponents</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span class="text-gray-300">Saves your game progress and achievements</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span class="text-gray-300">Enables fair play and anti-cheat measures</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="googleLoginBtn" class="w-full bg-[#7FFF00] text-black font-bold py-3 px-6 rounded-lg hover:scale-[1.02] active:scale-95 transition-all mb-6 flex items-center justify-center gap-3">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span>Sign in with Google</span>
+                </button>
+                
+                <div class="bg-[#1A1A1A] p-4 rounded-lg">
+                    <h4 class="text-white font-bold mb-3">🔒 Privacy Policy</h4>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                        <li>• We only access your name and profile picture</li>
+                        <li>• No email or personal data is stored</li>
+                        <li>• Your data is never shared with third parties</li>
+                        <li>• You can delete your account anytime</li>
+                        <li>• Game stats are stored locally in your browser</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1458,17 +1787,94 @@ function updateStatsUI(stats) {
 }
 
 
-// 1. Ecosystem Stats Database (Local)
-function getEcosystemStats(uid) {
-    const data = localStorage.getItem(`hex_stats_${uid}`);
-    return data ? JSON.parse(data) : { matches: 0, wins: 0 };
+// --- ENHANCED PLAYER PROFILE SYSTEM ---
+function getPlayerProfile(uid) {
+    const saved = localStorage.getItem(`numberhex_profile_${uid}`);
+    return saved ? JSON.parse(saved) : {
+        name: 'Player',
+        photo: 'https://via.placeholder.com/60',
+        bio: 'No bio yet...',
+        stats: { matches: 0, wins: 0 }
+    };
 }
 
-function calculateRank(wins) {
-    if (wins >= 50) return { title: "HEX GOD", color: "#FFD700" };
-    if (wins >= 20) return { title: "MASTER", color: "#A855F7" };
-    if (wins >= 5)  return { title: "SCHOLAR", color: "#60A5FA" };
-    return { title: "ROOKIE", color: "#9CA3AF" };
+function savePlayerProfile(uid, profile) {
+    localStorage.setItem(`numberhex_profile_${uid}`, JSON.stringify(profile));
+    updateProfileUI(profile);
+    updateSidebarProfile(profile);
+}
+
+function updateProfileUI(profile) {
+    const user = auth.currentUser;
+    if (user) {
+        // Update header profile
+        document.getElementById('userName').textContent = profile.name.split(' ')[0];
+        document.getElementById('userAvatar').src = profile.photo || 'https://via.placeholder.com/40';
+        
+        // Update modal stats
+        document.getElementById('statsMatches').textContent = profile.stats.matches;
+        document.getElementById('statsWins').textContent = profile.stats.wins;
+        
+        // Calculate rank
+        let rank = "Rookie";
+        if (profile.stats.wins > 50) rank = "Math God";
+        else if (profile.stats.wins > 20) rank = "Hex Master";
+        else if (profile.stats.wins > 5) rank = "Scholar";
+        
+        document.getElementById('statsRank').textContent = rank.toUpperCase();
+        document.getElementById('displayRank').textContent = rank;
+    }
+}
+
+function updateSidebarProfile(profile) {
+    // Update sidebar profile
+    document.getElementById('sidebarName').textContent = profile.name;
+    document.getElementById('sidebarAvatar').src = profile.photo || 'https://via.placeholder.com/60';
+    document.getElementById('sidebarBio').textContent = profile.bio || 'No bio yet...';
+    
+    // Update stats
+    document.getElementById('sidebarMatches').textContent = profile.stats.matches;
+    document.getElementById('sidebarWins').textContent = profile.stats.wins;
+    
+    // Calculate win rate
+    const winRate = profile.stats.matches > 0 
+        ? Math.round((profile.stats.wins / profile.stats.matches) * 100) 
+        : 0;
+    document.getElementById('sidebarWinRate').textContent = winRate + '%';
+    
+    // Update rank
+    let rank = "ROOKIE";
+    if (profile.stats.wins > 50) rank = "MATH GOD";
+    else if (profile.stats.wins > 20) rank = "HEX MASTER";
+    else if (profile.stats.wins > 5) rank = "SCHOLAR";
+    
+    document.getElementById('sidebarRank').textContent = rank;
+}
+
+function showOpponentProfile(opponentData) {
+    const opponentInfo = document.getElementById('opponentInfo');
+    opponentInfo.style.display = 'block';
+    
+    document.getElementById('opponentName').textContent = opponentData.name || 'Opponent';
+    document.getElementById('opponentAvatar').src = opponentData.photo || 'https://via.placeholder.com/40';
+    document.getElementById('opponentBio').textContent = opponentData.bio || 'No bio available...';
+    
+    // Update opponent stats
+    document.getElementById('opponentMatches').textContent = opponentData.stats?.matches || 0;
+    document.getElementById('opponentWins').textContent = opponentData.stats?.wins || 0;
+    
+    // Calculate opponent rank
+    let rank = "ROOKIE";
+    const wins = opponentData.stats?.wins || 0;
+    if (wins > 50) rank = "MATH GOD";
+    else if (wins > 20) rank = "HEX MASTER";
+    else if (wins > 5) rank = "SCHOLAR";
+    
+    document.getElementById('opponentRank').textContent = rank;
+}
+
+function hideOpponentProfile() {
+    document.getElementById('opponentInfo').style.display = 'none';
 }
 
 // 2. Open/Close Modal
@@ -1476,26 +1882,48 @@ function toggleProfileModal() {
     const modal = document.getElementById('profileModal');
     if (modal.classList.contains('hidden')) {
         const user = auth.currentUser;
-        const stats = getEcosystemStats(user.uid);
-        const rank = calculateRank(stats.wins);
-
-        // Fill Stats
-        document.getElementById('statsMatches').textContent = stats.matches;
-        document.getElementById('statsWins').textContent = stats.wins;
-        document.getElementById('statsRank').textContent = rank.title;
-        document.getElementById('statsRank').style.color = rank.color;
-
-        // Fill Inputs
-        document.getElementById('editName').value = user.displayName || "";
-        document.getElementById('editPhoto').value = user.photoURL || "";
-
+        const profile = getPlayerProfile(user.uid);
+        
+        // Populate modal fields
+        document.getElementById('editName').value = profile.name;
+        document.getElementById('editPhoto').value = profile.photo || '';
+        document.getElementById('editBio').value = profile.bio || '';
+        
+        // Update character count
+        document.getElementById('bioCharCount').textContent = (profile.bio || '').length;
+        
+        // Update stats display
+        updateProfileUI(profile);
+        
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
     } else {
         modal.classList.add('hidden');
-        modal.classList.remove('flex');
     }
 }
+
+// Bio character counter
+document.getElementById('editBio')?.addEventListener('input', (e) => {
+    const count = e.target.value.length;
+    document.getElementById('bioCharCount').textContent = count;
+});
+
+// Edit profile button handler
+document.getElementById('editProfileBtn')?.addEventListener('click', toggleProfileModal);
+
+googleBtn.addEventListener('click', () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    
+    // Explicitly using the 'auth' object created from your config
+    auth.signInWithPopup(provider)
+        .then((result) => {
+            console.log("Login Successful");
+        })
+        .catch((error) => {
+            console.error("Login Error:", error.code, error.message);
+            // If it keeps closing, try Redirect instead:
+            // auth.signInWithRedirect(provider); 
+        });
+});
 
 // 3. Save Custom Identity
 async function saveProfile() {
@@ -1727,41 +2155,57 @@ function refreshStatsUI(stats) {
 
 async function saveProfile() {
     const user = firebase.auth().currentUser;
-    const newName = document.getElementById('editName').value;
-    const newPhoto = document.getElementById('editPhoto').value;
-
-    if (user) {
-        try {
-            await user.updateProfile({
-                displayName: newName,
-                photoURL: newPhoto
-            });
-            
-            // Update UI
-            document.getElementById('userName').textContent = newName.split(' ')[0];
-            document.getElementById('userAvatar').src = newPhoto || 'https://via.placeholder.com/40';
-            
-            // Sync with game server
-          // index.html
-            const myStats = getPlayerStats(user.uid);
-            socket.emit('authenticate', {
+    if (!user) return;
+    
+    const newName = document.getElementById('editName').value.trim();
+    const newPhoto = document.getElementById('editPhoto').value.trim();
+    const newBio = document.getElementById('editBio').value.trim();
+    
+    // Validate inputs
+    if (!newName) {
+        alert('Please enter a display name');
+        return;
+    }
+    
+    try {
+        // Update Firebase auth profile
+        await user.updateProfile({
+            displayName: newName,
+            photoURL: newPhoto || null
+        });
+        
+        // Get current profile data
+        const profile = getPlayerProfile(user.uid);
+        
+        // Update profile
+        profile.name = newName;
+        profile.photo = newPhoto || 'https://via.placeholder.com/60';
+        profile.bio = newBio || 'No bio yet...';
+        
+        // Save to localStorage
+        savePlayerProfile(user.uid, profile);
+        
+        // Update server with new profile data
+        if (socket) {
+            socket.emit('updateProfile', {
                 uid: user.uid,
-                name: user.displayName,
-                photo: user.photoURL,
-                wins: myStats.wins // Send your strength to the ecosystem
+                name: profile.name,
+                photo: profile.photo,
+                bio: profile.bio,
+                stats: profile.stats
             });
-            
-            toggleProfileModal();
-            alert("Profile updated successfully!");
-        } catch (error) {
-            console.error("Update failed:", error);
-            alert("Error updating profile.");
         }
+        
+        toggleProfileModal();
+        alert("Profile updated successfully!");
+    } catch (error) {
+        console.error("Update failed:", error);
+        alert("Error updating profile: " + error.message);
     }
 }
 
 // Attach click event to your existing userProfile div
-document.getElementById('userProfile').addEventListener('click', (e) => {
+document.getElementById('userProfile')?.addEventListener('click', (e) => {
     // Only open if they didn't click the Logout button
     if (!e.target.closest('#logoutBtn')) {
         toggleProfileModal();
@@ -1794,17 +2238,29 @@ auth.onAuthStateChanged(user => {
         userProfile.classList.remove('hidden');
         userProfile.classList.add('flex');
         
-        userAvatar.src = user.photoURL || 'https://via.placeholder.com/40';
-        userName.textContent = user.displayName ? user.displayName.split(' ')[0] : "Player";
+        // Initialize profile system
+        const profile = getPlayerProfile(user.uid);
+        updateProfileUI(profile);
+        updateSidebarProfile(profile);
+        
+        // Update header with profile data
+        userAvatar.src = profile.photo || 'https://via.placeholder.com/40';
+        userName.textContent = profile.name.split(' ')[0];
 
-        socket.emit('authenticate', {
-            uid: user.uid,
-            name: user.displayName,
-            photo: user.photoURL
-        });
+        // Authenticate with server
+        if (socket) {
+            socket.emit('authenticate', {
+                uid: user.uid,
+                name: profile.name,
+                photo: profile.photo,
+                bio: profile.bio,
+                stats: profile.stats
+            });
+        }
     } else {
         loginOverlay.style.display = 'flex';
         userProfile.classList.add('hidden');
+        hideOpponentProfile();
     }
 });
 
@@ -1958,8 +2414,13 @@ if (socket) {
         // Update the UI log
         log(`Matched! Playing against ${data.opponentName}`);
         
-        // Optional: If you want to show the opponent's photo on the sidebar
-        const statsArea = document.getElementById('game-stats');
+        // Show opponent profile
+        showOpponentProfile({
+            name: data.opponentName,
+            photo: data.opponentPhoto,
+            bio: data.opponentBio,
+            stats: data.opponentStats
+        });
         
         // Update button states
         document.getElementById('matchBtn').textContent = "MATCHED";
