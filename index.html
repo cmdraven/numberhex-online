@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="google-site-verification" content="rPxpMutvNGlKKmOlY3tgGrkt2SB_QUK4b37jfI9bX50" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>NumberHex: Common Multiple Challenge</title>
 <link rel="icon" type="image/png" href="logo.png" />
@@ -361,7 +360,7 @@ body::after {
     max-width:var(--max-width);
     margin:0 auto;
     padding: 8px 16px; 
-    height: 100vh; /* Fixed height for desktop/default */
+    height: 100vh;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -395,8 +394,6 @@ body::after {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    height: 100%;
-    position: relative;
 }
 
 .sidebar::before {
@@ -777,9 +774,10 @@ body::after {
 /* Grid/Board Panel - TOURNAMENT ARENA */
 .panel{
     background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 50%, var(--bg-panel) 100%);
-    padding:15px; 
+    padding: 0; 
     border-radius:var(--radius-panel);
     border:3px solid var(--accent-blue);
+
     box-shadow: 
         0 0 20px rgba(0,0,0,0.9),
         0 0 40px rgba(0, 255, 65, 0.4),
@@ -790,7 +788,10 @@ body::after {
     display: flex;
     flex-direction: column;
     position: relative;
-    overflow: hidden;
+    overflow: hidden; 
+    width: 100%;    
+    justify-content: flex-start;
+    align-items: stretch;
 }
 
 .panel::before {
@@ -831,28 +832,44 @@ body::after {
 }
 .board-scroll{
     border-radius:4px; /* SQUARED */
-    padding: 10px; 
+    padding: 0; 
     background: var(--bg-light); 
     display:flex;
     justify-content:center;
     align-items:center;
+
     box-shadow: var(--shadow-inset); 
     margin: 0; 
     flex-grow: 1; 
     min-height: 0;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 1;
 }
 .grid-container{
     position:relative;
-    display:inline-block;
+    display:flex;
     user-select:none;
     touch-action:manipulation; 
     background-color: transparent;
-    margin: 0 auto; 
-}
-#output {
-    transition: filter 0.5s ease, opacity 0.5s ease;
+    margin: 0; 
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
 }
 
+#output {
+    transition: filter 0.5s ease, opacity 0.5s ease;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    display: block;
+}
 /* This class will be applied when it is NOT your turn */
 .board-locked {
     filter: grayscale(0.5) blur(1px);
@@ -1109,201 +1126,7 @@ body::after {
     opacity: 0;
 }
 
-/* --- USER SIDEBAR STYLES --- */
-.user-sidebar {
-    width: 280px;
-    background: var(--bg-dark);
-    border: 2px solid var(--accent-green);
-    border-radius: var(--radius-sharp);
-    padding: 16px;
-    height: fit-content;
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
-}
-
-.profile-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--muted);
-}
-
-.sidebar-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 2px solid var(--accent-green);
-    object-fit: cover;
-}
-
-.profile-info h4 {
-    color: var(--accent-green);
-    font-family: var(--font-header);
-    font-size: 16px;
-    margin: 0 0 4px 0;
-}
-
-.rank-badge {
-    background: var(--bg-light);
-    color: var(--text-secondary);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 10px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.profile-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 16px;
-}
-
-.stat-item {
-    text-align: center;
-    background: var(--bg-light);
-    padding: 8px 4px;
-    border-radius: 8px;
-}
-
-.stat-value {
-    display: block;
-    color: var(--accent-green);
-    font-size: 18px;
-    font-weight: bold;
-    font-family: var(--font-header);
-}
-
-.stat-label {
-    display: block;
-    color: var(--text-secondary);
-    font-size: 10px;
-    text-transform: uppercase;
-    margin-top: 2px;
-}
-
-.profile-bio {
-    margin-bottom: 16px;
-}
-
-.profile-bio h4 {
-    color: var(--text-primary);
-    font-size: 14px;
-    margin: 0 0 8px 0;
-}
-
-.profile-bio p {
-    color: var(--text-secondary);
-    font-size: 12px;
-    line-height: 1.4;
-    margin: 0;
-    min-height: 40px;
-}
-
-.edit-profile-btn {
-    width: 100%;
-    background: var(--accent-green);
-    color: var(--bg-dark);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 12px;
-}
-
-.edit-profile-btn:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(127, 255, 0, 0.3);
-}
-
-.opponent-info {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--muted);
-}
-
-.opponent-info h4 {
-    color: var(--text-primary);
-    font-size: 14px;
-    margin: 0 0 12px 0;
-}
-
-.opponent-profile {
-    display: flex;
-    gap: 12px;
-}
-
-.opponent-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid var(--accent-red);
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.opponent-details h5 {
-    color: var(--accent-red);
-    font-family: var(--font-header);
-    font-size: 14px;
-    margin: 0 0 4px 0;
-}
-
-.opponent-stats {
-    display: flex;
-    gap: 12px;
-    font-size: 11px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
-
-.opponent-bio {
-    color: var(--text-secondary);
-    font-size: 11px;
-    line-height: 1.3;
-    margin: 0;
-    font-style: italic;
-}
-
-/* --- ADJUST MAIN LAYOUT FOR TWO SIDEBARS --- */
-.main-layout {
-    display: grid;
-    grid-template-columns: 1fr 280px 280px;
-    gap: 16px;
-    height: 100%;
-    align-items: start;
-}
-
-@media (max-width: 1200px) {
-    .main-layout {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-    
-    .sidebar, .user-sidebar {
-        width: 100%;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-}
-
-@media (max-width: 768px) {
-    .main-layout {
-        grid-template-columns: 1fr;
-    }
-    
-    .sidebar, .user-sidebar {
-        width: auto;
-        height: 300px;
-        order: 3;
-    }
-}
+/* END NEW LAYOUT FOR SIDEBAR */
 @media (max-width: 768px) {
     /* ENABLE SCROLLING FOR MOBILE */
     html, body {
@@ -1383,12 +1206,12 @@ body::after {
         align-self: center;
     }
     .panel {
-        padding: 8px;
+        padding: 0;
         border-radius: var(--radius-sharp); /* SQUARED */
         border-width: 2px;
     }
     .board-scroll {
-        padding: 10px;
+        padding: 0;
     }
     .legend {
         flex-direction: column;
@@ -1503,56 +1326,7 @@ body::after {
             </div>
     </div>
     
-    <div class="user-sidebar" id="userSidebar">
-        <h3>👤 PLAYER PROFILE</h3>
-        
-        <div class="profile-header">
-            <img id="sidebarAvatar" src="https://via.placeholder.com/60" alt="Avatar" class="sidebar-avatar">
-            <div class="profile-info">
-                <h4 id="sidebarName">Player</h4>
-                <span id="sidebarRank" class="rank-badge">ROOKIE</span>
-            </div>
-        </div>
-        
-        <div class="profile-stats">
-            <div class="stat-item">
-                <span class="stat-value" id="sidebarMatches">0</span>
-                <span class="stat-label">Matches</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value" id="sidebarWins">0</span>
-                <span class="stat-label">Wins</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value" id="sidebarWinRate">0%</span>
-                <span class="stat-label">Win Rate</span>
-            </div>
-        </div>
-        
-        <div class="profile-bio">
-            <h4>📝 About Me</h4>
-            <p id="sidebarBio">No bio yet...</p>
-        </div>
-        
-        <button id="editProfileBtn" class="edit-profile-btn">✏️ Edit Profile</button>
-        
-        <div class="opponent-info" id="opponentInfo" style="display: none;">
-            <h4>🎯 OPPONENT</h4>
-            <div class="opponent-profile">
-                <img id="opponentAvatar" src="https://via.placeholder.com/40" alt="Opponent" class="opponent-avatar">
-                <div class="opponent-details">
-                    <h5 id="opponentName">Opponent</h5>
-                    <span id="opponentRank" class="rank-badge">ROOKIE</span>
-                    <div class="opponent-stats">
-                        <span>🎮 <span id="opponentMatches">0</span> matches</span>
-                        <span>🏆 <span id="opponentWins">0</span> wins</span>
-                    </div>
-                    <p id="opponentBio" class="opponent-bio">No bio available...</p>
-                </div>
-            </div>
-        </div>
     </div>
-  </div>
 
 </div>
 
@@ -1615,15 +1389,8 @@ body::after {
                 <label class="text-[9px] text-gray-500 uppercase ml-1 mb-1 block">Avatar URL</label>
                 <input type="text" id="editPhoto" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00] transition-all" placeholder="Paste image link...">
             </div>
-            <div>
-                <label class="text-[9px] text-gray-500 uppercase ml-1 mb-1 block">Bio</label>
-                <textarea id="editBio" class="w-full bg-[#1A1A1A] border border-[#444] rounded-xl p-3 text-white outline-none focus:border-[#7FFF00] transition-all resize-none" placeholder="Tell other players about yourself..." rows="3" maxlength="150"></textarea>
-                <div class="text-[8px] text-gray-500 text-right mt-1">
-                    <span id="bioCharCount">0</span>/150
-                </div>
-            </div>
             
-            <button onclick="saveProfile()" class="w-full bg-[#7FFF00] text-black font-black py-4 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg">SAVE PROFILE</button>
+            <button onclick="saveProfile()" class="w-full bg-[#7FFF00] text-black font-black py-4 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg">SAVE IDENTITY</button>
             <button id="logoutBtn" class="w-full text-gray-500 text-xs font-bold hover:text-red-500 transition-colors pt-2">Sign Out</button>
         </div>
     </div>
@@ -1786,134 +1553,11 @@ function updateStatsUI(stats) {
     document.getElementById('displayRank').textContent = stats.rank;
 }
 
-
-// --- ENHANCED PLAYER PROFILE SYSTEM ---
-function getPlayerProfile(uid) {
-    const saved = localStorage.getItem(`numberhex_profile_${uid}`);
-    return saved ? JSON.parse(saved) : {
-        name: 'Player',
-        photo: 'https://via.placeholder.com/60',
-        bio: 'No bio yet...',
-        stats: { matches: 0, wins: 0 }
-    };
-}
-
-function savePlayerProfile(uid, profile) {
-    localStorage.setItem(`numberhex_profile_${uid}`, JSON.stringify(profile));
-    updateProfileUI(profile);
-    updateSidebarProfile(profile);
-}
-
-function updateProfileUI(profile) {
-    const user = auth.currentUser;
-    if (user) {
-        // Update header profile
-        document.getElementById('userName').textContent = profile.name.split(' ')[0];
-        document.getElementById('userAvatar').src = profile.photo || 'https://via.placeholder.com/40';
-        
-        // Update modal stats
-        document.getElementById('statsMatches').textContent = profile.stats.matches;
-        document.getElementById('statsWins').textContent = profile.stats.wins;
-        
-        // Calculate rank
-        let rank = "Rookie";
-        if (profile.stats.wins > 50) rank = "Math God";
-        else if (profile.stats.wins > 20) rank = "Hex Master";
-        else if (profile.stats.wins > 5) rank = "Scholar";
-        
-        document.getElementById('statsRank').textContent = rank.toUpperCase();
-        document.getElementById('displayRank').textContent = rank;
-    }
-}
-
-function updateSidebarProfile(profile) {
-    // Update sidebar profile
-    document.getElementById('sidebarName').textContent = profile.name;
-    document.getElementById('sidebarAvatar').src = profile.photo || 'https://via.placeholder.com/60';
-    document.getElementById('sidebarBio').textContent = profile.bio || 'No bio yet...';
-    
-    // Update stats
-    document.getElementById('sidebarMatches').textContent = profile.stats.matches;
-    document.getElementById('sidebarWins').textContent = profile.stats.wins;
-    
-    // Calculate win rate
-    const winRate = profile.stats.matches > 0 
-        ? Math.round((profile.stats.wins / profile.stats.matches) * 100) 
-        : 0;
-    document.getElementById('sidebarWinRate').textContent = winRate + '%';
-    
-    // Update rank
-    let rank = "ROOKIE";
-    if (profile.stats.wins > 50) rank = "MATH GOD";
-    else if (profile.stats.wins > 20) rank = "HEX MASTER";
-    else if (profile.stats.wins > 5) rank = "SCHOLAR";
-    
-    document.getElementById('sidebarRank').textContent = rank;
-}
-
-function showOpponentProfile(opponentData) {
-    const opponentInfo = document.getElementById('opponentInfo');
-    opponentInfo.style.display = 'block';
-    
-    document.getElementById('opponentName').textContent = opponentData.name || 'Opponent';
-    document.getElementById('opponentAvatar').src = opponentData.photo || 'https://via.placeholder.com/40';
-    document.getElementById('opponentBio').textContent = opponentData.bio || 'No bio available...';
-    
-    // Update opponent stats
-    document.getElementById('opponentMatches').textContent = opponentData.stats?.matches || 0;
-    document.getElementById('opponentWins').textContent = opponentData.stats?.wins || 0;
-    
-    // Calculate opponent rank
-    let rank = "ROOKIE";
-    const wins = opponentData.stats?.wins || 0;
-    if (wins > 50) rank = "MATH GOD";
-    else if (wins > 20) rank = "HEX MASTER";
-    else if (wins > 5) rank = "SCHOLAR";
-    
-    document.getElementById('opponentRank').textContent = rank;
-}
-
-function hideOpponentProfile() {
-    document.getElementById('opponentInfo').style.display = 'none';
-}
-
-// 2. Open/Close Modal
-function toggleProfileModal() {
-    const modal = document.getElementById('profileModal');
-    if (modal.classList.contains('hidden')) {
-        const user = auth.currentUser;
-        const profile = getPlayerProfile(user.uid);
-        
-        // Populate modal fields
-        document.getElementById('editName').value = profile.name;
-        document.getElementById('editPhoto').value = profile.photo || '';
-        document.getElementById('editBio').value = profile.bio || '';
-        
-        // Update character count
-        document.getElementById('bioCharCount').textContent = (profile.bio || '').length;
-        
-        // Update stats display
-        updateProfileUI(profile);
-        
-        modal.classList.remove('hidden');
-    } else {
-        modal.classList.add('hidden');
-    }
-}
-
-// Bio character counter
-document.getElementById('editBio')?.addEventListener('input', (e) => {
-    const count = e.target.value.length;
-    document.getElementById('bioCharCount').textContent = count;
-});
-
-// Edit profile button handler
-document.getElementById('editProfileBtn')?.addEventListener('click', toggleProfileModal);
-
+// --- LOGIN GATE ONLY ---
 googleBtn.addEventListener('click', () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     
-    // Explicitly using the 'auth' object created from your config
+    // Explicitly using 'auth' object created from your config
     auth.signInWithPopup(provider)
         .then((result) => {
             console.log("Login Successful");
@@ -1925,106 +1569,28 @@ googleBtn.addEventListener('click', () => {
         });
 });
 
-// 3. Save Custom Identity
-async function saveProfile() {
-    const user = auth.currentUser;
-    const newName = document.getElementById('editName').value;
-    const newPhoto = document.getElementById('editPhoto').value;
-
-    if (user && newName) {
-        try {
-            await user.updateProfile({ displayName: newName, photoURL: newPhoto });
-            
-            // Update UI Header
-            document.getElementById('userName').textContent = newName.split(' ')[0];
-            document.getElementById('userAvatar').src = newPhoto || 'https://via.placeholder.com/40';
-            
-            // Sync with Server
-            socket.emit('authenticate', { uid: user.uid, name: newName, photo: newPhoto });
-            
-            toggleProfileModal();
-            alert("Identity Synced to Ecosystem!");
-        } catch (e) {
-            alert("Save failed: " + e.message);
-        }
-    }
-}
-
-// 4. Update stats when game ends
-function recordGameResult(didWin) {
-    const user = auth.currentUser;
-    if (!user) return;
-    let stats = getEcosystemStats(user.uid);
-    stats.matches++;
-    if (didWin) stats.wins++;
-    localStorage.setItem(`hex_stats_${user.uid}`, JSON.stringify(stats));
-}
-// --- INTEGRATING WITH GAME END ---
-// Call this inside your handleResignation() or winning logic:
-function recordGameEnd(isWin) {
-    const user = auth.currentUser;
-    if (!user) return;
-    let stats = getStats(user.uid);
-    stats.matches++;
-    if (isWin) stats.wins++;
-    saveStats(user.uid, stats);
-}
-
-// --- PROFILE ACTIONS ---
-function toggleProfileModal() {
-    const modal = document.getElementById('profileModal');
-    if (modal.classList.contains('hidden')) {
-        const user = auth.currentUser;
-        document.getElementById('editName').value = user.displayName || "";
-        document.getElementById('editPhoto').value = user.photoURL || "";
-        updateStatsUI(getStats(user.uid));
-        showNextTip(); 
-        modal.classList.remove('hidden');
-    } else {
-        modal.classList.add('hidden');
-    }
-}
-
-async function saveProfile() {
-    const user = auth.currentUser;
-    const name = document.getElementById('editName').value;
-    const photo = document.getElementById('editPhoto').value;
-    
-    if (user) {
-        await user.updateProfile({ displayName: name, photoURL: photo });
-        document.getElementById('userName').textContent = name.split(' ')[0];
-        document.getElementById('userAvatar').src = photo || 'https://via.placeholder.com/40';
-        socket.emit('authenticate', { uid: user.uid, name: name, photo: photo });
-        toggleProfileModal();
-    }
-}
-
-// Event Listeners
-document.getElementById('userProfile').addEventListener('click', (e) => {
-    if (!e.target.closest('#logoutBtn')) toggleProfileModal();
-});
-
-document.getElementById('logoutBtn').addEventListener('click', () => {
-    auth.signOut().then(() => location.reload());
-});
-
 // --- ECOSYSTEM LOGIC ---
 function getStats(uid) {
     const saved = localStorage.getItem(`numberhex_stats_${uid}`);
     return saved ? JSON.parse(saved) : { matches: 0, wins: 0, rank: "Rookie" };
 }
 
-function updateStatsUI(stats) {
-    // Dynamic Rank Calculation
-    let rank = "Rookie";
-    if (stats.wins >= 50) rank = "Hex God";
-    else if (stats.wins >= 20) rank = "Master";
-    else if (stats.wins >= 5) rank = "Scholar";
+function saveStats(uid, stats) {
+    // Determine Rank
+    if (stats.wins > 50) stats.rank = "Math God";
+    else if (stats.wins > 20) stats.rank = "Hex Master";
+    else if (stats.wins > 5) stats.rank = "Scholar";
+    else stats.rank = "Rookie";
 
+    localStorage.setItem(`numberhex_stats_${uid}`, JSON.stringify(stats));
+    updateStatsUI(stats);
+}
+
+function updateStatsUI(stats) {
     document.getElementById('statsMatches').textContent = stats.matches;
     document.getElementById('statsWins').textContent = stats.wins;
-    document.getElementById('statsRank').textContent = rank.toUpperCase();
-    document.getElementById('displayRank').textContent = rank;
+    document.getElementById('statsRank').textContent = stats.rank.toUpperCase();
+    document.getElementById('displayRank').textContent = stats.rank;
 }
 
 // --- MODAL & IDENTITY LOGIC ---
@@ -2048,229 +1614,24 @@ async function saveProfile() {
     const name = document.getElementById('editName').value;
     const photo = document.getElementById('editPhoto').value;
     
-    if (user && name) {
-        try {
-            await user.updateProfile({ displayName: name, photoURL: photo });
-            // Update UI
-            document.getElementById('userName').textContent = name.split(' ')[0];
-            document.getElementById('userAvatar').src = photo || 'https://via.placeholder.com/40';
-            // Sync with Server
-            socket.emit('authenticate', { uid: user.uid, name: name, photo: photo });
-            toggleProfileModal();
-            alert("Identity Updated!");
-        } catch (e) {
-            alert("Error updating profile: " + e.message);
-        }
+    if (user) {
+        await user.updateProfile({ displayName: name, photoURL: photo });
+        document.getElementById('userName').textContent = name.split(' ')[0];
+        document.getElementById('userAvatar').src = photo || 'https://via.placeholder.com/40';
+        // Sync with Server
+        socket.emit('authenticate', { uid: user.uid, name: name, photo: photo });
+        toggleProfileModal();
+        alert("Identity Updated!");
     }
 }
 
 // Event Listeners
-document.getElementById('userProfile').onclick = (e) => {
+document.getElementById('userProfile').addEventListener('click', (e) => {
     if (!e.target.closest('#logoutBtn')) toggleProfileModal();
-};
-
-document.getElementById('logoutBtn').onclick = () => {
-    if(confirm("Logout?")) auth.signOut().then(() => location.reload());
-};
-
-
-function recordMatchResult(isWin) {
-    const user = auth.currentUser;
-    if (!user) return;
-    
-    let stats = getStats(user.uid);
-    stats.matches++;
-    if (isWin) stats.wins++;
-    
-    localStorage.setItem(`numberhex_stats_${user.uid}`, JSON.stringify(stats));
-    updateStatsUI(stats);
-}
-
-// Handle Login
-// 1. Ensure the listener is assigned to the button ID
-
-// --- MATH TIPS DATABASE ---
-// --- MATH TIPS SYSTEM ---
-const tips = [
-    "To find a common multiple of 4 and 6, try checking 12, 24, and 36.",
-    "The LCM (Least Common Multiple) is the smallest positive integer divisible by both numbers.",
-    "When dice show 3 and 5, any number ending in 0 or 5 that is divisible by 3 works (e.g., 15, 30, 45).",
-    "Strategy: Try to build a path across the board while blocking your opponent's prime numbers.",
-    "If the dice are identical (e.g., 4 and 4), any multiple of 4 is a valid move."
-];
-let currentTipIdx = 0;
-
-function showNextTip() {
-    currentTipIdx = (currentTipIdx + 1) % tips.length;
-    document.getElementById('mathTipDisplay').textContent = `"${tips[currentTipIdx]}"`;
-}
-
-// --- PROFILE MANAGEMENT ---
-function toggleProfileModal() {
-    const modal = document.getElementById('profileModal');
-    const user = firebase.auth().currentUser;
-
-    if (modal.classList.contains('hidden')) {
-        // Pre-fill fields
-        document.getElementById('editName').value = user.displayName || "";
-        document.getElementById('editPhoto').value = user.photoURL || "";
-        modal.classList.remove('hidden');
-    } else {
-        modal.classList.add('hidden');
-    }
-}
-
-
-// Initialize or load stats
-function getPlayerStats(uid) {
-    const stats = localStorage.getItem(`stats_${uid}`);
-    return stats ? JSON.parse(stats) : { matches: 0, wins: 0, losses: 0 };
-}
-
-function updatePlayerStats(uid, result) {
-    let stats = getPlayerStats(uid);
-    stats.matches += 1;
-    if (result === 'win') stats.wins += 1;
-    if (result === 'loss') stats.losses += 1;
-    localStorage.setItem(`stats_${uid}`, JSON.stringify(stats));
-    refreshStatsUI(stats);
-}
-
-function refreshStatsUI(stats) {
-    document.getElementById('statsMatches').textContent = stats.matches;
-    document.getElementById('statsWins').textContent = stats.wins;
-    
-    // Simple Rank Logic
-    let rank = "Rookie";
-    if (stats.wins > 5) rank = "Scholar";
-    if (stats.wins > 15) rank = "Math Lord";
-    if (stats.wins > 50) rank = "Hex Master";
-    document.getElementById('statsRank').textContent = rank;
-}
-
-// Trigger stats update when the game ends
-// Add this inside your handleResignation or showWinModal functions:
-// if (isWinner) updatePlayerStats(auth.currentUser.uid, 'win');
-// else updatePlayerStats(auth.currentUser.uid, 'loss');
-
-async function saveProfile() {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-    
-    const newName = document.getElementById('editName').value.trim();
-    const newPhoto = document.getElementById('editPhoto').value.trim();
-    const newBio = document.getElementById('editBio').value.trim();
-    
-    // Validate inputs
-    if (!newName) {
-        alert('Please enter a display name');
-        return;
-    }
-    
-    try {
-        // Update Firebase auth profile
-        await user.updateProfile({
-            displayName: newName,
-            photoURL: newPhoto || null
-        });
-        
-        // Get current profile data
-        const profile = getPlayerProfile(user.uid);
-        
-        // Update profile
-        profile.name = newName;
-        profile.photo = newPhoto || 'https://via.placeholder.com/60';
-        profile.bio = newBio || 'No bio yet...';
-        
-        // Save to localStorage
-        savePlayerProfile(user.uid, profile);
-        
-        // Update server with new profile data
-        if (socket) {
-            socket.emit('updateProfile', {
-                uid: user.uid,
-                name: profile.name,
-                photo: profile.photo,
-                bio: profile.bio,
-                stats: profile.stats
-            });
-        }
-        
-        toggleProfileModal();
-        alert("Profile updated successfully!");
-    } catch (error) {
-        console.error("Update failed:", error);
-        alert("Error updating profile: " + error.message);
-    }
-}
-
-// Attach click event to your existing userProfile div
-document.getElementById('userProfile')?.addEventListener('click', (e) => {
-    // Only open if they didn't click the Logout button
-    if (!e.target.closest('#logoutBtn')) {
-        toggleProfileModal();
-    }
 });
 
-googleBtn.addEventListener('click', () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    
-    // Explicitly using the 'auth' object created from your config
-    auth.signInWithPopup(provider)
-        .then((result) => {
-            console.log("Login Successful");
-        })
-        .catch((error) => {
-            console.error("Login Error:", error.code, error.message);
-            // If it keeps closing, try Redirect instead:
-            // auth.signInWithRedirect(provider); 
-        });
-});
-
-// 1. Set Persistence (Optional, but ensures it stays logged in across sessions)
-firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-// 2. Listen for User State (This triggers automatically on page load for returning users)
-auth.onAuthStateChanged(user => {
-    if (user) {
-        // User is found in local storage, skip login screen
-        loginOverlay.style.display = 'none';
-        userProfile.classList.remove('hidden');
-        userProfile.classList.add('flex');
-        
-        // Initialize profile system
-        const profile = getPlayerProfile(user.uid);
-        updateProfileUI(profile);
-        updateSidebarProfile(profile);
-        
-        // Update header with profile data
-        userAvatar.src = profile.photo || 'https://via.placeholder.com/40';
-        userName.textContent = profile.name.split(' ')[0];
-
-        // Authenticate with server
-        if (socket) {
-            socket.emit('authenticate', {
-                uid: user.uid,
-                name: profile.name,
-                photo: profile.photo,
-                bio: profile.bio,
-                stats: profile.stats
-            });
-        }
-    } else {
-        loginOverlay.style.display = 'flex';
-        userProfile.classList.add('hidden');
-        hideOpponentProfile();
-    }
-});
-
-// 3. Logout Functionality
 document.getElementById('logoutBtn').addEventListener('click', () => {
-    if(confirm("Are you sure you want to logout?")) {
-        auth.signOut().then(() => {
-            location.reload(); // Refresh to show login screen
-        });
-    }
+    auth.signOut().then(() => location.reload());
 });
 
 const SIZE = 11; 
@@ -2672,11 +2033,9 @@ function getCanvasCenter(x, y) {
     const cy = y * 1.5 * HEX_R + Y_MARGIN;
     return [cx, cy];
 }
-
 /**
  * Calculates scale factor based on **both** width and height 
  * constraints of the container to ensure the board fits entirely on screen without scrolling.
- * MODIFIED: On small screens, prioritizes filling width and allows vertical overflow.
  */
 function calculateCanvasSize() {
     const [maxXCenter, maxYCenter] = getCanvasCenter(SIZE - 1, SIZE - 1);
@@ -2690,29 +2049,20 @@ function calculateCanvasSize() {
     outputCanvas.height = boardIntrinsicHeight;
     
     const scrollContainer = document.querySelector('.board-scroll');
-    const scrollRect = scrollContainer.getBoundingClientRect();
+    const cs = window.getComputedStyle(scrollContainer);
+    const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+    const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
     
-    // Add a small safety margin (20px) to the available space
-    const safetyMargin = 20; 
-    const availableWidth = scrollRect.width - safetyMargin; 
-    const availableHeight = scrollRect.height - safetyMargin; 
+    // Use the true inner content box so the scale matches what's actually visible.
+    const availableWidth = Math.max(0, scrollContainer.clientWidth - padX);
+    const availableHeight = Math.max(0, scrollContainer.clientHeight - padY);
 
     // Calculate scale factor based on both dimensions
     const scaleX = availableWidth / boardIntrinsicWidth;
     const scaleY = availableHeight / boardIntrinsicHeight;
     
-    // 1. Check if we are on a small screen (mobile)
-    // We use window.innerWidth because screen size directly impacts our scaling decision
-    const isMobileScreen = window.innerWidth <= 768; 
-    
-    let scale;
-    if (isMobileScreen) {
-        // 2. On mobile, scale by width to maximize size, rely on page scroll for height
-        scale = scaleX; 
-    } else {
-        // 3. On desktop, use the minimum scale to fit all content without scrolling
-        scale = Math.min(scaleX, scaleY);
-    }
+    // Always use the minimum scale to fit perfectly within the container
+    const scale = Math.min(scaleX, scaleY);
     
     // Apply the transformation and center the board
     outputCanvas.style.transform = `scale(${scale})`;
@@ -4037,3 +3387,4 @@ window.addEventListener('orientationchange', () => {
 </script>
 </body>
 </html>
+ 
