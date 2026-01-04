@@ -774,10 +774,9 @@ body::after {
 /* Grid/Board Panel - TOURNAMENT ARENA */
 .panel{
     background: linear-gradient(135deg, var(--bg-panel) 0%, #1f1f1f 50%, var(--bg-panel) 100%);
-    padding: 0; 
+    padding:15px; 
     border-radius:var(--radius-panel);
     border:3px solid var(--accent-blue);
-
     box-shadow: 
         0 0 20px rgba(0,0,0,0.9),
         0 0 40px rgba(0, 255, 65, 0.4),
@@ -790,8 +789,9 @@ body::after {
     position: relative;
     overflow: hidden; 
     width: 100%;    
-    justify-content: flex-start;
-    align-items: stretch;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
 }
 
 .panel::before {
@@ -832,43 +832,34 @@ body::after {
 }
 .board-scroll{
     border-radius:4px; /* SQUARED */
-    padding: 0; 
+    padding: 10px; 
     background: var(--bg-light); 
     display:flex;
     justify-content:center;
     align-items:center;
-
     box-shadow: var(--shadow-inset); 
     margin: 0; 
     flex-grow: 1; 
     min-height: 0;
-    width: 100%;
-    height: 100%;
-    position: relative;
-    z-index: 1;
 }
 .grid-container{
     position:relative;
-    display:flex;
+    display:inline-block;
     user-select:none;
     touch-action:manipulation; 
     background-color: transparent;
-    margin: 0; 
+    margin: 0 auto; 
     max-width: 100%;
     max-height: 100%;
     overflow: hidden;
-    width: 100%;
-    height: 100%;
-    justify-content: center;
-    align-items: center;
 }
 
 #output {
     transition: filter 0.5s ease, opacity 0.5s ease;
     max-width: 100%;
     max-height: 100%;
+    object-fit: contain;
     overflow: hidden;
-    display: block;
 }
 /* This class will be applied when it is NOT your turn */
 .board-locked {
@@ -1202,16 +1193,16 @@ body::after {
     }
     .turn-indicator-bar {
         font-size: 16px;
-        padding: 2px 10px;
+        padding: 8px 10px;
         align-self: center;
     }
     .panel {
-        padding: 0;
+        padding: 8px;
         border-radius: var(--radius-sharp); /* SQUARED */
         border-width: 2px;
     }
     .board-scroll {
-        padding: 0;
+        padding: 10px;
     }
     .legend {
         flex-direction: column;
@@ -2036,6 +2027,7 @@ function getCanvasCenter(x, y) {
 /**
  * Calculates scale factor based on **both** width and height 
  * constraints of the container to ensure the board fits entirely on screen without scrolling.
+ * MODIFIED: On small screens, prioritizes filling width and allows vertical overflow.
  */
 function calculateCanvasSize() {
     const [maxXCenter, maxYCenter] = getCanvasCenter(SIZE - 1, SIZE - 1);
@@ -2049,20 +2041,29 @@ function calculateCanvasSize() {
     outputCanvas.height = boardIntrinsicHeight;
     
     const scrollContainer = document.querySelector('.board-scroll');
-    const cs = window.getComputedStyle(scrollContainer);
-    const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
-    const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+    const scrollRect = scrollContainer.getBoundingClientRect();
     
-    // Use the true inner content box so the scale matches what's actually visible.
-    const availableWidth = Math.max(0, scrollContainer.clientWidth - padX);
-    const availableHeight = Math.max(0, scrollContainer.clientHeight - padY);
+    // Add a small safety margin (20px) to the available space
+    const safetyMargin = 20; 
+    const availableWidth = scrollRect.width - safetyMargin; 
+    const availableHeight = scrollRect.height - safetyMargin; 
 
     // Calculate scale factor based on both dimensions
     const scaleX = availableWidth / boardIntrinsicWidth;
     const scaleY = availableHeight / boardIntrinsicHeight;
     
-    // Always use the minimum scale to fit perfectly within the container
-    const scale = Math.min(scaleX, scaleY);
+    // 1. Check if we are on a small screen (mobile)
+    // We use window.innerWidth because screen size directly impacts our scaling decision
+    const isMobileScreen = window.innerWidth <= 768; 
+    
+    let scale;
+    if (isMobileScreen) {
+        // 2. On mobile, scale by width to maximize size, rely on page scroll for height
+        scale = scaleX; 
+    } else {
+        // 3. On desktop, use the minimum scale to fit all content without scrolling
+        scale = Math.min(scaleX, scaleY);
+    }
     
     // Apply the transformation and center the board
     outputCanvas.style.transform = `scale(${scale})`;
