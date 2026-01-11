@@ -1368,11 +1368,33 @@ body::after {
     </div>
 </div>
 
-<div id="loginOverlay" class="fixed inset-0 bg-black bg-opacity-90 z-[2000] flex flex-center items-center justify-center">
+<div id="loginOverlay" class="fixed inset-0 bg-black bg-opacity-90 z-[2000] flex flex-center items-center justify-center p-4" style="overflow: hidden;">
     <div class="bg-[#2A2A2A] p-8 rounded-lg border-2 border-[#7FFF00] text-center max-w-sm">
         <h2 class="font-['Bungee_Inline'] text-2xl text-[#7FFF00] mb-6">NUMBERHEX LOGIN</h2>
+        
+        <div class="mb-6 text-left">
+            <h3 class="text-white font-bold mb-3">🎮 Why Sign In?</h3>
+            <ul class="text-gray-300 text-sm space-y-2">
+                <li>✅ Track your wins and losses</li>
+                <li>🏆 Climb the global rankings</li>
+                <li>👥 Play multiplayer matches</li>
+                <li>💾 Save your progress</li>
+            </ul>
+        </div>
+        
         <button id="googleLoginBtn" class="btn w-full mb-4">Sign in with Google</button>
-        <p class="text-xs text-gray-400">Join to track your wins and rank up!</p>
+        
+        <div class="mb-4">
+            <div class="border-t border-gray-600 my-4"></div>
+            <p class="text-gray-400 text-xs mb-3">Or play without signing in:</p>
+        </div>
+        
+        <button id="guestLoginBtn" class="w-full bg-gray-600 text-white font-bold py-4 px-6 rounded-lg hover:bg-gray-500 active:scale-95 transition-all flex items-center justify-center gap-3 border-2 border-gray-500">
+            <span class="text-xl">👤</span>
+            <span>Play as Guest - Single Player Only</span>
+        </button>
+        
+        <p class="text-xs text-gray-500 mt-4">Guest mode: Single player only. No multiplayer access.</p>
     </div>
 </div>
 
@@ -1773,12 +1795,75 @@ googleBtn.addEventListener('click', () => {
         });
 });
 
+// --- GUEST LOGIN FUNCTIONALITY ---
+const guestBtn = document.getElementById('guestLoginBtn');
+guestBtn.addEventListener('click', () => {
+    // Hide login overlay
+    loginOverlay.style.display = 'none';
+    
+    // Set guest mode flag
+    localStorage.setItem('numberhex_guest_mode', 'true');
+    
+    // Disable multiplayer button and show tooltip
+    const matchBtn = document.getElementById('matchBtn');
+    matchBtn.disabled = true;
+    matchBtn.textContent = 'LOGIN REQUIRED';
+    matchBtn.style.background = 'var(--muted)';
+    matchBtn.style.cursor = 'not-allowed';
+    matchBtn.title = 'Multiplayer requires Google login';
+    
+    // Force mode to single player
+    const modeSelect = document.getElementById('modeSelect');
+    modeSelect.value = 'single';
+    modeSelect.disabled = true;
+    modeSelect.title = 'Multiplayer requires Google login';
+    
+    // Hide user profile since guest mode
+    const userProfile = document.getElementById('userProfile');
+    userProfile.style.display = 'none';
+    
+    // Show guest notification
+    log('👤 Playing as Guest - Single Player Mode Only');
+    
+    console.log("Guest login successful - Multiplayer disabled");
+});
+
 // 1. Set Persistence (Optional, but ensures it stays logged in across sessions)
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // 2. Listen for User State (This triggers automatically on page load for returning users)
 auth.onAuthStateChanged(user => {
-    if (user) {
+    // Check for guest mode first
+    const isGuestMode = localStorage.getItem('numberhex_guest_mode') === 'true';
+    
+    if (isGuestMode) {
+        // Apply guest mode restrictions
+        const matchBtn = document.getElementById('matchBtn');
+        matchBtn.disabled = true;
+        matchBtn.textContent = 'LOGIN REQUIRED';
+        matchBtn.style.background = 'var(--muted)';
+        matchBtn.style.cursor = 'not-allowed';
+        matchBtn.title = 'Multiplayer requires Google login';
+        
+        const modeSelect = document.getElementById('modeSelect');
+        modeSelect.value = 'single';
+        modeSelect.disabled = true;
+        modeSelect.title = 'Multiplayer requires Google login';
+        
+        const userProfile = document.getElementById('userProfile');
+        userProfile.style.display = 'none';
+        
+        // Hide login overlay for returning guests
+        loginOverlay.style.display = 'none';
+        userProfile.classList.remove('hidden');
+        userProfile.classList.add('flex');
+        
+        // Set default guest info
+        userAvatar.src = 'https://via.placeholder.com/40';
+        userName.textContent = 'Guest';
+        
+        log('👤 Guest Mode Active - Single Player Only');
+    } else if (user) {
         // User is found in local storage, skip login screen
         loginOverlay.style.display = 'none';
         userProfile.classList.remove('hidden');
@@ -1801,6 +1886,9 @@ auth.onAuthStateChanged(user => {
 // 3. Logout Functionality
 document.getElementById('logoutBtn').addEventListener('click', () => {
     if(confirm("Are you sure you want to logout?")) {
+        // Clear guest mode flag
+        localStorage.removeItem('numberhex_guest_mode');
+        
         auth.signOut().then(() => {
             location.reload(); // Refresh to show login screen
         });
@@ -1872,6 +1960,13 @@ let occupiedCount = 0;
 let lastHoveredValid = [-1, -1]; 
 
 document.getElementById('matchBtn').addEventListener('click', () => {
+    const isGuestMode = localStorage.getItem('numberhex_guest_mode') === 'true';
+    
+    if (isGuestMode) {
+        log('⚠️ Multiplayer is disabled in Guest Mode! Please sign in to access multiplayer features.');
+        return; // Block the click
+    }
+    
     socket.emit('findMatch');
     document.getElementById('matchBtn').textContent = "SEARCHING...";
     // Note: isMultiplayer becomes true once 'matchFound' is received
@@ -1936,7 +2031,7 @@ function handleResignation(resignerId) {
     const winnerName = (resignerId === 1) ? "RED" : "BLUE";
     const reason = (resignerId === myRole) ? "You resigned." : "Opponent resigned.";
     
-    showWinModal(`${winnerName} WINS!`, reason);
+    showWinModal(`${winnerName} WINS!`, `${reason}\n\n🔄 Please refresh the page to play again.`);
 
     if (isMultiplayer) {
         socket.emit('leaveRoom', { roomId: currentRoom });
@@ -1964,7 +2059,7 @@ function handleResignation(resignerId) {
     const reason = (resignerId === myRole) ? "You resigned." : "Opponent resigned.";
     
     // Show the modal (using your existing modal ID)
-    showWinModal(`${winnerName} WINS!`, reason);
+    showWinModal(`${winnerName} WINS!`, `${reason}\n\n🔄 Please refresh the page to play again.`);
     
     // Cleanup Multiplayer State
     if (isMultiplayer) {
