@@ -1963,8 +1963,9 @@ document.getElementById('matchBtn').addEventListener('click', () => {
     const isGuestMode = localStorage.getItem('numberhex_guest_mode') === 'true';
     
     if (isGuestMode) {
-        log('⚠️ Multiplayer is disabled in Guest Mode! Please sign in to access multiplayer features.');
-        return; // Block the click
+        // Show login screen again for guests who want to upgrade
+        loginOverlay.style.display = 'flex';
+        return; // Block matchmaking
     }
     
     socket.emit('findMatch');
