@@ -492,15 +492,18 @@ body::after {
 }
 .controls { 
     display: flex; 
-    gap: 8px;
+    gap: 6px;
     flex-wrap: nowrap;
     flex-shrink: 1;
-    overflow-x: auto;
+    overflow-x: hidden;
+    min-width: 0;
 }
 .controls .btn, .controls .ghost {
     min-width: fit-content;
-    font-size: 14px;
-    padding: 10px 16px;
+    font-size: 12px;
+    padding: 8px 14px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* Status/Control Strip - TOURNAMENT STYLE */
@@ -1145,6 +1148,8 @@ body::after {
       gap: 4px;
       margin-bottom: 8px;
       padding: 0 4px;
+      max-height: fit-content;
+      overflow: visible;
     }
     .title {
       flex-shrink: 0;
@@ -1159,13 +1164,16 @@ body::after {
         flex-wrap: nowrap;
         gap: 6px;
         justify-content: flex-end;
-        overflow-x: auto;
+        overflow-x: hidden;
         flex-shrink: 1;
+        min-width: 0;
     }
     .controls .btn, .controls .ghost {
         min-width: fit-content;
         font-size: 12px;
         padding: 8px 14px;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
     .main-layout {
         flex-direction: column; /* Stack sidebar below game board on mobile */
