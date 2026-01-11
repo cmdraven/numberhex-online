@@ -470,23 +470,38 @@ body::after {
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:12px;
-    margin-bottom:12px;
-    flex-wrap: wrap;
+    gap:4px;
+    margin-bottom:8px;
+    flex-wrap: nowrap;
     flex-shrink: 0; 
+    padding: 0 4px;
+}
+.title {
+    flex-shrink: 0;
 }
 .title h1{
     margin:0;
-    font-size: clamp(40px, 8vw, 85px); 
+    font-size: clamp(28px, 5vw, 60px); 
     font-weight:900;
     font-family:var(--font-title);
     color:var(--accent-blue);
     line-height:1.05; 
-    letter-spacing: 8px; 
+    letter-spacing: 1px; 
     position: relative;
     text-shadow: none;
 }
-.controls { display: flex; gap: 12px; }
+.controls { 
+    display: flex; 
+    gap: 8px;
+    flex-wrap: nowrap;
+    flex-shrink: 1;
+    overflow-x: auto;
+}
+.controls .btn, .controls .ghost {
+    min-width: fit-content;
+    font-size: 14px;
+    padding: 10px 16px;
+}
 
 /* Status/Control Strip - TOURNAMENT STYLE */
 .status-strip {
@@ -1123,18 +1138,34 @@ body::after {
         padding: 4px 8px;
     }
     .header {
-        flex-direction: column;
-        align-items: stretch;
-        margin-bottom: 8px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+    .title {
+      flex-shrink: 0;
     }
     .title h1 {
         text-align: center;
-        letter-spacing: 2px;
+        letter-spacing: 1px;
+        font-size: clamp(28px, 5vw, 60px);
     }
     .controls {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 6px;
+        justify-content: flex-end;
+        overflow-x: auto;
+        flex-shrink: 1;
+    }
+    .controls .btn, .controls .ghost {
+        min-width: fit-content;
+        font-size: 12px;
+        padding: 8px 14px;
     }
     .main-layout {
         flex-direction: column; /* Stack sidebar below game board on mobile */
@@ -1239,6 +1270,7 @@ body::after {
       <button id="lcmHelperBtn" class="ghost" style="--ghost-shadow: var(--accent-blue-shadow);">HELPER 💡</button>
       <button id="newBtn" class="btn">NEW GAME</button>
       <button id="matchBtn" class="btn" style="background: var(--accent-info); --btn-shadow-color: #008f66;">FIND MATCH</button>
+      <button id="upgradeLoginBtn" class="btn" style="background: var(--accent-warning); --btn-shadow-color: #ff6b00; display: none;">LOGIN</button>
     </div>
   </div>
 
@@ -1822,6 +1854,10 @@ guestBtn.addEventListener('click', () => {
     const userProfile = document.getElementById('userProfile');
     userProfile.style.display = 'none';
     
+    // Show upgrade login button
+    const upgradeLoginBtn = document.getElementById('upgradeLoginBtn');
+    upgradeLoginBtn.style.display = 'block';
+    
     // Show guest notification
     log('👤 Playing as Guest - Single Player Mode Only');
     
@@ -1852,6 +1888,10 @@ auth.onAuthStateChanged(user => {
         
         const userProfile = document.getElementById('userProfile');
         userProfile.style.display = 'none';
+        
+        // Show upgrade login button
+        const upgradeLoginBtn = document.getElementById('upgradeLoginBtn');
+        upgradeLoginBtn.style.display = 'block';
         
         // Hide login overlay for returning guests
         loginOverlay.style.display = 'none';
@@ -1963,14 +2003,91 @@ document.getElementById('matchBtn').addEventListener('click', () => {
     const isGuestMode = localStorage.getItem('numberhex_guest_mode') === 'true';
     
     if (isGuestMode) {
-        // Show login screen again for guests who want to upgrade
+        // Clear guest mode and show login screen
+        localStorage.removeItem('numberhex_guest_mode');
         loginOverlay.style.display = 'flex';
+        
+        // Reset UI elements to normal state
+        const matchBtn = document.getElementById('matchBtn');
+        matchBtn.disabled = false;
+        matchBtn.textContent = 'FIND MATCH';
+        matchBtn.style.background = '';
+        matchBtn.style.cursor = 'pointer';
+        matchBtn.title = '';
+        
+        const modeSelect = document.getElementById('modeSelect');
+        modeSelect.disabled = false;
+        modeSelect.title = '';
+        
+        const userProfile = document.getElementById('userProfile');
+        userProfile.style.display = '';
+        
+        // Hide upgrade login button
+        const upgradeLoginBtn = document.getElementById('upgradeLoginBtn');
+        upgradeLoginBtn.style.display = 'none';
+        
         return; // Block matchmaking
     }
     
     socket.emit('findMatch');
     document.getElementById('matchBtn').textContent = "SEARCHING...";
     // Note: isMultiplayer becomes true once 'matchFound' is received
+});
+
+document.getElementById('matchBtn').addEventListener('mousedown', (e) => {
+    const isGuestMode = localStorage.getItem('numberhex_guest_mode') === 'true';
+    
+    if (isGuestMode) {
+        e.preventDefault(); // Prevent default behavior
+        // Clear guest mode and show login screen
+        localStorage.removeItem('numberhex_guest_mode');
+        loginOverlay.style.display = 'flex';
+        
+        // Reset UI elements to normal state
+        const matchBtn = document.getElementById('matchBtn');
+        matchBtn.disabled = false;
+        matchBtn.textContent = 'FIND MATCH';
+        matchBtn.style.background = '';
+        matchBtn.style.cursor = 'pointer';
+        matchBtn.title = '';
+        
+        const modeSelect = document.getElementById('modeSelect');
+        modeSelect.disabled = false;
+        modeSelect.title = '';
+        
+        const userProfile = document.getElementById('userProfile');
+        userProfile.style.display = '';
+        
+        // Hide upgrade login button
+        const upgradeLoginBtn = document.getElementById('upgradeLoginBtn');
+        upgradeLoginBtn.style.display = 'none';
+    }
+});
+
+// --- UPGRADE LOGIN BUTTON FUNCTIONALITY ---
+document.getElementById('upgradeLoginBtn').addEventListener('click', () => {
+    // Clear guest mode and show login screen
+    localStorage.removeItem('numberhex_guest_mode');
+    loginOverlay.style.display = 'flex';
+    
+    // Reset UI elements to normal state
+    const matchBtn = document.getElementById('matchBtn');
+    matchBtn.disabled = false;
+    matchBtn.textContent = 'FIND MATCH';
+    matchBtn.style.background = '';
+    matchBtn.style.cursor = 'pointer';
+    matchBtn.title = '';
+    
+    const modeSelect = document.getElementById('modeSelect');
+    modeSelect.disabled = false;
+    modeSelect.title = '';
+    
+    const userProfile = document.getElementById('userProfile');
+    userProfile.style.display = '';
+    
+    // Hide upgrade login button
+    const upgradeLoginBtn = document.getElementById('upgradeLoginBtn');
+    upgradeLoginBtn.style.display = 'none';
 });
 
 // --- UPDATED MATCHMAKING LISTENER ---
